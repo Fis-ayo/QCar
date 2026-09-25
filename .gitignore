@@ -1,0 +1,26 @@
+# Python/runtime artifacts
+__pycache__/
+*.py[cod]
+*.log
+*.pid
+
+# Physical-run evidence is archived separately, not committed wholesale.
+Logs/
+
+# Machine- and calibration-specific binary data
+reference_scan/*.mat
+
+# External reference document; verify redistribution rights separately.
+QCar2 multi vehicle self driving.pdf
+
+# Generated model/build artifacts
+*.slxc
+*.rt-linux_*
+slprj/
+
+# Editor/OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

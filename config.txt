@@ -1,0 +1,7 @@
+REMOTE_PATH=/home/nvidia/Documents/Quanser/applications/multi_vehicle_self_driving
+QCAR_IPS=[192.168.0.151]
+CALIBRATE_IP=192.168.0.152
+PROBING_IP=192.168.0.151
+LOCAL_IP=192.168.0.153
+WIDTH=320
+HEIGHT=200
