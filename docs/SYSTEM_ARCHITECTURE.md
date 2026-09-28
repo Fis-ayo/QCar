@@ -114,21 +114,22 @@ obstacle logic. A reservation grant is permission to enter the conflict zone,
 not permission to ignore an observed obstacle. The front CSI lane detector is
 currently diagnostic and has no control authority.
 
-## Proposed staged hybrid lane safety
+## Staged hybrid lane safety
 
 ```mermaid
 flowchart LR
     MAP[Waypoint route and EKF pose] --> BASE[Baseline path controller]
     CSI[Front CSI yellow-boundary measurement] --> CONF[Confidence and debounce]
     CONF --> WARN[Current: warning and log only]
-    CONF -. proposed next stage .-> LIMIT[Bounded slowdown / safety stop]
+    CONF --> LIMIT[Candidate 5: earlier slowdown / latched safety stop]
     BASE --> ACT[Steering and nominal speed]
     LIMIT -. speed restriction only .-> ACT
     YOLO[YOLO obstacle restriction] --> ACT
     CZ[Intersection permission] --> ACT
 ```
 
-Waypoint navigation remains responsible for route selection. The proposed
-camera safety layer cannot choose a route, grant an intersection movement, or
-override YOLO/CZ1 stopping. Camera steering fusion is intentionally excluded
-from this next stage.
+Waypoint navigation remains responsible for route selection. Candidate 5 is
+enabled explicitly for `.151` in the launcher and awaits physical validation.
+The camera safety layer cannot choose a route, grant an intersection movement,
+or override YOLO/CZ1 stopping. Camera steering fusion is intentionally
+excluded from this stage.

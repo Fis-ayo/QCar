@@ -17,8 +17,9 @@ accessible emergency stop.
 - fail-closed communication-loss handling and stale-owner recovery;
 - YOLO-based obstacle/vehicle stopping;
 - localization, path-tracking, intersection, and front-camera diagnostics; and
-- measurement-only front CSI yellow-line detection. Camera measurements do not
-  currently command steering.
+- front CSI yellow-line detection and an opt-in, speed-only lane-safety layer.
+  Camera measurements never command steering; Candidate 5 can reduce speed or
+  latch a stop on `.151` and is awaiting physical validation.
 
 ## Physical configuration
 
@@ -98,6 +99,13 @@ Python/JSON files, starts YOLO, optionally starts measurement-only CSI lane
 diagnostics, and then starts vehicle control. A vehicle remains stopped if its
 initial pose does not agree with its configured start node.
 
+The current `.151` launcher configuration explicitly enables experimental
+Candidate 5 lane safety. A reliable yellow boundary approaching the calibrated
+safety margin reduces target speed; a critical threshold latches a complete stop until the
+process is restarted. Loss of the local camera-safety data stream also stops
+the car. Keep the emergency stop available and do not expect the vehicle to
+resume automatically after a critical lane stop.
+
 ## Stop the application
 
 ```powershell
@@ -129,7 +137,7 @@ each formal experiment. See `EXPERIMENTAL_REPORTS.md` for the experiment record.
 Run the complete local test suite:
 
 ```powershell
-python -m unittest discover -s python -p "test_*.py"
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
 Validate the road configuration separately with:
@@ -137,6 +145,11 @@ Validate the road configuration separately with:
 ```powershell
 python qcar/road_rules.py
 ```
+
+Maintained offline utilities are grouped under `tools/analysis/`,
+`tools/visualization/`, and `tools/replay/`. Automated tests are under
+`tests/`. Experimental run evidence remains under the local, Git-ignored
+`Logs/` directory and is not removed by source-code cleanup.
 
 ## Documentation
 

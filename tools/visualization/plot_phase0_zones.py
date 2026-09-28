@@ -13,8 +13,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-CURRENT_DIR = Path(__file__).resolve().parent
-QCAR_DIR = CURRENT_DIR.parent / "qcar"
+ROOT = Path(__file__).resolve().parent.parent.parent
+QCAR_DIR = ROOT / "qcar"
 sys.path.insert(0, str(QCAR_DIR))
 
 from road_rules import RoadNetwork  # noqa: E402
@@ -59,7 +59,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output",
-        default=str(CURRENT_DIR.parent / "phase0_cz1_candidate.png"),
+        default=str(ROOT / "docs" / "images" / "phase0_cz1_candidate.png"),
     )
     parser.add_argument(
         "--half-extent",

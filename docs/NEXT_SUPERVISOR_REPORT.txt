@@ -53,7 +53,8 @@ Waypoint navigation retains global route and intersection responsibility. The
 front CSI camera supplies local boundary evidence in stages:
 
 1. measurement and warning — implemented;
-2. confidence-gated, debounced slowdown/stop — proposed next;
+2. confidence-gated, debounced slowdown/stop — Candidate 4 stopped too late;
+   Candidate 5 moves the thresholds earlier and awaits physical validation;
 3. small bounded steering correction — only after repeated validation.
 
 YOLO and intersection stops retain authority. Camera logic must not select a
@@ -101,7 +102,10 @@ minimum separation, YOLO stops, and every collision or manual stop.
 8. CURRENT LIMITATIONS
 
 - Candidate 3 was not observed through the live warning display.
-- Camera intervention is not implemented or physically validated.
+- Candidate 4 stopped after physical lane entry; Candidate 5 is not yet physically validated.
+- Candidate 5 stopped earlier, but both left wheels were already beyond the
+  divider. Image offset must be calibrated against physical tire clearance
+  before another safety threshold or steering correction is accepted.
 - Camera output is not calibrated metric lane position.
 - Quantitative two-vehicle trials remain pending.
 - Parking and multi-zone work remain deferred.

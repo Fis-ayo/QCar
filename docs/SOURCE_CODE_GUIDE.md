@@ -24,8 +24,8 @@ source appendix.
 | `qcar/road_rules.py` | Loads and validates the road-network configuration |
 | `qcar/path_manager.py` | Validates generated waypoint geometry and conservatively repairs supported paired reversals |
 | `qcar/footprint_correction.py` | Computes the optional bounded outward curve-reference displacement used to test vehicle off-tracking |
-| `python/plot_validated_routes.py` | Compares raw and prepared routes offline |
-| `python/plot_phase0_zones.py` | Visualizes configured conflict-zone geometry |
+| `tools/visualization/plot_validated_routes.py` | Compares raw and prepared routes offline |
+| `tools/visualization/plot_phase0_zones.py` | Visualizes configured conflict-zone geometry |
 
 ## Vehicle localization and control
 
@@ -35,7 +35,7 @@ source appendix.
 | `qcar/localization_diagnostics.py` | Logs raw GPS/LiDAR and EKF behavior and captures significant localization events |
 | `qcar/tracking_diagnostics.py` | Logs vehicle pose, projected route reference, tracking errors, commands, and intersection state |
 | `qcar/curvature_control.py` | Contains experimental curvature-control helpers; not enabled in the current launcher configuration |
-| `python/analyze_tracking.py` | Produces offline summaries/plots from tracking diagnostics |
+| `tools/analysis/analyze_tracking.py` | Produces offline summaries/plots from tracking diagnostics |
 
 The current steering command is map/path based. The front CSI measurement
 pipeline has no steering or throttle output.
@@ -70,30 +70,37 @@ not override an obstacle stop.
 | `qcar/lane_camera_server.py` | Captures front CSI frames, logs measurements, and saves raw/annotated snapshots |
 | `qcar/lane_detection.py` | Detects visible yellow lane features and reports bounded image-space measurements/confidence |
 | `qcar/lane_warning.py` | Debounces and latches the measurement-only yellow-boundary proximity warning |
-| `python/analyze_lane_frames.py` | Reprocesses saved frames offline without influencing vehicle control |
-| `python/analyze_camera_tracking_alignment.py` | Time-aligns CSI measurements with tracking diagnostics |
-| `python/evaluate_camera_clearance_signal.py` | Evaluates candidate camera warning features against diagnostic event proxies |
-| `python/replay_lane_warning.py` | Replays the runtime warning logic on recorded runs |
+| `qcar/lane_safety.py` | Produces confidence-gated slowdown/latched-stop states and transports them locally over UDP |
+| `tools/analysis/analyze_lane_frames.py` | Reprocesses saved frames offline without influencing vehicle control |
+| `tools/analysis/analyze_camera_tracking_alignment.py` | Time-aligns CSI measurements with tracking diagnostics |
+| `tools/analysis/evaluate_camera_clearance_signal.py` | Evaluates candidate camera warning features against diagnostic event proxies |
+| `tools/replay/replay_lane_warning.py` | Replays the runtime warning logic on recorded runs |
+| `tools/replay/replay_lane_safety.py` | Replays Candidate 4 slowdown/stop timing on recorded runs |
 
-This subsystem is measurement-only. It is retained to investigate whether
-camera evidence can later provide a bounded lane-centering correction.
+The detector remains non-steering. Candidate 5 may restrict speed or latch a
+stop, but the camera cannot select a route or issue a steering command.
+
+Lane-keeping objectives, physical-clearance definitions, staged acceptance
+gates, and the next calibration experiment are defined in
+`docs/LANE_KEEPING_ACCEPTANCE_PLAN.md`.
 
 ## Automated tests
 
 | File | Coverage |
 |---|---|
-| `python/test_phase1.py` | Reservation order, release, fairness, stale-owner recovery, and vehicle intersection states |
-| `python/test_path_manager.py` | Path validation, anchor preservation, supported repair, and fail-closed behavior |
-| `python/test_localization_diagnostics.py` | Localization CSV and event capture |
-| `python/test_tracking_diagnostics.py` | Tracking recorder calculations and output |
-| `python/test_lane_detection.py` | Image-space lane detector behavior |
-| `python/test_lane_warning.py` | Warning confidence gate, debounce, latch, and optional hysteresis |
-| `python/test_curvature_control.py` | Experimental curvature-control helpers |
+| `tests/test_phase1.py` | Reservation order, release, fairness, stale-owner recovery, and vehicle intersection states |
+| `tests/test_path_manager.py` | Path validation, anchor preservation, supported repair, and fail-closed behavior |
+| `tests/test_localization_diagnostics.py` | Localization CSV and event capture |
+| `tests/test_tracking_diagnostics.py` | Tracking recorder calculations and output |
+| `tests/test_lane_detection.py` | Image-space lane detector behavior |
+| `tests/test_lane_warning.py` | Warning confidence gate, debounce, latch, and optional hysteresis |
+| `tests/test_lane_safety.py` | Slowdown/stop debounce, stop latch, confidence rejection, release margin, and stale-transport stop |
+| `tests/test_curvature_control.py` | Experimental curvature-control helpers |
 
 Run all tests with:
 
 ```powershell
-python -m unittest discover -s python -p "test_*.py"
+python -m unittest discover -s tests -p "test_*.py"
 ```
 
 ## Suggested report appendix organization

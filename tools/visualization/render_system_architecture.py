@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
 
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 OUTPUT = ROOT / "docs" / "system_architecture.png"
 
 
@@ -96,7 +96,7 @@ arrow(ax, (0.74, 0.49), (0.26, 0.50), "state / grant")
 arrow(ax, (0.41, 0.36), (0.26, 0.28), "diagnostics")
 
 ax.text(0.505, 0.125,
-        "Proposed next stage: confidence-gated camera slowdown/stop (not yet enabled)",
+        "Candidate 5: earlier slowdown/latched stop (physical validation pending)",
         ha="center", va="center", fontsize=9, color="#bf360c",
         bbox=dict(boxstyle="round,pad=0.35", facecolor="#fff3e0",
                   edgecolor="#ef6c00", linestyle="--"))

@@ -266,6 +266,11 @@ class TrackingDiagnostics:
             "steering_command_rad",
             "steering_saturated",
             "intersection_phase",
+            "lane_safety_state",
+            "lane_safety_gain",
+            "lane_safety_confidence",
+            "lane_safety_offset_normalized",
+            "lane_safety_age_s",
         ])
         self.csv_file.flush()
 
@@ -285,6 +290,11 @@ class TrackingDiagnostics:
         throttle,
         steering,
         intersection_phase,
+        lane_safety_state="DISABLED",
+        lane_safety_gain=1.0,
+        lane_safety_confidence=float("nan"),
+        lane_safety_offset=float("nan"),
+        lane_safety_age=float("nan"),
     ):
         """Record one sample when the configured logging period has elapsed."""
         elapsed = float(elapsed)
@@ -367,6 +377,11 @@ class TrackingDiagnostics:
             self._number(steering),
             int(saturated),
             intersection_phase,
+            lane_safety_state,
+            self._number(lane_safety_gain),
+            self._number(lane_safety_confidence),
+            self._number(lane_safety_offset),
+            self._number(lane_safety_age),
         ])
         self.csv_file.flush()
         self.last_sample_time = elapsed

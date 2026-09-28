@@ -3,7 +3,6 @@ import argparse
 from scp import SCPClient
 import subprocess
 import os
-import glob
 import time
 import atexit
 import sys
@@ -29,6 +28,25 @@ LOCAL_SCRIPTS_PATH = "../qcar"
 LOCAL_OBSERVER_PATH = "python/observer.py"
 CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 SCRIPTS_PATH = os.path.normpath(os.path.join(CURRENT_DIR,LOCAL_SCRIPTS_PATH))
+QCAR_RUNTIME_FILES = (
+    "vehicle_control.py",
+    "yolo_server.py",
+    "utils.py",
+    "road_rules.py",
+    "road_network.json",
+    "path_manager.py",
+    "intersection_client.py",
+    "localization_diagnostics.py",
+    "tracking_diagnostics.py",
+    "lane_camera_server.py",
+    "lane_detection.py",
+    "lane_warning.py",
+    "lane_safety.py",
+    # Transitional dependencies. Pass 3 will remove these after their disabled
+    # controller branches are removed from vehicle_control.py.
+    "curvature_control.py",
+    "footprint_correction.py",
+)
 COORDINATOR_PORT = 18750
 COORDINATOR_SCRIPT = os.path.join(CURRENT_DIR, "intersection_coordinator.py")
 COORDINATOR_LOG_PATH = os.path.normpath(
@@ -53,6 +71,7 @@ CAR_SETTINGS = {
         "tracking_offset_m": 0.20,
         # Introduce camera measurement on one car before fleet-wide use.
         "lane_camera": False,
+        "lane_safety": False,
     },
     "192.168.0.151": {
         "node_configuration": 0,
@@ -72,6 +91,10 @@ CAR_SETTINGS = {
         "tracking_offset_m": 0.13,
         # Measurement only: this process cannot command steering or throttle.
         "lane_camera": True,
+        # Candidate 5: earlier speed-only CSI slowdown and latched safety stop.
+        # This cannot modify steering and remains disabled by default in
+        # vehicle_control.py unless this explicit launcher flag is supplied.
+        "lane_safety": True,
     },
 }
 
@@ -138,10 +161,15 @@ for ip in QCAR_IPS:
     # Upload Python scripts
     ssh, scp = create_ssh_and_scp(ip)
 
-    deploy_files = []
-    for pattern in ("*.py", "*.json"):
-        deploy_files.extend(
-            glob.glob(os.path.normpath(os.path.join(SCRIPTS_PATH, pattern)))
+    deploy_files = [
+        os.path.normpath(os.path.join(SCRIPTS_PATH, name))
+        for name in QCAR_RUNTIME_FILES
+    ]
+    missing_files = [file for file in deploy_files if not os.path.isfile(file)]
+    if missing_files:
+        raise FileNotFoundError(
+            "QCar deployment manifest contains missing files: "
+            + ", ".join(missing_files)
         )
     for file in deploy_files:
         scp.put(file, REMOTE_PATH)
@@ -169,15 +197,21 @@ for ip in QCAR_IPS:
     settings = CAR_SETTINGS[ip]
     if settings.get("lane_camera", False):
         lane_probe_flag = "--probing" if is_probing else ""
+        lane_safety_publish_flag = (
+            "--lane_safety_publish"
+            if settings.get("lane_safety", False) else ""
+        )
         cmd_lane = (
             f"cd {REMOTE_PATH} && "
             f"nohup python lane_camera_server.py "
             f"--car_id {ip} --ip_host {LOCAL_IP} {lane_probe_flag} "
+            f"{lane_safety_publish_flag} "
             f"> lane_camera.log 2>&1 < /dev/null &"
         )
         ssh.exec_command(cmd_lane)
         print(
-            f"[{ip}] Started measurement-only front CSI lane diagnostics."
+            f"[{ip}] Started front CSI lane diagnostics "
+            f"(speed safety={settings.get('lane_safety', False)})."
         )
 
     time.sleep(3)
@@ -197,6 +231,9 @@ for ip in QCAR_IPS:
     footprint_gain = settings.get("footprint_correction_gain", 1.0)
     footprint_max_m = settings.get("footprint_correction_max_m", 0.04)
     tracking_offset_m = settings.get("tracking_offset_m", 0.20)
+    lane_safety_flag = (
+        "--lane_safety" if settings.get("lane_safety", False) else ""
+    )
     cmd_vehicle = (
         f"cd {REMOTE_PATH} && "
         f"nohup python vehicle_control.py -n {node_configuration} "
@@ -207,7 +244,7 @@ for ip in QCAR_IPS:
         f"--tracking_offset_m {tracking_offset_m} "
         f"--footprint_correction_gain {footprint_gain} "
         f"--footprint_correction_max_m {footprint_max_m} "
-        f"{curvature_flag} {footprint_flag} "
+        f"{curvature_flag} {footprint_flag} {lane_safety_flag} "
         f"> vehicle_control.log 2>&1 < /dev/null &"
     )
     ssh.exec_command(cmd_vehicle)

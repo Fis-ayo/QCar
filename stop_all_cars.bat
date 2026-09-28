@@ -8,6 +8,14 @@ setlocal
 @REM Enable delayed expansion for the for loop to function
 setlocal enabledelayedexpansion
 
+@REM Load the local-only QCar password without publishing it to GitHub.
+if exist ".qcar_credentials.bat" call ".qcar_credentials.bat"
+if not defined QCAR_PASSWORD (
+    echo Missing .qcar_credentials.bat or QCAR_PASSWORD environment variable.
+    pause
+    exit /b 1
+)
+
 @REM Path to the config file
 set "configFile=config.txt"
 

@@ -64,6 +64,8 @@ The local coordinator runs at `192.168.0.153` on UDP port `18750`.
 | EXP-021 | `.151` repeated unchanged-controller baseline | Completed; four clean runs plus one localization-disturbed run | Physical node-5 lane crossing repeated while map-reference tracking error remained comparatively small |
 | EXP-022 | Bounded footprint-aware reference correction | Completed and rejected after two physical candidates | Both offsets reduced modeled inner error but failed physically and increased outer-boundary risk |
 | EXP-023 | Yellow-boundary warning replay and Candidate 3 | Offline and saved-frame validation complete; live display confirmation pending | Candidate 3 warned `2.86 s` before shutdown while saved frames showed the real yellow divider crossing image center |
+| EXP-024 | Candidate 4 camera speed safety | Implemented and validated offline; physical `.151` test pending | Existing runs predict slowdown `2.13-4.67 s` and latched stop `0.49-3.73 s` before operator shutdown |
+| EXP-025 | Candidate 5 earlier camera safety thresholds | Implemented and validated offline; physical `.151` test pending | Moves slowdown to `-0.60`, crawl gain to `0.35`, and stop to `-0.40` after Candidate 4 stopped after crossing |
 
 ## EXP-001 — Deterministic Two-Car Route Operation
 
@@ -548,7 +550,7 @@ Added a route-independent recorder that logs at 20 Hz:
 - intersection phase.
 
 The recorder does not modify control. The same code runs on both cars and on
-every route. `python/analyze_tracking.py` produces common metrics and a
+every route. `tools/analysis/analyze_tracking.py` produces common metrics and a
 trajectory/time-series plot from the resulting CSV.
 
 ### Planned procedure
@@ -1117,7 +1119,7 @@ two-boundary result remains in the CSV only for comparison.
 
 Each periodic snapshot now produces a clean image in `lane_frames/raw/` and a
 separate overlay in `lane_frames/annotated/`. The offline tool
-`python/analyze_lane_frames.py` can rerun detector revisions over saved raw
+`tools/analysis/analyze_lane_frames.py` can rerun detector revisions over saved raw
 frames without another physical drive. A sanity check on the 33 requested
 3:27 PM annotated snapshots accepted 17 yellow-line observations with median
 accepted confidence of approximately `0.87`; this is not an accuracy result
@@ -1254,7 +1256,7 @@ the physical placement of the reference through node 2 to node 4 is validated.
 
 ### Map-derived vehicle-footprint overlay
 
-`python/plot_reference_validation.py` now overlays all five estimated body
+`tools/visualization/plot_reference_validation.py` now overlays all five estimated body
 trajectories, the prepared route, the median tracking point, and median front
 and rear wheel trajectories on the SDCS road graph. The resulting plot is
 stored at `Logs/QCar .151/reference_validation_151_node2_to_node4.png`.
@@ -1387,7 +1389,7 @@ the operator subsequently clarified that this startup behavior also existed
 before Candidate 1. The vehicle moved fully inside its lane before eventually
 crossing toward node 5.
 
-`python/analyze_footprint_envelope.py` was added to test both sides against the
+`tools/analysis/analyze_footprint_envelope.py` was added to test both sides against the
 measured `0.13335 m` center-to-near-boundary distance. In waypoints 200–400,
 the modeled four-wheel envelope was narrow enough to fit in the lane for 100%
 of samples in all four clean baselines and Candidate 1. Baseline negative-side
@@ -1426,7 +1428,7 @@ This rejects further increases to a fixed curvature-only offset.
 
 ### Camera/tracking alignment check
 
-`python/analyze_camera_tracking_alignment.py` synchronized Candidate 2 CSI and
+`tools/analysis/analyze_camera_tracking_alignment.py` synchronized Candidate 2 CSI and
 tracking samples by wall time. Yellow detection was present for all 110
 selected samples. The yellow image-space offset had moderate correlation with
 negative clearance (`0.529`) and positive clearance (`-0.646`), whereas the
@@ -1446,7 +1448,7 @@ and candidate data before any bounded steering fusion.
 **Status:** Offline replay and Candidate 3 saved-frame validation complete; live display confirmation pending  
 **Date:** September 25, 2026  
 **Evidence:** Seven `.151` lane/tracking datasets, `qcar/lane_warning.py`,
-`python/replay_lane_warning.py`, and automated tests
+`tools/replay/replay_lane_warning.py`, and automated tests
 
 ### Research question
 
@@ -1509,6 +1511,115 @@ authority is incremental: measurement/warning first, then a bounded safety
 slowdown or stop, and only after repeated validation a small bounded steering
 correction. Camera measurements must not select a different route or override
 YOLO and intersection safety stops.
+
+## EXP-024 — Candidate 4 Camera Slowdown and Latched Stop
+
+**Status:** Implemented and validated offline; physical `.151` test pending
+
+**Date:** September 28, 2026
+
+**Evidence:** `qcar/lane_safety.py`, `tools/replay/replay_lane_safety.py`, eight
+recorded `.151` datasets, and 39 automated tests
+
+### Research question
+
+Can the validated yellow-boundary signal prevent continued unsafe travel by
+reducing speed and stopping, without granting the camera steering authority?
+
+### Implementation
+
+- `NORMAL`: speed gain `1.0`.
+- `SLOWDOWN`: normalized yellow offset at least `-0.45`, confidence at least
+  `0.60`, for four consecutive frames; speed gain `0.45`.
+- `STOP`: offset at least `-0.15` for three consecutive reliable frames;
+  speed gain `0.0` and latched until process restart.
+- Slowdown release requires eight reliable frames beyond the `-0.55` clear
+  margin. Weak/missing detections do not immediately release slowdown.
+- Stale local camera communication for more than `0.50 s` fails closed with a
+  zero speed gain when Candidate 4 is enabled.
+- Camera state is transported locally over UDP port `18760`, combined with
+  YOLO and intersection gains using the minimum restriction, and logged in
+  both lane and tracking CSV files.
+- Steering remains entirely waypoint-based.
+
+### Offline replay result
+
+Across Candidate 1/2/3 and five baseline datasets, slowdown first occurred
+`2.13-4.67 s` before the recorded operator shutdown and STOP occurred
+`0.49-3.73 s` before shutdown in every run. This establishes reproducible
+software timing against existing evidence, but shutdown is only an approximate
+crossing marker.
+
+### Safety limitation and next test
+
+Candidate 4 is enabled only for `.151` through an explicit launcher setting.
+A critical stop cannot steer the stationary car back into its lane; the
+operator must stop the experiment, reposition the vehicle, and restart. The
+first physical test must determine whether slowdown and STOP occur before
+physical divider entry and record false interventions. This is not yet an
+accepted lane-centering solution.
+
+### Candidate 4 physical result
+
+Candidate 4 reduced speed as designed but stopped only after the vehicle had
+crossed into the node-5 lane. Slowdown began near waypoint `287` at offset
+`-0.427`; STOP reached vehicle control near waypoint `357` at offset `-0.150`.
+The controller received the stop about `35 ms` after the camera decision, speed
+fell below `0.02 m/s` within approximately `69 ms`, and estimated motion after
+the stop command was only about `0.0024 m`. Post-startup localization innovation
+remained below approximately `0.059 m`, with no event capture.
+
+This rejects braking, transport delay, and localization discontinuity as the
+main reason for the late stop. The `-0.15` image threshold did not represent
+the physical vehicle boundary; camera perspective and vehicle footprint meant
+the car crossed while the yellow divider was still left of image center.
+
+## EXP-025 — Candidate 5 Earlier Camera Safety Thresholds
+
+**Status:** Implemented and validated offline; physical `.151` test pending
+
+**Date:** September 28, 2026
+
+### Change
+
+- Slowdown threshold changed from `-0.45` to `-0.60`.
+- Slowdown speed gain changed from `0.45` to `0.35` (`0.0875 m/s` at the
+  current nominal speed).
+- Clear margin changed from `-0.55` to `-0.70`.
+- Latched stop threshold changed from `-0.15` to `-0.40`.
+- Confidence, debounce, stale-communication stop, logging, and waypoint-only
+  steering remain unchanged.
+
+### Offline validation
+
+Replay across all nine available `.151` datasets placed slowdown around
+waypoints `268-302` and STOP around waypoints `289-327`. On the physical
+Candidate 4 data, the revised logic would have slowed near waypoint `268` and
+stopped near waypoint `289`, rather than continuing to the observed Candidate
+4 stop near waypoint `357`. All 39 automated tests pass.
+
+### Next action
+
+Run `.151` alone and record whether Candidate 5 stops fully inside its lane,
+on the divider, or after crossing. An early but safe stop is acceptable for
+this conservative test; autonomous recovery remains outside this stage.
+
+### Candidate 5 physical result
+
+Candidate 5 stopped earlier than Candidate 4, but the operator observed that
+the left front and rear wheels were already beyond the yellow divider when it
+stopped. Slowdown began near waypoint `268` at yellow offset `-0.572`. STOP was
+generated at offset `-0.374` and reached vehicle control near waypoint `309`.
+Vehicle speed fell from the reduced-speed condition to below `0.02 m/s` in
+approximately `67 ms`; estimated displacement after the first logged STOP
+sample was approximately `0.0007 m`. Post-startup localization innovation was
+at most approximately `0.063 m`, with no event capture.
+
+Candidate 5 is an improvement in stop location but fails the physical safety
+criterion. Another uncalibrated threshold change is not justified. The next
+step is the stationary measured-clearance protocol in
+`docs/LANE_KEEPING_ACCEPTANCE_PLAN.md`, followed by a threshold or clearance
+model derived from physical tire position.
 
 ## Current Experimental Conclusions
 

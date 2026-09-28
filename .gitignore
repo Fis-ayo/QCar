@@ -9,6 +9,7 @@ Logs/
 
 # Machine- and calibration-specific binary data
 reference_scan/*.mat
+.qcar_credentials.bat
 
 # External reference document; verify redistribution rights separately.
 QCar2 multi vehicle self driving.pdf
@@ -23,4 +24,3 @@ slprj/
 .idea/
 .DS_Store
 Thumbs.db
-

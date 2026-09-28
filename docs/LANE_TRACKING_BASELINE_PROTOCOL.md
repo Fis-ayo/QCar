@@ -161,7 +161,7 @@ Aggregate the five trials using the mean and standard deviation, while also
 reporting the worst trial. Do not remove outliers without a documented sensor,
 logging, or procedural failure.
 
-The current `python/analyze_tracking.py` reports several of these whole-run
+The current `tools/analysis/analyze_tracking.py` reports several of these whole-run
 metrics and produces a route/time plot. Per-section and multi-trial aggregation
 will be added only after the baseline files establish the exact segmentation
 and lap-boundary behavior.
@@ -218,4 +218,3 @@ The baseline stage is complete when:
 
 No controller parameter or camera-control change should be introduced until
 this baseline package has been reviewed.
-

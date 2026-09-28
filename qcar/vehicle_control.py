@@ -28,6 +28,7 @@ from path_manager import PathManager
 from tracking_diagnostics import PathCurvatureAnalyzer, TrackingDiagnostics
 from curvature_control import CurvatureAwareControl
 from footprint_correction import FootprintReferenceCorrection
+from lane_safety import LANE_SAFETY_PORT, LaneSafetyReceiver
 
 parser = argparse.ArgumentParser(prog='Vehicle control')
 parser.add_argument('-c','--calibrate', default=False)
@@ -60,6 +61,12 @@ parser.add_argument(
 )
 parser.add_argument('--footprint_correction_gain', type=float, default=1.0)
 parser.add_argument('--footprint_correction_max_m', type=float, default=0.04)
+parser.add_argument(
+    '--lane_safety',
+    action='store_true',
+    help='Enable CSI-based speed slowdown/latched stop; never changes steering.',
+)
+parser.add_argument('--lane_safety_port', type=int, default=LANE_SAFETY_PORT)
 
 args = parser.parse_args()
 if not 0.0 <= args.tracking_offset_m <= 0.30:
@@ -552,6 +559,26 @@ def controlLoop():
         waypoints=waypointSequence,
         maximum_steering_angle=steeringController.maxSteeringAngle,
     )
+    laneSafetyReceiver = None
+    laneSafety = {
+        "state": "DISABLED",
+        "speed_gain": 1.0,
+        "reliable": False,
+        "confidence": float("nan"),
+        "offset": float("nan"),
+        "age_s": float("nan"),
+    }
+    lastLaneSafetyState = laneSafety["state"]
+    if args.lane_safety:
+        laneSafetyReceiver = LaneSafetyReceiver(
+            port=args.lane_safety_port,
+            expected_car_id=args.car_id,
+        )
+        print(
+            f"[LANE SAFETY] Enabled speed-only intervention on local UDP "
+            f"port {args.lane_safety_port}; critical stops latch until restart.",
+            flush=True,
+        )
 
     with qcar, gps, yolo:
         t0 = time.time()
@@ -575,6 +602,19 @@ def controlLoop():
                                             yolo.cars,
                                             yolo.yieldSign,
                                             yolo.person)
+            if laneSafetyReceiver is not None:
+                laneSafety = laneSafetyReceiver.receive()
+                if laneSafety["state"] != lastLaneSafetyState:
+                    print(
+                        f"[LANE SAFETY] {lastLaneSafetyState} -> "
+                        f"{laneSafety['state']}; "
+                        f"gain={laneSafety['speed_gain']:.2f}, "
+                        f"confidence={laneSafety['confidence']:.2f}, "
+                        f"offset={laneSafety['offset']:.3f}, "
+                        f"age={laneSafety['age_s']:.3f} s",
+                        flush=True,
+                    )
+                    lastLaneSafetyState = laneSafety["state"]
             if enableSteeringControl:
 
                 if gps.readLidar():
@@ -632,7 +672,11 @@ def controlLoop():
                 
             v = qcar.motorTach
             intersectionGain = intersectionController.update(p, v)
-            vGain = min(yoloGain, intersectionGain)
+            vGain = min(
+                yoloGain,
+                intersectionGain,
+                laneSafety["speed_gain"],
+            )
             #endregion
 
             #region : Update controllers and write to car
@@ -676,6 +720,11 @@ def controlLoop():
                     throttle=u,
                     steering=delta,
                     intersection_phase=intersectionController.phase,
+                    lane_safety_state=laneSafety["state"],
+                    lane_safety_gain=laneSafety["speed_gain"],
+                    lane_safety_confidence=laneSafety["confidence"],
+                    lane_safety_offset=laneSafety["offset"],
+                    lane_safety_age=laneSafety["age_s"],
                 )
             # end = elapsed_time()
             if int(t * 2) != int(tp * 2):
@@ -708,7 +757,11 @@ def controlLoop():
                     f"{steeringController.footprint_correction_applied:.3f} m, "
                     f"crossTrack={steeringController.cross_track_error:.3f} m, "
                     f"headingError="
-                    f"{np.degrees(steeringController.heading_error):.1f} deg",
+                    f"{np.degrees(steeringController.heading_error):.1f} deg, "
+                    f"laneSafety={laneSafety['state']}, "
+                    f"laneGain={laneSafety['speed_gain']:.2f}, "
+                    f"laneOffset={laneSafety['offset']:.3f}, "
+                    f"laneAge={laneSafety['age_s']:.3f} s",
                     flush=True,
                 )
             continue
@@ -716,6 +769,8 @@ def controlLoop():
     localizationDiagnostics.close()
     trackingDiagnostics.close()
     intersectionController.close()
+    if laneSafetyReceiver is not None:
+        laneSafetyReceiver.close()
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 

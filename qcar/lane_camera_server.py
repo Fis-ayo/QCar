@@ -10,6 +10,7 @@ from pal.products.qcar import QCarCameras
 from pal.utilities.probe import Probe
 
 from lane_detection import FrontLaneDetector
+from lane_safety import LANE_SAFETY_PORT, LaneSafetyMonitor, LaneSafetyPublisher
 from lane_warning import LaneBoundaryWarning
 
 
@@ -24,6 +25,8 @@ parser.add_argument("--csv_path", default="lane_diagnostics.csv")
 parser.add_argument("--snapshot_directory", default="lane_frames")
 parser.add_argument("--snapshot_period", type=float, default=1.0)
 parser.add_argument("--maximum_snapshots", type=int, default=300)
+parser.add_argument("--lane_safety_publish", action="store_true")
+parser.add_argument("--lane_safety_port", type=int, default=LANE_SAFETY_PORT)
 args = parser.parse_args()
 
 
@@ -39,6 +42,9 @@ CSV_FIELDS = [
     "yellow_near_y_px", "yellow_far_y_px", "yellow_extrapolated",
     "perspective_calibrated", "yellow_boundary_warning",
     "yellow_warning_enter_streak", "yellow_warning_exit_streak",
+    "lane_safety_state", "lane_safety_speed_gain",
+    "lane_safety_reliable", "lane_safety_stop_latched",
+    "lane_safety_slowdown_streak", "lane_safety_stop_streak",
     "annotated_snapshot_path", "snapshot_path",
 ]
 
@@ -58,6 +64,11 @@ camera = QCarCameras(
 )
 detector = FrontLaneDetector()
 boundary_warning = LaneBoundaryWarning()
+safety_monitor = LaneSafetyMonitor()
+safety_publisher = (
+    LaneSafetyPublisher(port=args.lane_safety_port, car_id=args.car_id)
+    if args.lane_safety_publish else None
+)
 probe = None
 if args.probing:
     probe = Probe(ip=args.ip_host)
@@ -96,6 +107,13 @@ try:
             measurement.yellow_confidence,
             measurement.yellow_offset_normalized,
         )
+        safety = safety_monitor.update(
+            measurement.yellow_detected,
+            measurement.yellow_confidence,
+            measurement.yellow_offset_normalized,
+        )
+        if safety_publisher is not None:
+            safety_publisher.send(safety)
         annotated = detector.render(frame, measurement, mask)
         if warning_active:
             cv2.putText(
@@ -106,6 +124,16 @@ try:
                 0.8,
                 (0, 0, 255),
                 2,
+            )
+        if safety["state"] == LaneSafetyMonitor.SLOWDOWN:
+            cv2.putText(
+                annotated, "LANE SAFETY: SLOWDOWN", (20, 130),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 165, 255), 2,
+            )
+        elif safety["state"] == LaneSafetyMonitor.STOP:
+            cv2.putText(
+                annotated, "LANE SAFETY: STOP LATCHED", (20, 130),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2,
             )
 
         raw_snapshot_path = ""
@@ -169,6 +197,12 @@ try:
             "yellow_boundary_warning": int(warning_active),
             "yellow_warning_enter_streak": boundary_warning.enter_streak,
             "yellow_warning_exit_streak": boundary_warning.exit_streak,
+            "lane_safety_state": safety["state"],
+            "lane_safety_speed_gain": value(safety["speed_gain"]),
+            "lane_safety_reliable": int(safety["reliable"]),
+            "lane_safety_stop_latched": int(safety["stop_latched"]),
+            "lane_safety_slowdown_streak": safety["slowdown_streak"],
+            "lane_safety_stop_streak": safety["stop_streak"],
             "raw_snapshot_path": raw_snapshot_path,
             "annotated_snapshot_path": annotated_snapshot_path,
             # Backward-compatible alias for older collection instructions.
@@ -191,6 +225,8 @@ try:
                 f"yellowOffset={measurement.yellow_offset_normalized:.3f}, "
                 f"yellowHeading={measurement.yellow_heading_rad:.3f} rad, "
                 f"yellowWarning={warning_active}, "
+                f"laneSafety={safety['state']}, "
+                f"laneGain={safety['speed_gain']:.2f}, "
                 f"legacyTwoBoundary={measurement.detected}, "
                 f"yellow={measurement.yellow_pixels}, "
                 f"white={measurement.white_pixels}",
@@ -203,3 +239,5 @@ finally:
     camera.terminate()
     if probe is not None:
         probe.terminate()
+    if safety_publisher is not None:
+        safety_publisher.close()

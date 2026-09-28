@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-ROOT = Path(__file__).resolve().parent.parent
+ROOT = Path(__file__).resolve().parent.parent.parent
 sys.path.insert(0, str(ROOT / "qcar"))
 
 from hal.products.mats import SDCSRoadMap  # noqa: E402
@@ -20,7 +20,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--output",
-        default=str(ROOT / "validated_routes.png"),
+        default=str(ROOT / "docs" / "images" / "validated_routes.png"),
     )
     args = parser.parse_args()
 
