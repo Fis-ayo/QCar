@@ -2,7 +2,7 @@
 
 Date: 2026-09-28
 
-Status: Pass 1 completed; Pass 2 completed and locally verified.
+Status: Passes 1 and 2 completed; Pass 3 implemented and awaiting physical regression validation.
 
 ## Purpose
 
@@ -57,10 +57,10 @@ silently becoming part of the deployed system.
 - `tracking_diagnostics.py`
 - `lane_safety.py`
 
-It also imports `curvature_control.py` and `footprint_correction.py`, although
-both features are disabled in the current launcher configuration. These were
-candidate solutions that did not solve the physical lane-crossing problem and
-should be reviewed in Pass 3 rather than mixed into the baseline controller.
+The rejected `curvature_control.py` and `footprint_correction.py` experiments
+were removed from the active runtime in Pass 3. Their implementations remain
+recoverable from Git tag `pre-runtime-cleanup`, and their results remain in
+`EXPERIMENTAL_REPORTS.md`.
 
 ### Front-camera dependencies
 
@@ -138,26 +138,22 @@ The `Logs/` directory is experimental evidence and is explicitly outside the
 cleanup removal scope. Temporary bytecode and regenerated process logs may be
 cleared separately when appropriate, but Pass 2 did not remove them.
 
-### Pass 3: runtime simplification requiring technical review
+### Pass 3: runtime simplification implemented
 
-1. Remove `curvature_control.py` and `footprint_correction.py` from the active
-   runtime after preserving their experimental findings in Git history and
-   `EXPERIMENTAL_REPORTS.md`. Remove their launcher flags, controller branches,
-   diagnostic columns, and dedicated tests together so no partial dependency
-   remains.
-2. Remove the unused randomized-route variables/imports from
-   `vehicle_control.py`. Valid routes must continue to come from
-   `road_network.json`.
-3. Review the no-`start_node` compatibility branch in `vehicle_control.py`.
-   The current launcher always supplies a start node, but the branch should be
-   removed only after verifying that no documented manual workflow uses it.
-4. Decide whether `lane_warning.py` and `lane_safety.py` remain separate state
-   machines or become one clearly named camera-safety module. This decision
-   should follow the physical clearance calibration and controller design, not
-   precede it.
-5. Split the main control loop only where it improves testability: route and
-   localization initialization, longitudinal safety arbitration, steering, and
-   logging. Avoid changing controller behavior during structural cleanup.
+1. Removed `curvature_control.py` and `footprint_correction.py`, their launcher
+   flags, inactive controller branches, controller-specific diagnostic fields,
+   and dedicated tests as one coherent change.
+2. Removed the unused randomized-route variables/import. Valid routes continue
+   to come from `road_network.json`.
+3. Removed the unreachable automatic route-recovery branch. Calibration still
+   exits after localization initialization; normal driving requires the
+   launcher's explicit start node and retains the fail-closed pose check.
+4. Kept `lane_warning.py` and `lane_safety.py` separate. The first preserves a
+   measurement-only experimental event marker; the second owns speed
+   restriction and UDP transport. Combining them would change responsibilities
+   without improving the current physical evidence.
+5. Preserved the baseline Stanley steering equation, fixed routes,
+   intersection behavior, YOLO response, and lane-safety arbitration.
 
 ## Proposed explicit QCar deployment set
 
@@ -177,13 +173,7 @@ lane_camera_server.py
 lane_detection.py
 lane_warning.py
 lane_safety.py
-curvature_control.py          # temporary, until Pass 3 removes its imports
-footprint_correction.py       # temporary, until Pass 3 removes its imports
 ```
-
-This is intentionally a transitional manifest. The final two experimental
-modules disappear from it only when their imports and inactive branches are
-removed in Pass 3.
 
 ## Three-pass acceptance checks
 
@@ -205,8 +195,8 @@ Completed verification:
 
 - 39 automated tests passed after the directory moves;
 - all maintained Python files passed bytecode compilation;
-- all 15 entries in the explicit QCar deployment manifest exist;
-- no QCar runtime file is omitted by the transitional manifest; and
+- all entries in the explicit QCar deployment manifest exist;
+- no QCar runtime file is omitted by the manifest; and
 - `Logs/` was not moved, changed, or removed.
 
 ### Pass 3 — runtime cleanup
@@ -217,8 +207,22 @@ Completed verification:
 - A controlled single-car baseline run confirms no behavioral regression.
 - A controlled two-car CZ1 run confirms reservation behavior is unchanged.
 
-## Pass 3 approval point
+Completed software verification:
 
-Pass 3 requires separate approval because it changes active source code and
-retires rejected experimental branches. Historical raw logs remain local and
-ignored; they will not be reorganized or removed.
+- the remaining 31 automated tests pass;
+- every maintained Python file passes bytecode compilation;
+- the final 13-file QCar deployment manifest has no missing or omitted runtime
+  dependencies;
+- source diffs confirm that the baseline Stanley steering equation and nominal
+  speed command are preserved; and
+- `git diff --check` reports no whitespace errors.
+
+The single-car and two-car physical regression checks remain pending.
+
+## Pass 3 preservation and validation
+
+The pre-cleanup implementation is preserved in commit `bac3583` and annotated
+tag `pre-runtime-cleanup`. Historical raw logs remain local and ignored; they
+were not reorganized or removed. Automated verification and controlled
+physical regression checks are required before the cleanup is treated as the
+new validated physical baseline.

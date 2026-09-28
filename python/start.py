@@ -42,10 +42,6 @@ QCAR_RUNTIME_FILES = (
     "lane_detection.py",
     "lane_warning.py",
     "lane_safety.py",
-    # Transitional dependencies. Pass 3 will remove these after their disabled
-    # controller branches are removed from vehicle_control.py.
-    "curvature_control.py",
-    "footprint_correction.py",
 )
 COORDINATOR_PORT = 18750
 COORDINATOR_SCRIPT = os.path.join(CURRENT_DIR, "intersection_coordinator.py")
@@ -60,13 +56,7 @@ COORDINATOR_PID_PATH = os.path.normpath(
 # changing a vehicle's route. These start nodes match the physical setup.
 CAR_SETTINGS = {
     "192.168.0.152": {
-        "node_configuration": 1,
         "start_node": 11,
-        # Keep .152 on baseline until candidate 2 passes on .151.
-        "curvature_control": False,
-        "footprint_correction": False,
-        "footprint_correction_gain": 1.0,
-        "footprint_correction_max_m": 0.04,
         # Preserve the known baseline for the other vehicle.
         "tracking_offset_m": 0.20,
         # Introduce camera measurement on one car before fleet-wide use.
@@ -74,18 +64,7 @@ CAR_SETTINGS = {
         "lane_safety": False,
     },
     "192.168.0.151": {
-        "node_configuration": 0,
         "start_node": 0,
-        # Candidate 3 improved numerical error but still crossed physically.
-        "curvature_control": False,
-        # Candidate 1 (gain 1.0, max 0.04 m) delayed but did not prevent the
-        # crossing. Candidate 2 (gain 1.65, max 0.06 m) still crossed and made
-        # the outer-edge behavior noticeably worse. Preserve the settings for
-        # reproducibility, but keep the rejected correction disabled.
-        # "footprint_correction": True,
-        "footprint_correction": False,
-        "footprint_correction_gain": 1.65,
-        "footprint_correction_max_m": 0.06,
         # Controlled EXP-019 test: documented body-center-to-front-axle
         # distance. Do not change gains, speed, or route during this run.
         "tracking_offset_m": 0.13,
@@ -218,40 +197,25 @@ for ip in QCAR_IPS:
 
     # Use the route and physical start node assigned to this specific QCar.
     # nohup prevents the controller from being killed when SSH disconnects.
-    node_configuration = settings["node_configuration"]
     start_node = settings["start_node"]
-    curvature_flag = (
-        "--curvature_control" if settings.get("curvature_control", False) else ""
-    )
-    footprint_flag = (
-        "--footprint_correction"
-        if settings.get("footprint_correction", False)
-        else ""
-    )
-    footprint_gain = settings.get("footprint_correction_gain", 1.0)
-    footprint_max_m = settings.get("footprint_correction_max_m", 0.04)
     tracking_offset_m = settings.get("tracking_offset_m", 0.20)
     lane_safety_flag = (
         "--lane_safety" if settings.get("lane_safety", False) else ""
     )
     cmd_vehicle = (
         f"cd {REMOTE_PATH} && "
-        f"nohup python vehicle_control.py -n {node_configuration} "
-        f"-s {start_node} "
+        f"nohup python vehicle_control.py -s {start_node} "
         f"--coordinator_ip {LOCAL_IP} "
         f"--coordinator_port {COORDINATOR_PORT} "
         f"--car_id {ip} "
         f"--tracking_offset_m {tracking_offset_m} "
-        f"--footprint_correction_gain {footprint_gain} "
-        f"--footprint_correction_max_m {footprint_max_m} "
-        f"{curvature_flag} {footprint_flag} {lane_safety_flag} "
+        f"{lane_safety_flag} "
         f"> vehicle_control.log 2>&1 < /dev/null &"
     )
     ssh.exec_command(cmd_vehicle)
     print(
         f"[{ip}] Started vehicle_control.py "
-        f"(node configuration {node_configuration}, "
-        f"start node {start_node}, "
+        f"(start node {start_node}, "
         f"tracking offset {tracking_offset_m:.3f} m)."
     )
 

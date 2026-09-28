@@ -253,12 +253,7 @@ class TrackingDiagnostics:
             "upcoming_required_steering_rad",
             "upcoming_steering_exceeds_limit",
             "controller_mode",
-            "footprint_correction_target_m",
-            "footprint_correction_applied_m",
-            "feedforward_steering_rad",
             "feedback_steering_rad",
-            "active_heading_gain",
-            "curve_speed_target_mps",
             "speed_mps",
             "target_speed_mps",
             "speed_gain",
@@ -360,16 +355,7 @@ class TrackingDiagnostics:
                 > self.maximum_steering_angle
             ),
             getattr(controller, "control_mode", "baseline"),
-            self._number(getattr(
-                controller, "footprint_correction_target", 0.0
-            )),
-            self._number(getattr(
-                controller, "footprint_correction_applied", 0.0
-            )),
-            self._number(getattr(controller, "feedforward_steering", 0.0)),
             self._number(getattr(controller, "feedback_steering", steering)),
-            self._number(getattr(controller, "active_heading_gain", 1.0)),
-            self._number(getattr(controller, "curve_speed_target", target_speed)),
             self._number(speed),
             self._number(target_speed),
             self._number(speed_gain),

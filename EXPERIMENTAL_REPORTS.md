@@ -57,15 +57,15 @@ The local coordinator runs at `192.168.0.153` on UDP port `18750`.
 | EXP-014 | Curvature-demand characterization | Completed on both vehicles | Missing curvature anticipation explains moderate-curve lag; accumulated feedback explains `.152` roundabout saturation |
 | EXP-015 | Curvature-aware controller A/B test | Superseded after `.151` physical test | First candidate slightly worsened inward curve error; launcher returned to baseline |
 | EXP-016 | Scheduled-feedback curvature controller | Superseded after `.151` physical test | Candidate 2 increased inward error by adding turn-in steering |
-| EXP-017 | Curvature-scheduled feedback without feedforward | Software implemented; `.151` validation pending | Preserve straight tracking and let cross-track correction oppose inside curve cutting |
+| EXP-017 | Curvature-scheduled feedback without feedforward | Completed and rejected after `.151` physical test | Numerical error improved, but the vehicle still crossed into the node-5 lane |
 | EXP-018 | Vehicle-footprint and reference-point diagnosis | Baseline `.151` run completed | Forward control point remained near the route while the estimated body and inside-rear wheel cut much farther inward |
 | EXP-019 | Tracking-offset A/B test | Completed; partial improvement | `0.13 m` removed the gradual early encroachment and reduced modeled curve errors, but `.151` still entered the node-5 lane on the tighter curve |
 | EXP-020 | Front-CSI lane measurement validation | Implemented; stationary/physical run pending | Validate camera view, lane colors, ROI, two-boundary detection, center offset, heading, and confidence before steering fusion |
 | EXP-021 | `.151` repeated unchanged-controller baseline | Completed; four clean runs plus one localization-disturbed run | Physical node-5 lane crossing repeated while map-reference tracking error remained comparatively small |
 | EXP-022 | Bounded footprint-aware reference correction | Completed and rejected after two physical candidates | Both offsets reduced modeled inner error but failed physically and increased outer-boundary risk |
 | EXP-023 | Yellow-boundary warning replay and Candidate 3 | Offline and saved-frame validation complete; live display confirmation pending | Candidate 3 warned `2.86 s` before shutdown while saved frames showed the real yellow divider crossing image center |
-| EXP-024 | Candidate 4 camera speed safety | Implemented and validated offline; physical `.151` test pending | Existing runs predict slowdown `2.13-4.67 s` and latched stop `0.49-3.73 s` before operator shutdown |
-| EXP-025 | Candidate 5 earlier camera safety thresholds | Implemented and validated offline; physical `.151` test pending | Moves slowdown to `-0.60`, crawl gain to `0.35`, and stop to `-0.40` after Candidate 4 stopped after crossing |
+| EXP-024 | Candidate 4 camera speed safety | Completed; physical acceptance failed | Speed reduction worked, but the vehicle stopped after entering the node-5 lane |
+| EXP-025 | Candidate 5 earlier camera safety thresholds | Completed; physical acceptance failed | The vehicle stopped earlier, but both left wheels were already beyond the divider |
 
 ## EXP-001 — Deterministic Two-Car Route Operation
 

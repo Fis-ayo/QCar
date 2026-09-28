@@ -23,7 +23,6 @@ source appendix.
 | `qcar/road_network.json` | Machine-readable routes, available roads, CZ1 geometry, stop/exit regions, and traffic rules |
 | `qcar/road_rules.py` | Loads and validates the road-network configuration |
 | `qcar/path_manager.py` | Validates generated waypoint geometry and conservatively repairs supported paired reversals |
-| `qcar/footprint_correction.py` | Computes the optional bounded outward curve-reference displacement used to test vehicle off-tracking |
 | `tools/visualization/plot_validated_routes.py` | Compares raw and prepared routes offline |
 | `tools/visualization/plot_phase0_zones.py` | Visualizes configured conflict-zone geometry |
 
@@ -34,7 +33,6 @@ source appendix.
 | `qcar/vehicle_control.py` | Creates the route, estimates state, advances waypoints, computes speed/steering, applies safety restrictions, and writes actuator commands |
 | `qcar/localization_diagnostics.py` | Logs raw GPS/LiDAR and EKF behavior and captures significant localization events |
 | `qcar/tracking_diagnostics.py` | Logs vehicle pose, projected route reference, tracking errors, commands, and intersection state |
-| `qcar/curvature_control.py` | Contains experimental curvature-control helpers; not enabled in the current launcher configuration |
 | `tools/analysis/analyze_tracking.py` | Produces offline summaries/plots from tracking diagnostics |
 
 The current steering command is map/path based. The front CSI measurement
@@ -95,7 +93,6 @@ gates, and the next calibration experiment are defined in
 | `tests/test_lane_detection.py` | Image-space lane detector behavior |
 | `tests/test_lane_warning.py` | Warning confidence gate, debounce, latch, and optional hysteresis |
 | `tests/test_lane_safety.py` | Slowdown/stop debounce, stop latch, confidence rejection, release margin, and stale-transport stop |
-| `tests/test_curvature_control.py` | Experimental curvature-control helpers |
 
 Run all tests with:
 

@@ -19,9 +19,10 @@ The following major capabilities have been demonstrated on the physical system:
 - The coordinator has prevented both vehicles from holding CZ1 simultaneously.
 - Stale-network recovery has been improved after a temporary communication interruption caused a permanent standstill.
 - Experimental lane-controller changes were rolled back after controlled tests. A general path-validation and conservative repair layer now removes unsafe generated-path spikes before driving.
+- The rejected curvature and footprint-correction controller branches have now been removed from the active runtime after being preserved in `EXPERIMENTAL_REPORTS.md` and Git tag `pre-runtime-cleanup`.
 - The repaired `.152` route has been physically validated through the node-16-to-node-18 transition that previously caused route departure.
 
-The main unresolved issue is lateral path accuracy, especially through curves. Map waypoints and estimated pose currently control steering; the front CSI lane detector and newly added yellow-boundary warning are measurement-only and do not command the vehicle. Offline replay shows that the warning preceded all seven recorded `.151` operator stops by `1.41-4.21 s`, but a physical run must confirm correct boundary identity and real-time timing. A car that enters another car's lane can trigger the second car's YOLO vehicle detector, causing it to stop even if it has intersection priority. Lane tracking therefore needs to be quantitatively characterized and improved before expanding the reservation system to additional conflict zones.
+The main unresolved issue is lateral path accuracy, especially through curves. Map waypoints and estimated pose currently control steering; the front CSI lane detector does not command steering. Its optional experimental safety layer can reduce speed or latch a stop, but Candidate 5 still stopped after both left wheels had crossed the divider, so its image threshold is not yet a valid physical-clearance boundary. A car that enters another car's lane can trigger the second car's YOLO vehicle detector, causing it to stop even if it has intersection priority. Lane tracking therefore needs to be quantitatively characterized and improved before expanding the reservation system to additional conflict zones.
 
 The roadmap was revised after supervisor review. Phase 0 map definition and the Phase 1 CZ1 reservation foundation are implemented. The active work is now Phase 1A documentation and lane/trajectory reliability, followed by Phase 1B controlled two-vehicle interaction and Phase 1C repeated quantitative evaluation. Parking and multiple-zone expansion are deferred until these fundamentals pass their acceptance gates.
 
@@ -780,7 +781,6 @@ At the time of this update, the full local discovery suite passes all 23 automat
 | `qcar/road_network.json` | Shared map availability, routes, zones, approaches, and traffic rules |
 | `qcar/road_rules.py` | Road-network loading and validation |
 | `qcar/path_manager.py` | General generated-path validation and conservative spike repair |
-| `qcar/footprint_correction.py` | Bounded signed-curvature reference shift for vehicle off-tracking |
 | `qcar/localization_diagnostics.py` | Raw pose/EKF diagnostics and LiDAR event capture |
 | `qcar/intersection_client.py` | QCar reservation client and stop/intersection state machine |
 | `qcar/vehicle_control.py` | Localization, speed control, steering, perception response, and reservation integration |

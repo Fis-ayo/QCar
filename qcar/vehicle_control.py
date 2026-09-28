@@ -13,8 +13,7 @@ import signal
 import numpy as np
 from threading import Thread
 import time
-import random
-from pal.products.qcar import QCar, QCarGPS, IS_PHYSICAL_QCAR
+from pal.products.qcar import QCar, QCarGPS
 
 from pal.utilities.math import wrap_to_pi
 from hal.content.qcar_functions import QCarEKF
@@ -25,23 +24,15 @@ from road_rules import RoadNetwork
 from intersection_client import IntersectionClient, IntersectionController
 from localization_diagnostics import LocalizationDiagnostics
 from path_manager import PathManager
-from tracking_diagnostics import PathCurvatureAnalyzer, TrackingDiagnostics
-from curvature_control import CurvatureAwareControl
-from footprint_correction import FootprintReferenceCorrection
+from tracking_diagnostics import TrackingDiagnostics
 from lane_safety import LANE_SAFETY_PORT, LaneSafetyReceiver
 
 parser = argparse.ArgumentParser(prog='Vehicle control')
 parser.add_argument('-c','--calibrate', default=False)
-parser.add_argument('-n', '--node_configuration', type=int, choices=(0, 1), default=0)
 parser.add_argument('-s', '--start_node', type=int, default=None)
 parser.add_argument('--coordinator_ip', default=None)
 parser.add_argument('--coordinator_port', type=int, default=18750)
 parser.add_argument('--car_id', default=None)
-parser.add_argument(
-    '--curvature_control',
-    action='store_true',
-    help='Enable bounded curvature feedforward and curve-speed scheduling.',
-)
 parser.add_argument(
     '--tracking_offset_m',
     type=float,
@@ -52,16 +43,6 @@ parser.add_argument(
     ),
 )
 parser.add_argument(
-    '--footprint_correction',
-    action='store_true',
-    help=(
-        'Enable bounded curvature-based outward reference correction for '
-        'vehicle off-tracking.'
-    ),
-)
-parser.add_argument('--footprint_correction_gain', type=float, default=1.0)
-parser.add_argument('--footprint_correction_max_m', type=float, default=0.04)
-parser.add_argument(
     '--lane_safety',
     action='store_true',
     help='Enable CSI-based speed slowdown/latched stop; never changes steering.',
@@ -71,31 +52,7 @@ parser.add_argument('--lane_safety_port', type=int, default=LANE_SAFETY_PORT)
 args = parser.parse_args()
 if not 0.0 <= args.tracking_offset_m <= 0.30:
     parser.error('--tracking_offset_m must be between 0.0 and 0.30 m')
-if not 0.0 < args.footprint_correction_gain <= 3.0:
-    parser.error('--footprint_correction_gain must be in (0.0, 3.0]')
-if not 0.0 <= args.footprint_correction_max_m <= 0.08:
-    parser.error('--footprint_correction_max_m must be between 0.0 and 0.08 m')
-node_options = args.node_configuration
 roadNetwork = RoadNetwork()
-
-# choosing between two sets of nodes which avoids two way traffic
-if node_options==0:
-    valid_nodes=[10,2,4,14,20,22,9,7,0]
-    # valid_nodes=[0,2,4,6,13,19,17,15,5,3,1]
-else:
-    valid_nodes=[10,1,5,3,8,23,21,15,6]
-    # valid_nodes=[11,12,7,14,16,18]
-
-# Previous randomized route selection. Keep this commented out until every
-# possible transition has been verified on the physical map.
-# random.shuffle(valid_nodes)
-# num_nodes = random.randint(6, min(10, len(valid_nodes)))
-# route_nodes = valid_nodes[:num_nodes]
-# if args.start_node is None:
-#     nodeSequence = route_nodes + [route_nodes[0]]
-# else:
-#     route_nodes = [node for node in route_nodes if node != args.start_node]
-#     nodeSequence = [args.start_node] + route_nodes + [args.start_node]
 
 # Fixed, reproducible routes for the current physical setup.
 if args.calibrate:
@@ -233,10 +190,6 @@ class SteeringController:
         waypoints,
         k=1,
         cyclic=True,
-        curvature_control=False,
-        footprint_correction=False,
-        footprint_correction_gain=1.0,
-        footprint_correction_max_m=0.04,
     ):
         self.maxSteeringAngle = np.pi/6
 
@@ -252,30 +205,7 @@ class SteeringController:
         self.cross_track_error = 0.0
         self.heading_error = 0.0
         self.distance_to_next_waypoint = float("inf")
-        self.control_mode = "curvature_feedback_v3" if curvature_control else "baseline"
-        self.feedforward_steering = 0.0
         self.feedback_steering = 0.0
-        self.active_heading_gain = 1.0
-        self.curve_speed_target = v_ref
-        self.curvatureController = None
-        self.curvatureAnalyzer = None
-        self.footprintCorrection = None
-        self.footprint_correction_target = 0.0
-        self.footprint_correction_applied = 0.0
-        if curvature_control or footprint_correction:
-            self.curvatureAnalyzer = PathCurvatureAnalyzer(waypoints)
-        if curvature_control:
-            self.curvatureController = CurvatureAwareControl(
-                analyzer=self.curvatureAnalyzer,
-                maximum_steering_angle=self.maxSteeringAngle,
-                cross_track_gain=self.k,
-            )
-        if footprint_correction:
-            self.footprintCorrection = FootprintReferenceCorrection(
-                correction_gain=footprint_correction_gain,
-                maximum_offset=footprint_correction_max_m,
-            )
-            self.control_mode += "+footprint_reference_v2"
 
     # ==============  SECTION B -  Steering Control  ====================
     def update(self, p, th, speed, dt=0.0):
@@ -300,17 +230,6 @@ class SteeringController:
         tangent = np.arctan2(v_uv[1], v_uv[0])
 
         ep = wp_1 + v_uv*s
-        if self.footprintCorrection is not None:
-            curvature = self.curvatureAnalyzer.metrics(self.wpi)[
-                "local_curvature"
-            ]
-            lateral_offset = self.footprintCorrection.update(curvature, dt)
-            left_normal = np.array([-v_uv[1], v_uv[0]])
-            ep = ep + lateral_offset * left_normal
-            self.footprint_correction_target = (
-                self.footprintCorrection.target_offset
-            )
-            self.footprint_correction_applied = lateral_offset
         ct = ep - p
         dir = wrap_to_pi(np.arctan2(ct[1], ct[0]) - tangent)
 
@@ -322,25 +241,6 @@ class SteeringController:
         self.cross_track_error = float(ect)
         self.heading_error = float(psi)
 
-        if self.curvatureController is not None:
-            steering = self.curvatureController.update(
-                waypoint_index=self.wpi,
-                heading_error=psi,
-                cross_track_error=ect,
-                speed=speed,
-                dt=dt,
-            )
-            self.feedforward_steering = (
-                self.curvatureController.filtered_feedforward
-            )
-            self.feedback_steering = (
-                self.curvatureController.feedback_steering
-            )
-            self.active_heading_gain = (
-                self.curvatureController.active_heading_gain
-            )
-            return steering
-
         self.feedback_steering = wrap_to_pi(
             psi + np.arctan2(self.k*ect, speed)
         )
@@ -348,18 +248,6 @@ class SteeringController:
             self.feedback_steering,
             -self.maxSteeringAngle,
             self.maxSteeringAngle)
-
-    def recommended_speed(self, nominal_speed):
-        if self.curvatureController is None:
-            self.curve_speed_target = float(nominal_speed)
-        else:
-            self.curve_speed_target = self.curvatureController.recommended_speed(
-                nominal_speed,
-                self.wpi,
-            )
-        return self.curve_speed_target
-        
-        # return 0
 
 def controlLoop():
     #region controlLoop setup
@@ -382,17 +270,10 @@ def controlLoop():
         steeringController = SteeringController(
             waypoints=waypointSequence,
             k=K_stanley,
-            curvature_control=args.curvature_control,
-            footprint_correction=args.footprint_correction,
-            footprint_correction_gain=args.footprint_correction_gain,
-            footprint_correction_max_m=args.footprint_correction_max_m,
         )
         print(
-            f"[CONTROL] Steering mode: {steeringController.control_mode}; "
-            f"tracking offset={args.tracking_offset_m:.3f} m; "
-            f"footprint correction={args.footprint_correction}; "
-            f"footprint gain={args.footprint_correction_gain:.2f}; "
-            f"footprint max={args.footprint_correction_max_m:.3f} m",
+            "[CONTROL] Steering mode: baseline; "
+            f"tracking offset={args.tracking_offset_m:.3f} m",
             flush=True,
         )
     #endregion
@@ -464,55 +345,28 @@ def controlLoop():
         flush=True,
     )
 
-    # Calibration only needs GPS/LiDAR initialization. In particular, do not
-    # call initial_check(), which is unavailable in the older HAL on .151.
+    # Calibration only needs GPS/LiDAR initialization and never enters the
+    # route-validation or driving stages.
     if calibrate:
         qcar.terminate()
         gps.terminate()
         yolo.terminate()
         return
 
-    if args.start_node is not None:
-        startPose = expectedStartPose
-        distanceToStart = np.linalg.norm(initPose[:2] - startPose[:2])
-        headingError = abs(wrap_to_pi(initPose[2] - startPose[2]))
+    startPose = expectedStartPose
+    distanceToStart = np.linalg.norm(initPose[:2] - startPose[:2])
+    headingError = abs(wrap_to_pi(initPose[2] - startPose[2]))
+    print(
+        f"[INFO] Start node {args.start_node}: "
+        f"position error={distanceToStart:.2f} m, "
+        f"heading error={np.degrees(headingError):.1f} deg",
+        flush=True,
+    )
+    if distanceToStart > 0.5 or headingError > np.pi/3:
         print(
-            f"[INFO] Start node {args.start_node}: "
-            f"position error={distanceToStart:.2f} m, "
-            f"heading error={np.degrees(headingError):.1f} deg",
-            flush=True,
-        )
-        if distanceToStart > 0.5 or headingError > np.pi/3:
-            print(
-                "[ERROR] Start pose does not match the declared start node. "
-                "The controller will remain stopped. Reposition and orient "
-                "the QCar, then run again.",
-                flush=True,
-            )
-            qcar.terminate()
-            gps.terminate()
-            yolo.terminate()
-            return
-
-        # Since this route begins at the declared physical node, a recovery
-        # path is unnecessary. This works with both old and new HAL versions.
-        startNodeReached = True
-    elif hasattr(roadmap, 'initial_check'):
-        startNodeReached, initWaypointSequence = roadmap.initial_check(
-            initPose,
-            nodeSequence,
-            waypointSequence,
-        )
-        if not startNodeReached:
-            initSteeringController = SteeringController(
-                waypoints=initWaypointSequence,
-                k=K_stanley,
-                cyclic=False,
-            )
-    else:
-        print(
-            "[ERROR] This QCar's HAL library does not support automatic "
-            "route recovery. Launch with --start_node.",
+            "[ERROR] Start pose does not match the declared start node. "
+            "The controller will remain stopped. Reposition and orient "
+            "the QCar, then run again.",
             flush=True,
         )
         qcar.terminate()
@@ -687,28 +541,19 @@ def controlLoop():
             else:
                 #region : Steering controller update
                 if enableSteeringControl:
-                    if not startNodeReached:
-                        # check the criterion inside the if condition to ensure it will
-                        # only be executed once
-                        distToStart = np.linalg.norm(waypointSequence[:,0]-p)
-                        startNodeReached = distToStart < 0.2
-                        # if the start node is not reached, use the initial steering controller
-                        delta = initSteeringController.update(p, th, v, dt)
-                    else:
-                        delta = steeringController.update(p, th, v, dt)
+                    delta = steeringController.update(p, th, v, dt)
                 else:
                     delta = 0
                 #endregion
 
                 #region : Speed controller update
-                curveSpeed = steeringController.recommended_speed(v_ref)
-                commandedSpeed = curveSpeed * vGain
+                commandedSpeed = v_ref * vGain
                 u = speedController.update(v, commandedSpeed, dt)
                 #endregion
             if t < startDelay:
                 vGain = 0.0
             qcar.write(u, delta)            
-            if enableSteeringControl and startNodeReached and t >= startDelay:
+            if enableSteeringControl and t >= startDelay:
                 trackingDiagnostics.record(
                     elapsed=t,
                     pose=[x, y, th],
@@ -745,16 +590,7 @@ def controlLoop():
                     f"wp={steeringController.wpi}, "
                     f"wpDistance="
                     f"{steeringController.distance_to_next_waypoint:.3f} m, "
-                    f"control={steeringController.control_mode}, "
-                    f"curveSpeed={steeringController.curve_speed_target:.2f}, "
-                    f"feedforward="
-                    f"{steeringController.feedforward_steering:.3f}, "
                     f"feedback={steeringController.feedback_steering:.3f}, "
-                    f"headingGain={steeringController.active_heading_gain:.2f}, "
-                    f"footprintTarget="
-                    f"{steeringController.footprint_correction_target:.3f} m, "
-                    f"footprintApplied="
-                    f"{steeringController.footprint_correction_applied:.3f} m, "
                     f"crossTrack={steeringController.cross_track_error:.3f} m, "
                     f"headingError="
                     f"{np.degrees(steeringController.heading_error):.1f} deg, "
