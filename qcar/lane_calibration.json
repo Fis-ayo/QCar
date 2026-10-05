@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "calibration_id": "q151_front_csi_2026-09-29",
+  "car_id": "192.168.0.151",
+  "desired_center_to_yellow_mm": 127.0,
+  "boundary_side": "left",
+  "profiles": [
+    {
+      "name": "straight",
+      "curvature_min_inv_m": -0.15,
+      "curvature_max_inv_m": 0.15,
+      "points": [
+        {"reference_x_px": 173.10, "center_to_yellow_mm": 152.4},
+        {"reference_x_px": 222.00, "center_to_yellow_mm": 127.0},
+        {"reference_x_px": 345.65, "center_to_yellow_mm": 101.6}
+      ]
+    },
+    {
+      "name": "tight_left_curve",
+      "curvature_min_inv_m": 0.75,
+      "curvature_max_inv_m": 1.30,
+      "points": [
+        {"reference_x_px": 21.20, "center_to_yellow_mm": 152.4},
+        {"reference_x_px": 76.80, "center_to_yellow_mm": 127.0},
+        {"reference_x_px": 149.80, "center_to_yellow_mm": 101.6}
+      ]
+    }
+  ]
+}

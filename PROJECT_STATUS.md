@@ -1,14 +1,14 @@
 # Multi-QCar Autonomous Driving Project Status
 
-**Last updated:** September 28, 2026
+**Last updated:** October 5, 2026
 
-**Current milestone:** Candidate 5 stopped earlier but with both left wheels already beyond the divider; image offset is not yet calibrated to tire clearance
+**Current milestone:** `.151` has a physically demonstrated preventive boundary stop, while continuous lane following and automatic recovery remain unresolved
 
-**Next milestone:** Stationary measured-clearance dataset across representative road geometries and both QCars
+**Next milestone:** Establish a repeatable continuous lane/corridor estimate and evaluate it offline before authorizing another bounded steering candidate
 
 ## Executive Summary
 
-This project is developing a multi-vehicle autonomous-driving system on the Quanser Self-Driving Car Studio (SDCS) physical map. Two QCar2 vehicles can currently be launched from one local computer, follow predefined closed routes, communicate with a local intersection coordinator, stop at the central intersection, and receive mutually exclusive permission to enter it.
+This project is developing a multi-vehicle autonomous-driving system on the Quanser Self-Driving Car Studio (SDCS) physical map. Two QCar2 vehicles can be launched from one local computer, execute predefined routes, communicate with a local intersection coordinator, stop at the central intersection, and receive mutually exclusive permission to enter it. Reliable lane-centered route completion has not yet been demonstrated.
 
 The following major capabilities have been demonstrated on the physical system:
 
@@ -21,8 +21,11 @@ The following major capabilities have been demonstrated on the physical system:
 - Experimental lane-controller changes were rolled back after controlled tests. A general path-validation and conservative repair layer now removes unsafe generated-path spikes before driving.
 - The rejected curvature and footprint-correction controller branches have now been removed from the active runtime after being preserved in `EXPERIMENTAL_REPORTS.md` and Git tag `pre-runtime-cleanup`.
 - The repaired `.152` route has been physically validated through the node-16-to-node-18 transition that previously caused route departure.
+- A hybrid lane-guidance foundation logs bounded CSI steering proposals beside waypoint steering. Camera steering authority is disabled in the normal launcher after the latest active-steering candidate failed its physical test. The architecture and validation gates are defined in `docs/HYBRID_LANE_FOLLOWING_DESIGN.md`.
+- Stationary `.151` calibration established separate straight and tight-left-curve profiles at `101.6`, `127.0`, and `152.4 mm` centerline-to-nearest-divider-edge distances. A fixed-row detector, profile-bounded interpolation model, and fail-closed unsupported-curvature behavior are implemented.
+- In the accepted `hybrid_safety_2` trial, the calibrated camera boundary monitor stopped `.151` with the entire vehicle visually inside its lane. The camera had zero steering authority. The vehicle did not recover automatically or complete the lap.
 
-The main unresolved issue is lateral path accuracy, especially through curves. Map waypoints and estimated pose currently control steering; the front CSI lane detector does not command steering. Its optional experimental safety layer can reduce speed or latch a stop, but Candidate 5 still stopped after both left wheels had crossed the divider, so its image threshold is not yet a valid physical-clearance boundary. A car that enters another car's lane can trigger the second car's YOLO vehicle detector, causing it to stop even if it has intersection priority. Lane tracking therefore needs to be quantitatively characterized and improved before expanding the reservation system to additional conflict zones.
+The main unresolved issue is lateral path accuracy, especially through curves. Map waypoints and estimated pose currently control steering; the front CSI lane detector does not command steering in the accepted configuration. The preventive layer can stop the vehicle before a complete boundary crossing, but it cannot guide the car through the curve, recover automatically, or complete the route. Later bounded camera-steering trials did not eliminate lane crossing and were rejected. A car that enters another car's lane can trigger the second car's YOLO vehicle detector, causing it to stop even if it has intersection priority. Lane tracking therefore needs to be quantitatively characterized and improved before expanding the reservation system to additional conflict zones.
 
 The roadmap was revised after supervisor review. Phase 0 map definition and the Phase 1 CZ1 reservation foundation are implemented. The active work is now Phase 1A documentation and lane/trajectory reliability, followed by Phase 1B controlled two-vehicle interaction and Phase 1C repeated quantitative evaluation. Parking and multiple-zone expansion are deferred until these fundamentals pass their acceptance gates.
 
@@ -924,3 +927,65 @@ Update this file whenever a meaningful change is made. Each update should includ
 8. the resulting next action.
 
 Do not describe an implemented feature as physically validated until it has been tested on the QCars. Preserve failed approaches and important defects in the challenge and progress sections because they provide useful engineering evidence for reports, presentations, and future research work.
+# Control-stack consolidation (October 5, 2026)
+
+Physical tests had accumulated independent changes to longitudinal control,
+low-speed Stanley behavior, camera boundary stopping, localization stopping,
+and experimental camera steering. Consequently, setting camera steering
+authority to zero did not reproduce the pre-hybrid control condition.
+
+The runtime now exposes three explicit, mutually reviewable modes through
+`vehicle_control.py --control_mode`:
+
+| Mode | Speed controller | Stanley calculation | Emergency stops | Camera steering |
+|---|---|---|---|---|
+| `baseline` | Original PI | Original measured-speed denominator | None added by the hybrid study | None |
+| `baseline_safety` | Non-reversing safe controller | Low-speed regularized | Stale localization and sustained tracking loss | None |
+| `hybrid` | Same as `baseline_safety` | Same as `baseline_safety` | Same as `baseline_safety` | One bounded calibrated camera path |
+
+Camera boundary classifications remain diagnostic-only in all three modes.
+The legacy CSI speed-stop channel is disabled in the launcher. YOLO,
+intersection coordination, route selection, path validation, and telemetry
+remain common infrastructure.
+
+The historical baseline was reproduced in `clean_baseline_1`. It confirmed the
+known node-5 lane crossing and exposed signed-PI forward/reverse oscillation,
+so `baseline` is now an explicitly acknowledged reference mode rather than the
+normal physical-test configuration.
+
+The launcher now selects `baseline_safety` for both vehicles. On `.151`, front
+CSI measurements continue to be recorded in shadow mode but cannot affect
+steering or speed. `baseline_safety` and `hybrid` have identical propulsion,
+Stanley regularization, localization protection, and tracking-loss protection;
+their only authority difference is the bounded camera correction in `hybrid`.
+Startup logs print the selected mode and complete actuator-authority summary.
+
+The shared safe propulsion controller is non-reversing, has integral limits,
+static-friction feedforward, and bounded throttle rise/fall rates. It passed an
+offline first-order drivetrain test with static friction: command remained
+nonnegative, slew limits held, steady speed stayed within `0.04 m/s` of the
+`0.25 m/s` target, and steady oscillation remained below `0.04 m/s`.
+
+No additional diagnostic route repetitions are planned. The remaining
+physical work is a two-run `.151` A/B comparison: waypoint-only
+`baseline_safety`, followed by `hybrid` under the same route and conditions.
+
+One hybrid candidate was consolidated to waypoint steering plus a calibrated
+correction limited to `0.02 rad` and slewed at no more than `0.05 rad/s`.
+Offline replay of `clean_baseline_1` produced 81 boundary-risk samples; all
+corrections pointed away from the divider and none pointed toward it. The
+subsequent `hybrid_final_1` physical run nevertheless crossed the divider.
+Only six of 310 tracking samples had fully calibrated continuous lane-guidance
+authority; most assistance came from a categorical boundary condition. This
+candidate is rejected as a lane-centering solution and is disabled in the
+normal launcher.
+
+`.151` is now configured for `preventive_stop`; `.152` remains in
+`baseline_safety`. `.151` continues to record CSI measurements and shadow
+steering proposals with zero camera steering authority. The accepted
+`hybrid_safety_2` trial produced a visually confirmed stop with the entire car
+inside its lane. Its boundary state reached STOP at `10.36 s`, near waypoint
+`255`; this is a safety-containment
+milestone rather than completed lane following: the car did not resume or
+complete a lap automatically. Continuous lane centering remains under
+investigation, and no `.151` result has been generalized to `.152`.

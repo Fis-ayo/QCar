@@ -14,6 +14,9 @@ reference_scan/*.mat
 # External reference document; verify redistribution rights separately.
 QCar2 multi vehicle self driving.pdf
 
+# Locally supplied reference implementation; analyze but do not publish/copy.
+Quanser-qcar2/
+
 # Generated model/build artifacts
 *.slxc
 *.rt-linux_*

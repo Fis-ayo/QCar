@@ -7,7 +7,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "qcar"))
 
-from lane_safety import LaneSafetyMonitor, LaneSafetyReceiver  # noqa: E402
+from lane_safety import (  # noqa: E402
+    BoundaryCategorySafetyMonitor,
+    LaneSafetyMonitor,
+    LaneSafetyReceiver,
+)
 
 
 class LaneSafetyMonitorTests(unittest.TestCase):
@@ -73,6 +77,100 @@ class LaneSafetyReceiverTests(unittest.TestCase):
             self.assertEqual(result["speed_gain"], 0.0)
         finally:
             receiver.close()
+
+
+class BoundaryCategorySafetyMonitorTests(unittest.TestCase):
+    def test_sustained_inward_risk_slows_then_latches_stop(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=2,
+            stop_persistence_s=0.20,
+            stop_progress_px=20.0,
+        )
+        self.assertEqual(
+            monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 151.0, 0.1)["state"],
+            "UNAVAILABLE",
+        )
+        slowed = monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 160.0, 0.1)
+        self.assertEqual(slowed["state"], "SLOWDOWN")
+        stopped = monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 180.0, 0.1)
+        self.assertEqual(stopped["state"], "STOP")
+        self.assertEqual(stopped["speed_gain"], 0.0)
+        self.assertTrue(stopped["stop_latched"])
+
+    def test_missing_data_does_not_release_slowdown(self):
+        monitor = BoundaryCategorySafetyMonitor(slowdown_frames=1)
+        monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 151.0, 0.1)
+        result = monitor.update("FIXED_ROW_UNAVAILABLE", float("nan"), 0.1)
+        self.assertEqual(result["state"], "SLOWDOWN")
+        self.assertEqual(result["speed_gain"], 0.25)
+
+    def test_stationary_out_of_range_does_not_stop(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=1,
+            stop_persistence_s=0.1,
+            stop_progress_px=20.0,
+        )
+        for _ in range(5):
+            result = monitor.update(
+                "BEYOND_TOWARD_YELLOW_LIMIT", 155.0, 0.1
+            )
+        self.assertEqual(result["state"], "SLOWDOWN")
+
+    def test_calibrated_reading_does_not_release_slowdown(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=1,
+            clear_frames=2,
+        )
+        monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 155.0, 0.1)
+        for _ in range(4):
+            result = monitor.update("CALIBRATED", 140.0, 0.1)
+        self.assertEqual(result["state"], "SLOWDOWN")
+
+        monitor.update("BEYOND_AWAY_LIMIT", 100.0, 0.1)
+        result = monitor.update("BEYOND_AWAY_LIMIT", 95.0, 0.1)
+        self.assertEqual(result["state"], "NORMAL")
+
+    def test_sustained_calibrated_clearance_releases_slowdown(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=1,
+            clear_frames=2,
+            recovery_margin_m=0.010,
+        )
+        monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", 155.0, 0.1)
+        monitor.update("CALIBRATED", 60.0, 0.1, -0.012)
+        result = monitor.update("CALIBRATED", 58.0, 0.1, -0.013)
+        self.assertEqual(result["state"], "NORMAL")
+
+    def test_sustained_retreat_from_peak_suppresses_stale_stop(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=1,
+            stop_persistence_s=0.50,
+            stop_progress_px=18.0,
+            recovery_progress_px=12.0,
+            recovery_frames=2,
+        )
+        for x_value in (154.0, 172.0, 196.0, 184.0, 178.0, 170.0):
+            result = monitor.update(
+                "BEYOND_TOWARD_YELLOW_LIMIT", x_value, 0.1
+            )
+        self.assertEqual(result["state"], "SLOWDOWN")
+        self.assertGreaterEqual(result["recovery_from_peak_px"], 12.0)
+        self.assertGreaterEqual(result["recovery_streak"], 2)
+
+    def test_renewed_inward_motion_restores_stop_eligibility(self):
+        monitor = BoundaryCategorySafetyMonitor(
+            slowdown_frames=1,
+            stop_persistence_s=0.30,
+            stop_progress_px=18.0,
+            recovery_progress_px=12.0,
+            recovery_frames=2,
+        )
+        for x_value in (154.0, 180.0, 196.0, 180.0, 175.0):
+            monitor.update("BEYOND_TOWARD_YELLOW_LIMIT", x_value, 0.1)
+        result = monitor.update(
+            "BEYOND_TOWARD_YELLOW_LIMIT", 194.0, 0.1
+        )
+        self.assertEqual(result["state"], "STOP")
 
 
 if __name__ == "__main__":

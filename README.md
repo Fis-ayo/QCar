@@ -17,9 +17,13 @@ accessible emergency stop.
 - fail-closed communication-loss handling and stale-owner recovery;
 - YOLO-based obstacle/vehicle stopping;
 - localization, path-tracking, intersection, and front-camera diagnostics; and
-- front CSI yellow-line detection and an opt-in, speed-only lane-safety layer.
-  Camera measurements never command steering; Candidate 5 can reduce speed or
-  latch a stop on `.151` and is awaiting physical validation.
+- front CSI yellow-line and calibrated boundary diagnostics on `.151`;
+- explicit `baseline`, `baseline_safety`, `preventive_stop`, and experimental `hybrid` control
+  policies, with startup reporting of every actuator authority; and
+- measurement-only camera shadow processing in the normal launcher. Earlier
+  speed-stop trials improved containment, but continuous lane following and
+  automatic recovery remain unresolved. Active camera-steering candidates are
+  disabled after the latest physical candidate still crossed the divider.
 
 ## Physical configuration
 
@@ -99,12 +103,14 @@ Python/JSON files, starts YOLO, optionally starts measurement-only CSI lane
 diagnostics, and then starts vehicle control. A vehicle remains stopped if its
 initial pose does not agree with its configured start node.
 
-The current `.151` launcher configuration explicitly enables experimental
-Candidate 5 lane safety. A reliable yellow boundary approaching the calibrated
-safety margin reduces target speed; a critical threshold latches a complete stop until the
-process is restarted. Loss of the local camera-safety data stream also stops
-the car. Keep the emergency stop available and do not expect the vehicle to
-resume automatically after a critical lane stop.
+The normal launcher uses `preventive_stop` for `.151` and `baseline_safety`
+for `.152`. In `preventive_stop`, calibrated CSI boundary classifications may
+reduce speed and latch a stop, but camera measurements never modify steering.
+The accepted `hybrid_safety_2` trial visually confirmed that `.151` stopped
+inside its lane; the car did not resume or complete the lap. The historical `baseline` controller is
+unsafe for normal physical use and requires an explicit command-line
+acknowledgment. Experimental `hybrid` code remains available for research but
+is not enabled by `run_all_cars.bat`.
 
 ## Stop the application
 
@@ -156,5 +162,7 @@ Maintained offline utilities are grouped under `tools/analysis/`,
 - `docs/SYSTEM_ARCHITECTURE.md` — component/data-flow diagrams and safety ownership;
 - `docs/SOURCE_CODE_GUIDE.md` — implementation inventory for the report appendix;
 - `docs/LANE_TRACKING_BASELINE_PROTOCOL.md` — controlled baseline procedure, metrics, and acceptance gates;
+- `docs/HYBRID_LANE_FOLLOWING_DESIGN.md` — hybrid authority model, staged implementation, failure behavior, and validation gates;
+- `docs/STATIONARY_YELLOW_CALIBRATION.md` — motion-free, physically labeled yellow-divider capture procedure;
 - `PROJECT_STATUS.md` — current roadmap, status, limitations, and decisions; and
 - `EXPERIMENTAL_REPORTS.md` — chronological experiments and results.

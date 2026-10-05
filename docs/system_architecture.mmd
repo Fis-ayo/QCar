@@ -17,7 +17,7 @@ flowchart LR
         LOC151 --> VC151
         PATH151 --> VC151
         YOLO151 --> VC151
-        CSI151 -. warning only .-> VC151
+        CSI151 -. measurement + zero-authority shadow proposal .-> VC151
         VC151 --> ACT151
     end
 
@@ -41,4 +41,6 @@ flowchart LR
     VC151 -->|vehicle logs| OBS
     VC152 -->|vehicle logs| OBS
 
-    CSI151 -. Candidate 5: earlier bounded speed restriction .-> ACT151
+    STOP151[Preventive-stop policy\nspeed only; latched; no automatic recovery]
+    CSI151 -. calibrated boundary state .-> STOP151
+    STOP151 -. speed restriction .-> ACT151

@@ -66,6 +66,7 @@ The local coordinator runs at `192.168.0.153` on UDP port `18750`.
 | EXP-023 | Yellow-boundary warning replay and Candidate 3 | Offline and saved-frame validation complete; live display confirmation pending | Candidate 3 warned `2.86 s` before shutdown while saved frames showed the real yellow divider crossing image center |
 | EXP-024 | Candidate 4 camera speed safety | Completed; physical acceptance failed | Speed reduction worked, but the vehicle stopped after entering the node-5 lane |
 | EXP-025 | Candidate 5 earlier camera safety thresholds | Completed; physical acceptance failed | The vehicle stopped earlier, but both left wheels were already beyond the divider |
+| EXP-026 | Hybrid lane-guidance shadow validation | Stationary calibration complete; driving validation pending | Log calibrated physical-offset estimates and bounded camera proposals beside waypoint steering with camera authority fixed at zero |
 
 ## EXP-001 — Deterministic Two-Car Route Operation
 
@@ -1280,28 +1281,31 @@ still required before using it to set a control offset or acceptance threshold.
 
 ### Physical lane-width validation
 
-Physical measurements supplied after the overlay analysis were:
+Physical measurements supplied after the overlay analysis were later corrected
+for a one-inch ruler-origin error. The operator-confirmed reference is:
 
-- node-4 to node-5 lane-center spacing: approximately `11 in` (`0.2794 m`);
-- each lane center to the divider center: approximately `5.5 in` (`0.1397 m`);
+- intended lane center to the nearest divider edge: approximately `5.0 in`
+  (`0.1270 m`);
 - painted divider width: approximately `0.5 in` (`0.0127 m`); and
-- the lower-right curve uses the same center-to-divider spacing.
+- the lower-right curve uses the same center-to-divider-edge spacing.
 
-The near edge of the painted divider is therefore approximately `5.25 in`
-(`0.13335 m`) from the intended lane center. This agrees within approximately
-`1.5 mm` with the map-derived route-to-divider estimate of `0.1348 m` and
-validates the overlay geometry to the precision of the supplied measurements.
+The earlier `11 in` lane-center-spacing interpretation and its derived
+divider-center geometry are withdrawn; they combined a ruler-origin error with
+an incorrect boundary reference. The directly confirmed `0.1270 m`
+center-to-nearest-edge measurement differs by approximately `7.8 mm` from the
+map-derived route-to-divider estimate of `0.1348 m`, so the map overlay is not
+treated as millimetre-accurate painted-line ground truth.
 
-Using the modeled `0.086 m` half-track, only approximately `0.04735 m` remains
+Using the modeled `0.086 m` half-track, only approximately `0.0410 m` remains
 between an ideally oriented inside wheel center and the near divider edge. Tire
 width and a desired safety clearance would reduce the usable margin further.
 The clean-trial body-center deviations of `0.0611–0.0700 m` exceed this nominal
 margin, consistent with the repeated physical lane crossing.
 
-This measurement strengthens the footprint/off-tracking explanation. It does
-not by itself select a controller implementation, but it supports testing a
-route-independent curvature/footprint-aware reference correction rather than
-a node-specific waypoint edit.
+The corrected measurement still supports the footprint/off-tracking
+explanation because the observed `0.0611â€“0.0700 m` deviations exceed the
+smaller corrected nominal margin. It does not validate the map overlay as
+painted-line ground truth or by itself select a controller implementation.
 
 ### Next action
 
@@ -1621,6 +1625,65 @@ step is the stationary measured-clearance protocol in
 `docs/LANE_KEEPING_ACCEPTANCE_PLAN.md`, followed by a threshold or clearance
 model derived from physical tire position.
 
+## EXP-026 — Hybrid Lane-Guidance Shadow Validation
+
+**Status:** Stationary `.151` calibration completed; supervised shadow drive pending
+**Date:** September 28â€“29, 2026
+**Evidence:** `qcar/lane_guidance.py`, `qcar/lane_calibration.json`, `tests/test_lane_guidance.py`, `Logs/QCar .151/calibration_1/`, and future synchronized driving logs
+
+### Research question
+
+Can the front CSI lane-center and heading measurements produce a timely,
+directionally correct, bounded steering proposal without changing the existing
+waypoint controller?
+
+### Implementation boundary
+
+The lane-camera process publishes a versioned local observation containing a
+fixed-row yellow position and confidence in addition to the legacy diagnostic
+features. Vehicle control combines this observation with path curvature and a
+car-specific calibration file. Only calibrated straight curvature
+(`-0.15â€“0.15 1/m`) and tight-left curvature (`0.75â€“1.30 1/m`) are supported;
+intermediate curvature and out-of-range pixels fail closed as unavailable.
+The estimated physical offset and bounded, slew-limited proposal are recorded
+beside waypoint steering. Camera authority remains fixed at `0.00`, so the
+applied camera correction is exactly `0.000 rad`.
+
+### Stationary calibration results
+
+`.151` was captured at `101.6`, `127.0`, and `152.4 mm` centerline-to-nearest-
+divider-edge distances on a straight and at the node-2-to-node-4 tight curve.
+Fixed-row yellow detection was available in all saved calibration frames.
+
+- straight fixed-row means: `345.65`, `222.00`, and `173.10 px`;
+- tight-curve fixed-row means: `149.80`, `76.80`, and `21.20 px`;
+- straight response was monotonic but nonlinear (`RÂ²=0.941`, maximum linear
+  residual `24.92 px`);
+- tight-curve response was monotonic and closer to linear (`RÂ²=0.994`, maximum
+  residual `5.80 px`); and
+- equal physical clearance on straight and curve produced different pixel
+  signatures, ruling out one universal fixed-pixel centering target.
+
+The implementation therefore uses bounded piecewise interpolation within the
+matching geometry profile. It does not extrapolate beyond measured pixels and
+does not silently use a profile for unsupported path curvature.
+
+### Acceptance criteria
+
+- Every applied camera correction is zero throughout shadow trials.
+- Proposed correction remains within its configured bound and slew rate.
+- Proposed direction agrees with measured physical clearance.
+- Camera observation age remains below the transport freshness limit when
+  available.
+- Candidate timing leads the observed boundary encroachment on curves.
+
+### Next action
+
+Run one supervised `.151` route in shadow mode and verify calibration-profile
+selection, physical-error sign, availability, freshness, candidate bounds, and
+the zero-authority invariant. Nonzero steering authority is explicitly outside
+this experiment.
+
 ## Current Experimental Conclusions
 
 1. Fixed routes make multi-vehicle behavior reproducible.
@@ -1634,7 +1697,8 @@ model derived from physical tire position.
 9. A general, conservative path-repair layer restored `.152` route progress without changing Stanley gain or speed.
 10. General lane-centering accuracy remains the active research problem before the controlled Phase 1B two-vehicle demonstrations.
 11. Five repeated `.151` safety-stop trials confirm that physical node-5 lane entry can occur while map-reference tracking remains small and repeatable; physical reference placement must therefore be validated before further gain tuning.
-12. A debounced front-CSI yellow-boundary warning preceded all seven recorded `.151` operator stops in offline replay, but remains measurement-only pending real-time physical validation.
+12. A debounced front-CSI yellow-boundary warning preceded all seven recorded `.151` operator stops in offline replay; later speed-safety candidates stopped too late to pass physical lane containment.
+13. Hybrid guidance is now instrumented in zero-authority shadow mode so camera proposals can be evaluated without changing the validated waypoint steering baseline.
 
 ## Evidence Preservation Requirements
 
@@ -1730,3 +1794,87 @@ List missing evidence, confounding factors, and scope restrictions.
 
 State the single most useful follow-up experiment or implementation change.
 ```
+# EXP-CTRL-RESET — Explicit control-mode consolidation
+
+**Status:** Baseline reproduced; shared safe controller validated offline
+**Date:** October 5, 2026
+
+## Motivation
+
+Recent physical runs could not serve as a clean camera A/B comparison because
+zero camera steering authority coexisted with a replacement speed controller,
+low-speed Stanley regularization, camera speed stops, localization stops, and
+tracking-loss stops. The recorded node-5 lane crossing predated camera control,
+while the newer stop-and-resume motion came from later longitudinal changes.
+
+## Implementation
+
+The independent experimental flags were consolidated into `baseline`,
+`baseline_safety`, and `hybrid` policies. Baseline restores original waypoint
+steering and PI propulsion, keeps camera output measurement-only, and excludes
+new hybrid-study stop layers. Baseline-safety adds only the identified general
+protections. Hybrid uses that same safety configuration and enables one bounded
+camera correction path.
+
+Automated tests assert that baseline and baseline-safety have zero camera
+authority, boundary classification cannot change speed in any cleaned mode,
+and only hybrid enables camera steering. The full local suite contains 81
+passing tests.
+
+## Baseline reproduction result
+
+`clean_baseline_1` ran with confirmed zero camera, boundary-speed,
+localization-stop, and tracking-stop authority. The car crossed into the
+node-5 lane, exhibited intermittent motion, and later oscillated physically
+between forward and reverse until manually stopped. Logs showed original PI
+output reaching both `-0.30` and `+0.30`, signed speed ranging from about
+`-1.49 m/s` to `+1.31 m/s`, and route loss with saturated steering. This run is
+the historical reference; repeating it would add risk without new evidence.
+
+## Offline controller acceptance
+
+The controller shared by `baseline_safety` and `hybrid` now prohibits reverse
+torque, limits integral accumulation, compensates static friction, and bounds
+throttle slew. A simulated drivetrain test verifies nonnegative commands,
+bounded command changes, convergence near `0.25 m/s`, and low steady
+oscillation. Automated mode tests verify that the two A/B modes have identical
+non-camera authority. The complete local suite contains 84 passing tests.
+
+## Remaining experiment
+
+Conduct only the planned two-run `.151` comparison: first
+`baseline_safety`, then `hybrid`, with route, start pose, speed target, Stanley
+gain, tracking offset, and physical setup held constant.
+
+## Hybrid implementation gate
+
+The active hybrid path was reduced to one bounded fusion operation. It never
+replaces waypoint steering and never changes speed or route. The correction is
+limited to `0.02 rad`, slewed at `0.05 rad/s`, confidence-gated, and decays on
+camera dropout. The earlier recovery constraint that could suppress a required
+turn was removed from the runtime path.
+
+Replay against `clean_baseline_1` evaluated 323 samples, including 81 samples
+classified as beyond the toward-yellow calibration limit. Every risk-sample
+correction pointed away from the divider, no correction had the wrong sign,
+and maximum magnitude was `0.02 rad`. Together with the shared drivetrain and
+authority-isolation tests, 88 local automated tests pass.
+
+### Physical hybrid result and decision
+
+`hybrid_final_1` enabled the bounded correction on `.151`. Fusion reported
+active correction for 109 of 310 tracking samples and reached the `0.02 rad`
+limit in the intended away-from-divider direction. The operator nevertheless
+observed another lane crossing. Fully calibrated continuous lane-guidance
+authority was available for only six samples; the remaining assistance was
+primarily a categorical boundary response. The candidate is rejected and the
+normal launcher has returned `.151` to `baseline_safety` with camera output in
+zero-authority shadow mode.
+
+This failure does not invalidate the accepted `hybrid_safety_2` preventive
+stop. In that run camera steering authority remained exactly zero and the
+calibrated boundary safety state reached STOP at `10.36 s`, near waypoint
+`255`, after `24 px` of logged inward reference movement. The operator visually
+confirmed that the entire car stopped inside its lane. This result is retained
+as a partial safety milestone: `.151` did not resume automatically or complete
+the route, so it must not be described as solved lane following.

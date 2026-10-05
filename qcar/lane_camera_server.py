@@ -10,6 +10,7 @@ from pal.products.qcar import QCarCameras
 from pal.utilities.probe import Probe
 
 from lane_detection import FrontLaneDetector
+from lane_guidance import LANE_GUIDANCE_PORT, LaneGuidancePublisher
 from lane_safety import LANE_SAFETY_PORT, LaneSafetyMonitor, LaneSafetyPublisher
 from lane_warning import LaneBoundaryWarning
 
@@ -27,11 +28,69 @@ parser.add_argument("--snapshot_period", type=float, default=1.0)
 parser.add_argument("--maximum_snapshots", type=int, default=300)
 parser.add_argument("--lane_safety_publish", action="store_true")
 parser.add_argument("--lane_safety_port", type=int, default=LANE_SAFETY_PORT)
+parser.add_argument("--lane_guidance_publish", action="store_true")
+parser.add_argument("--lane_guidance_port", type=int, default=LANE_GUIDANCE_PORT)
+parser.add_argument(
+    "--calibration_mode", action="store_true",
+    help="Stationary labeled capture; never publishes safety/guidance packets.",
+)
+parser.add_argument("--calibration_session", default="")
+parser.add_argument("--calibration_pose", default="")
+parser.add_argument("--road_section", default="")
+parser.add_argument(
+    "--yellow_boundary_side", choices=("left", "right", "unknown"),
+    default="unknown",
+)
+measurement_group = parser.add_mutually_exclusive_group()
+measurement_group.add_argument(
+    "--vehicle_center_to_yellow_mm", type=float, default=None,
+    help="Measured QCar longitudinal-centerline to yellow-edge distance.",
+)
+measurement_group.add_argument(
+    "--yellow_clearance_mm", type=float,
+    dest="legacy_yellow_clearance_mm", default=None,
+    help=argparse.SUPPRESS,
+)
+parser.add_argument(
+    "--duration_s", type=float, default=0.0,
+    help="Stop automatically after this many seconds; zero runs continuously.",
+)
 args = parser.parse_args()
+
+if args.calibration_mode:
+    center_to_yellow_mm = args.vehicle_center_to_yellow_mm
+    if center_to_yellow_mm is None:
+        center_to_yellow_mm = args.legacy_yellow_clearance_mm
+        if center_to_yellow_mm is not None:
+            print(
+                "[LANE] WARNING: --yellow_clearance_mm is deprecated; "
+                "interpreting it as vehicle-centerline-to-yellow distance.",
+                flush=True,
+            )
+    missing = []
+    if not args.calibration_session.strip():
+        missing.append("--calibration_session")
+    if not args.calibration_pose.strip():
+        missing.append("--calibration_pose")
+    if not args.road_section.strip():
+        missing.append("--road_section")
+    if center_to_yellow_mm is None or center_to_yellow_mm < 0.0:
+        missing.append("--vehicle_center_to_yellow_mm (non-negative)")
+    if args.duration_s <= 0.0:
+        missing.append("--duration_s (positive)")
+    if missing:
+        parser.error("calibration mode requires " + ", ".join(missing))
+    # Calibration is observation-only even if publishing flags are supplied.
+    args.lane_safety_publish = False
+    args.lane_guidance_publish = False
+else:
+    center_to_yellow_mm = None
 
 
 CSV_FIELDS = [
     "elapsed_s", "wall_time_s", "car_id", "frame_index", "detected",
+    "capture_mode", "calibration_session", "calibration_pose",
+    "road_section", "yellow_boundary_side", "vehicle_center_to_yellow_mm",
     "confidence", "left_x_px", "right_x_px", "lane_center_x_px",
     "image_center_x_px", "center_offset_px", "center_offset_normalized",
     "heading_error_rad", "yellow_pixels", "white_pixels", "roi_top_px",
@@ -40,6 +99,20 @@ CSV_FIELDS = [
     "yellow_heading_rad", "yellow_curvature", "yellow_row_coverage",
     "yellow_fit_rmse_px", "yellow_temporal_jump_px", "raw_snapshot_path",
     "yellow_near_y_px", "yellow_far_y_px", "yellow_extrapolated",
+    "yellow_reference_detected", "yellow_reference_x_px",
+    "yellow_reference_y_px", "yellow_reference_confidence",
+    "yellow_multirow_fractions", "yellow_multirow_detected",
+    "yellow_multirow_x_px", "yellow_multirow_confidence",
+    "corridor_detected", "corridor_confidence", "corridor_paired_rows",
+    "corridor_yellow_near_x_px", "corridor_white_near_x_px",
+    "corridor_center_near_x_px", "corridor_offset_normalized",
+    "corridor_heading_rad",
+    "corridor_outer_source",
+    "quanser_yellow_detected", "quanser_yellow_confidence",
+    "quanser_yellow_slope", "quanser_yellow_intercept",
+    "quanser_yellow_fit_rmse_px", "quanser_shadow_steering_rad",
+    "corridor_trend_state", "corridor_trend_offset_delta",
+    "corridor_trend_heading_delta", "corridor_trend_history_count",
     "perspective_calibrated", "yellow_boundary_warning",
     "yellow_warning_enter_streak", "yellow_warning_exit_streak",
     "lane_safety_state", "lane_safety_speed_gain",
@@ -69,6 +142,10 @@ safety_publisher = (
     LaneSafetyPublisher(port=args.lane_safety_port, car_id=args.car_id)
     if args.lane_safety_publish else None
 )
+guidance_publisher = (
+    LaneGuidancePublisher(port=args.lane_guidance_port, car_id=args.car_id)
+    if args.lane_guidance_publish else None
+)
 probe = None
 if args.probing:
     probe = Probe(ip=args.ip_host)
@@ -95,6 +172,12 @@ frame_index = 0
 
 try:
     while True:
+        if args.duration_s > 0.0 and time.time() - start_time >= args.duration_s:
+            print(
+                f"[LANE] Capture complete after {args.duration_s:.1f} s.",
+                flush=True,
+            )
+            break
         flags = camera.readAll()
         if not any(flags):
             continue
@@ -114,6 +197,54 @@ try:
         )
         if safety_publisher is not None:
             safety_publisher.send(safety)
+        if guidance_publisher is not None:
+            guidance_publisher.send({
+                "detected": measurement.detected,
+                "confidence": measurement.confidence,
+                "center_offset_normalized": (
+                    measurement.center_offset_normalized
+                ),
+                "heading_error_rad": measurement.heading_error_rad,
+                "left_x_px": measurement.left_x_px,
+                "right_x_px": measurement.right_x_px,
+                "lane_center_x_px": measurement.lane_center_x_px,
+                "perspective_calibrated": measurement.perspective_calibrated,
+                "calibration_id": "none",
+                "yellow_reference_detected": (
+                    measurement.yellow_reference_detected
+                ),
+                "yellow_reference_x_px": measurement.yellow_reference_x_px,
+                "yellow_reference_y_px": measurement.yellow_reference_y_px,
+                "yellow_reference_confidence": (
+                    measurement.yellow_reference_confidence
+                ),
+                "yellow_multirow_fractions": measurement.yellow_multirow_fractions,
+                "yellow_multirow_detected": measurement.yellow_multirow_detected,
+                "yellow_multirow_x_px": measurement.yellow_multirow_x_px,
+                "yellow_multirow_confidence": measurement.yellow_multirow_confidence,
+                "corridor_detected": measurement.corridor_detected,
+                "corridor_confidence": measurement.corridor_confidence,
+                "corridor_paired_rows": measurement.corridor_paired_rows,
+                "corridor_offset_normalized": (
+                    measurement.corridor_offset_normalized
+                ),
+                "corridor_heading_rad": measurement.corridor_heading_rad,
+                "corridor_outer_source": measurement.corridor_outer_source,
+                "quanser_yellow_detected": measurement.quanser_yellow_detected,
+                "quanser_yellow_confidence": measurement.quanser_yellow_confidence,
+                "quanser_yellow_slope": measurement.quanser_yellow_slope,
+                "quanser_yellow_intercept": measurement.quanser_yellow_intercept,
+                "quanser_shadow_steering_rad": (
+                    measurement.quanser_shadow_steering_rad
+                ),
+                "corridor_trend_state": measurement.corridor_trend_state,
+                "corridor_trend_offset_delta": (
+                    measurement.corridor_trend_offset_delta
+                ),
+                "corridor_trend_heading_delta": (
+                    measurement.corridor_trend_heading_delta
+                ),
+            })
         annotated = detector.render(frame, measurement, mask)
         if warning_active:
             cv2.putText(
@@ -161,6 +292,15 @@ try:
             "wall_time_s": value(time.time()),
             "car_id": args.car_id,
             "frame_index": frame_index,
+            "capture_mode": (
+                "stationary_calibration" if args.calibration_mode
+                else "driving_diagnostics"
+            ),
+            "calibration_session": args.calibration_session,
+            "calibration_pose": args.calibration_pose,
+            "road_section": args.road_section,
+            "yellow_boundary_side": args.yellow_boundary_side,
+            "vehicle_center_to_yellow_mm": value(center_to_yellow_mm),
             "detected": int(measurement.detected),
             "confidence": value(measurement.confidence),
             "left_x_px": value(measurement.left_x_px),
@@ -191,6 +331,73 @@ try:
             "yellow_near_y_px": value(measurement.yellow_near_y_px),
             "yellow_far_y_px": value(measurement.yellow_far_y_px),
             "yellow_extrapolated": int(measurement.yellow_extrapolated),
+            "yellow_reference_detected": int(
+                measurement.yellow_reference_detected
+            ),
+            "yellow_reference_x_px": value(
+                measurement.yellow_reference_x_px
+            ),
+            "yellow_reference_y_px": value(
+                measurement.yellow_reference_y_px
+            ),
+            "yellow_reference_confidence": value(
+                measurement.yellow_reference_confidence
+            ),
+            "yellow_multirow_fractions": ";".join(
+                value(item) for item in measurement.yellow_multirow_fractions
+            ),
+            "yellow_multirow_detected": ";".join(
+                str(int(item)) for item in measurement.yellow_multirow_detected
+            ),
+            "yellow_multirow_x_px": ";".join(
+                value(item) for item in measurement.yellow_multirow_x_px
+            ),
+            "yellow_multirow_confidence": ";".join(
+                value(item) for item in measurement.yellow_multirow_confidence
+            ),
+            "corridor_detected": int(measurement.corridor_detected),
+            "corridor_confidence": value(measurement.corridor_confidence),
+            "corridor_paired_rows": measurement.corridor_paired_rows,
+            "corridor_yellow_near_x_px": value(
+                measurement.corridor_yellow_near_x_px
+            ),
+            "corridor_white_near_x_px": value(
+                measurement.corridor_white_near_x_px
+            ),
+            "corridor_center_near_x_px": value(
+                measurement.corridor_center_near_x_px
+            ),
+            "corridor_offset_normalized": value(
+                measurement.corridor_offset_normalized
+            ),
+            "corridor_heading_rad": value(measurement.corridor_heading_rad),
+            "corridor_outer_source": measurement.corridor_outer_source,
+            "quanser_yellow_detected": int(
+                measurement.quanser_yellow_detected
+            ),
+            "quanser_yellow_confidence": value(
+                measurement.quanser_yellow_confidence
+            ),
+            "quanser_yellow_slope": value(measurement.quanser_yellow_slope),
+            "quanser_yellow_intercept": value(
+                measurement.quanser_yellow_intercept
+            ),
+            "quanser_yellow_fit_rmse_px": value(
+                measurement.quanser_yellow_fit_rmse_px
+            ),
+            "quanser_shadow_steering_rad": value(
+                measurement.quanser_shadow_steering_rad
+            ),
+            "corridor_trend_state": measurement.corridor_trend_state,
+            "corridor_trend_offset_delta": value(
+                measurement.corridor_trend_offset_delta
+            ),
+            "corridor_trend_heading_delta": value(
+                measurement.corridor_trend_heading_delta
+            ),
+            "corridor_trend_history_count": (
+                measurement.corridor_trend_history_count
+            ),
             "perspective_calibrated": int(
                 measurement.perspective_calibrated
             ),
@@ -241,3 +448,5 @@ finally:
         probe.terminate()
     if safety_publisher is not None:
         safety_publisher.close()
+    if guidance_publisher is not None:
+        guidance_publisher.close()

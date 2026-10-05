@@ -22,7 +22,7 @@ flowchart LR
     subgraph A[QCar .151]
         VA[vehicle_control.py]
         YA[yolo_server.py]
-        CA[lane_camera_server.py\nmeasurement only]
+        CA[lane_camera_server.py\nmeasurement and shadow diagnostics]
         SA[Sensors and actuators]
     end
 
@@ -78,7 +78,7 @@ flowchart TD
     SPEED --> CMD
     CMD --> HW[QCar actuators]
 
-    CSI[Front CSI detector] -. measurement only .-> DIAG[Lane diagnostics]
+    CSI[Front CSI detector] -. measurement / shadow only .-> DIAG[Lane diagnostics]
     ST --> DIAG
     PM --> DIAG
 ```
@@ -109,10 +109,12 @@ ownership can be restored without creating simultaneous ownership.
 
 ## Safety authority
 
-Speed may be reduced to zero by either the intersection state machine or YOLO
-obstacle logic. A reservation grant is permission to enter the conflict zone,
-not permission to ignore an observed obstacle. The front CSI lane detector is
-currently diagnostic and has no control authority.
+Speed may be reduced to zero by the intersection state machine, YOLO obstacle
+logic, stale-localization protection, or the tracking-loss guard in
+`baseline_safety`. On `.151`, `preventive_stop` additionally permits calibrated
+camera-boundary state to reduce speed and latch a stop without camera steering
+authority. A reservation grant is permission to enter the conflict zone, not
+permission to ignore an observed obstacle.
 
 ## Staged hybrid lane safety
 
@@ -120,16 +122,20 @@ currently diagnostic and has no control authority.
 flowchart LR
     MAP[Waypoint route and EKF pose] --> BASE[Baseline path controller]
     CSI[Front CSI yellow-boundary measurement] --> CONF[Confidence and debounce]
-    CONF --> WARN[Current: warning and log only]
-    CONF --> LIMIT[Candidate 5: earlier slowdown / latched safety stop]
+    CONF --> WARN[Warning and diagnostics]
+    CONF --> STOP[.151 preventive-stop policy]
+    CONF --> SHADOW[Current shadow steering proposal]
     BASE --> ACT[Steering and nominal speed]
-    LIMIT -. speed restriction only .-> ACT
+    STOP -. speed only; latched; no recovery .-> ACT
+    SHADOW -. authority = 0; log only .-> ACT
     YOLO[YOLO obstacle restriction] --> ACT
     CZ[Intersection permission] --> ACT
 ```
 
-Waypoint navigation remains responsible for route selection. Candidate 5 is
-enabled explicitly for `.151` in the launcher and awaits physical validation.
-The camera safety layer cannot choose a route, grant an intersection movement,
-or override YOLO/CZ1 stopping. Camera steering fusion is intentionally
-excluded from this stage.
+Waypoint navigation remains responsible for route selection. The accepted
+`hybrid_safety_2` experiment kept the entire car inside its lane by stopping,
+but did not provide continuous route completion or automatic recovery.
+Subsequent low-authority steering candidates still crossed the divider and are
+disabled in the normal launcher. Camera processing therefore runs in shadow
+mode while the lane-centering approach remains under investigation. It cannot
+choose a route, grant an intersection movement, or override YOLO/CZ1 stopping.

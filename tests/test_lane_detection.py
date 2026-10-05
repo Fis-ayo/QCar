@@ -37,6 +37,45 @@ class FrontLaneDetectorTests(unittest.TestCase):
         self.assertTrue(measurement.yellow_detected)
         self.assertGreater(measurement.yellow_confidence, 0.0)
         self.assertTrue(np.isfinite(measurement.yellow_heading_rad))
+        self.assertTrue(measurement.yellow_reference_detected)
+        self.assertTrue(np.isfinite(measurement.yellow_reference_x_px))
+        self.assertEqual(len(measurement.yellow_multirow_x_px), 3)
+        self.assertGreaterEqual(sum(measurement.yellow_multirow_detected), 2)
+        self.assertTrue(measurement.corridor_detected)
+        self.assertGreaterEqual(measurement.corridor_paired_rows, 2)
+        self.assertAlmostEqual(
+            measurement.corridor_offset_normalized, 0.0, delta=0.12
+        )
+
+    def test_quanser_shadow_feature_uses_reference_crop(self):
+        frame = np.zeros((820, 1640, 3), dtype=np.uint8)
+        cv2.line(frame, (180, 674), (420, 524), (0, 255, 255), 12)
+
+        measurement, _ = self.detector.process(frame)
+
+        self.assertTrue(measurement.quanser_yellow_detected)
+        self.assertTrue(np.isfinite(measurement.quanser_yellow_slope))
+        self.assertTrue(np.isfinite(measurement.quanser_shadow_steering_rad))
+
+    def test_fixed_row_measurement_does_not_depend_on_component_extent(self):
+        frame = np.zeros((240, 400, 3), dtype=np.uint8)
+        cv2.line(frame, (80, 239), (150, 96), (0, 255, 255), 10)
+
+        measurement, _ = self.detector.process(frame)
+
+        expected_roi_y = round(0.85 * ((240 - int(0.4 * 240)) - 1))
+        self.assertTrue(measurement.yellow_reference_detected)
+        self.assertEqual(measurement.yellow_reference_y_px, expected_roi_y)
+
+    def test_fixed_row_rejects_yellow_that_is_only_far_ahead(self):
+        frame = np.zeros((240, 400, 3), dtype=np.uint8)
+        cv2.line(frame, (150, 110), (170, 96), (0, 255, 255), 10)
+
+        measurement, _ = self.detector.process(frame)
+
+        self.assertFalse(measurement.yellow_reference_detected)
+        self.assertTrue(np.isnan(measurement.yellow_reference_x_px))
+        self.assertTrue(any(measurement.yellow_multirow_detected))
 
     def test_rejects_frame_without_two_boundaries(self):
         frame = np.zeros((240, 400, 3), dtype=np.uint8)
@@ -55,6 +94,12 @@ class FrontLaneDetectorTests(unittest.TestCase):
         measurement, _ = self.detector.process(frame)
 
         self.assertFalse(measurement.yellow_detected)
+
+    def test_corridor_rejects_missing_outer_white_boundary(self):
+        frame = np.zeros((240, 400, 3), dtype=np.uint8)
+        cv2.line(frame, (90, 239), (140, 96), (0, 255, 255), 12)
+        measurement, _ = self.detector.process(frame)
+        self.assertFalse(measurement.corridor_detected)
 
     def test_temporal_jump_reduces_confidence(self):
         centered = np.zeros((240, 400, 3), dtype=np.uint8)

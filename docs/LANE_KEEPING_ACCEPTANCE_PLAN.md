@@ -31,8 +31,10 @@ allowable center error
       - selected safety margin
 ```
 
-The existing map measurement gives approximately `5.5 in` from lane center to
-the painted divider center and a divider width of approximately `0.5 in`.
+The operator-confirmed physical measurement gives approximately `5.0 in`
+(`127 mm`) from lane center to the nearest painted-divider edge. The painted
+divider is approximately `0.5 in` wide, but its center is not the calibration
+reference.
 Vehicle outside-tire width and the project safety margin must be measured and
 recorded before setting the final numerical acceptance threshold.
 
@@ -55,7 +57,8 @@ This does not require a checkerboard or camera intrinsic calibration.
 
 1. Select representative straight, moderate-curve, and tight-curve locations.
 2. At each location, align the QCar with its intended direction of travel.
-3. Measure the nearest tire edge relative to the yellow divider using a ruler.
+3. Measure the vehicle centerline relative to the yellow divider using a ruler;
+   also record nearest-tire clearance when evaluating boundary safety.
 4. Capture stationary CSI data at these conditions:
    - centered in lane;
    - chosen safe clearance;
@@ -117,3 +120,15 @@ Camera steering fusion should begin only after Gate A establishes a reliable
 direction and clearance signal. The first steering candidate must be bounded,
 must preserve waypoint route selection, and must retain Candidate safety logic
 as an independent final restriction.
+
+## Current gate status — October 5, 2026
+
+`hybrid_safety_2` visually confirmed one `.151` stop with the entire vehicle
+inside its lane. This is meaningful safety progress but does not satisfy the
+five-trial, two-vehicle Gate B requirement. Automatic recovery was not
+implemented, and the vehicle did not complete a lap.
+
+The latest bounded steering candidate (`hybrid_final_1`) stayed within its
+software correction limit and pointed away from the divider, but the vehicle
+still crossed. It is rejected and disabled. Another physical steering run is
+not justified without a materially improved continuous lane/corridor estimate.

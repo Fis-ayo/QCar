@@ -86,6 +86,47 @@ class TrackingDiagnosticsTests(unittest.TestCase):
                 rows[0]["geometry_assumption"],
                 "ekf_pose_assumed_body_center",
             )
+            self.assertEqual(rows[0]["lane_guidance_state"], "DISABLED")
+            self.assertEqual(
+                float(rows[0]["lane_guidance_authority"]),
+                0.0,
+            )
+            self.assertEqual(
+                float(rows[0]["lane_guidance_applied_correction_rad"]),
+                0.0,
+            )
+            self.assertEqual(
+                rows[0]["lane_guidance_calibration_profile"], "none"
+            )
+            self.assertEqual(
+                rows[0]["lane_guidance_calibration_reason"], "DISABLED"
+            )
+            self.assertEqual(
+                rows[0]["lane_guidance_boundary_category"], "DISABLED"
+            )
+            self.assertEqual(
+                int(rows[0]["lane_guidance_multirow_detected_count"]), 0
+            )
+            self.assertEqual(rows[0]["boundary_safety_state"], "DISABLED")
+            self.assertEqual(float(rows[0]["boundary_safety_gain"]), 1.0)
+            self.assertEqual(rows[0]["boundary_steering_state"], "DISABLED")
+            self.assertEqual(int(rows[0]["corridor_detected"]), 0)
+            self.assertEqual(int(rows[0]["quanser_yellow_detected"]), 0)
+            self.assertEqual(rows[0]["corridor_trend_state"], "UNAVAILABLE")
+            self.assertEqual(rows[0]["fused_lane_state"], "DISABLED")
+            self.assertEqual(float(rows[0]["fused_lane_authority"]), 0.0)
+            self.assertEqual(
+                rows[0]["continuous_corridor_state"], "DISABLED"
+            )
+            self.assertEqual(
+                float(rows[0]["continuous_corridor_authority"]), 0.0
+            )
+            self.assertEqual(int(rows[0]["smooth_path_available"]), 0)
+            self.assertEqual(float(rows[0]["smooth_path_authority"]), 0.0)
+            self.assertEqual(rows[0]["speed_control_state"], "UNKNOWN")
+            self.assertEqual(
+                rows[0]["localization_safety_state"], "UNKNOWN"
+            )
 
     def test_curvature_and_required_steering_on_circle(self):
         radius = 1.0

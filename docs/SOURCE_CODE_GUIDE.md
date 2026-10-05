@@ -31,12 +31,16 @@ source appendix.
 | File | Responsibility |
 |---|---|
 | `qcar/vehicle_control.py` | Creates the route, estimates state, advances waypoints, computes speed/steering, applies safety restrictions, and writes actuator commands |
+| `qcar/control_modes.py` | Defines explicit baseline, baseline-safety, preventive-stop, and experimental hybrid actuator policies |
+| `qcar/control_safety.py` | Provides non-reversing speed control, localization freshness, and tracking-loss protection |
 | `qcar/localization_diagnostics.py` | Logs raw GPS/LiDAR and EKF behavior and captures significant localization events |
 | `qcar/tracking_diagnostics.py` | Logs vehicle pose, projected route reference, tracking errors, commands, and intersection state |
 | `tools/analysis/analyze_tracking.py` | Produces offline summaries/plots from tracking diagnostics |
 
-The current steering command is map/path based. The front CSI measurement
-pipeline has no steering or throttle output.
+The normal steering command is map/path based. On `.151`, front-CSI calibrated
+boundary state may restrict speed through `preventive_stop`, but it has zero
+steering authority. Experimental hybrid steering code is retained but disabled
+after the latest physical candidate crossed the divider.
 
 ## Intersection coordination and communication recovery
 
@@ -67,6 +71,8 @@ not override an obstacle stop.
 |---|---|
 | `qcar/lane_camera_server.py` | Captures front CSI frames, logs measurements, and saves raw/annotated snapshots |
 | `qcar/lane_detection.py` | Detects visible yellow lane features and reports bounded image-space measurements/confidence |
+| `qcar/lane_guidance.py` | Transports calibrated boundary observations, calculates shadow proposals, and retains disabled experimental fusion logic |
+| `python/capture_lane_calibration.py` | Safely launches a labeled, stationary yellow-divider capture and refuses to run while vehicle control is active |
 | `qcar/lane_warning.py` | Debounces and latches the measurement-only yellow-boundary proximity warning |
 | `qcar/lane_safety.py` | Produces confidence-gated slowdown/latched-stop states and transports them locally over UDP |
 | `tools/analysis/analyze_lane_frames.py` | Reprocesses saved frames offline without influencing vehicle control |
@@ -75,8 +81,10 @@ not override an obstacle stop.
 | `tools/replay/replay_lane_warning.py` | Replays the runtime warning logic on recorded runs |
 | `tools/replay/replay_lane_safety.py` | Replays Candidate 4 slowdown/stop timing on recorded runs |
 
-The detector remains non-steering. Candidate 5 may restrict speed or latch a
-stop, but the camera cannot select a route or issue a steering command.
+The detector remains non-steering in the normal launcher. The accepted
+`hybrid_safety_2` trial demonstrated a speed-only stop with the entire `.151`
+vehicle inside its lane, but it did not recover or complete the route. The
+camera cannot select a route or issue a steering command in `preventive_stop`.
 
 Lane-keeping objectives, physical-clearance definitions, staged acceptance
 gates, and the next calibration experiment are defined in
@@ -93,6 +101,9 @@ gates, and the next calibration experiment are defined in
 | `tests/test_lane_detection.py` | Image-space lane detector behavior |
 | `tests/test_lane_warning.py` | Warning confidence gate, debounce, latch, and optional hysteresis |
 | `tests/test_lane_safety.py` | Slowdown/stop debounce, stop latch, confidence rejection, release margin, and stale-transport stop |
+| `tests/test_lane_guidance.py` | Guidance packet contract, confidence handling, slew limiting, calibration interlock, and zero-authority invariant |
+| `tests/test_control_modes.py` | Separation of baseline, preventive-stop, and experimental hybrid authority |
+| `tests/test_control_safety.py` | Non-reversing propulsion, slew limits, localization freshness, and tracking-loss safeguards |
 
 Run all tests with:
 

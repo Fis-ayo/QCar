@@ -35,11 +35,16 @@ QCAR_RUNTIME_FILES = (
     "road_rules.py",
     "road_network.json",
     "path_manager.py",
+    "path_tracking.py",
+    "control_safety.py",
+    "control_modes.py",
     "intersection_client.py",
     "localization_diagnostics.py",
     "tracking_diagnostics.py",
     "lane_camera_server.py",
     "lane_detection.py",
+    "lane_guidance.py",
+    "lane_calibration.json",
     "lane_warning.py",
     "lane_safety.py",
 )
@@ -61,6 +66,8 @@ CAR_SETTINGS = {
         "tracking_offset_m": 0.20,
         # Introduce camera measurement on one car before fleet-wide use.
         "lane_camera": False,
+        "lane_guidance_shadow": False,
+        "control_mode": "baseline_safety",
         "lane_safety": False,
     },
     "192.168.0.151": {
@@ -68,12 +75,19 @@ CAR_SETTINGS = {
         # Controlled EXP-019 test: documented body-center-to-front-axle
         # distance. Do not change gains, speed, or route during this run.
         "tracking_offset_m": 0.13,
-        # Measurement only: this process cannot command steering or throttle.
+        # Front-CSI process supplies diagnostics, optional speed safety, and
+        # zero-authority shadow steering proposals.
         "lane_camera": True,
-        # Candidate 5: earlier speed-only CSI slowdown and latched safety stop.
-        # This cannot modify steering and remains disabled by default in
-        # vehicle_control.py unless this explicit launcher flag is supplied.
-        "lane_safety": True,
+        # Camera guidance is logged beside waypoint steering but has zero
+        # actuator authority until calibration and acceptance gates pass.
+        "lane_guidance_shadow": True,
+        # Accepted partial safety milestone from hybrid_safety_2: calibrated
+        # boundary slowdown/latched stop with zero camera steering authority.
+        # It prevents continued travel but does not recover or complete a lap.
+        "control_mode": "preventive_stop",
+        # The older lane_safety receiver is kept disabled. preventive_stop
+        # consumes the calibrated boundary state carried by lane guidance.
+        "lane_safety": False,
     },
 }
 
@@ -180,11 +194,15 @@ for ip in QCAR_IPS:
             "--lane_safety_publish"
             if settings.get("lane_safety", False) else ""
         )
+        lane_guidance_publish_flag = (
+            "--lane_guidance_publish"
+            if settings.get("lane_guidance_shadow", False) else ""
+        )
         cmd_lane = (
             f"cd {REMOTE_PATH} && "
             f"nohup python lane_camera_server.py "
             f"--car_id {ip} --ip_host {LOCAL_IP} {lane_probe_flag} "
-            f"{lane_safety_publish_flag} "
+            f"{lane_safety_publish_flag} {lane_guidance_publish_flag} "
             f"> lane_camera.log 2>&1 < /dev/null &"
         )
         ssh.exec_command(cmd_lane)
@@ -199,8 +217,13 @@ for ip in QCAR_IPS:
     # nohup prevents the controller from being killed when SSH disconnects.
     start_node = settings["start_node"]
     tracking_offset_m = settings.get("tracking_offset_m", 0.20)
+    control_mode = settings.get("control_mode", "baseline_safety")
     lane_safety_flag = (
         "--lane_safety" if settings.get("lane_safety", False) else ""
+    )
+    lane_guidance_flag = (
+        "--lane_guidance_shadow"
+        if settings.get("lane_guidance_shadow", False) else ""
     )
     cmd_vehicle = (
         f"cd {REMOTE_PATH} && "
@@ -209,14 +232,15 @@ for ip in QCAR_IPS:
         f"--coordinator_port {COORDINATOR_PORT} "
         f"--car_id {ip} "
         f"--tracking_offset_m {tracking_offset_m} "
-        f"{lane_safety_flag} "
+        f"--control_mode {control_mode} "
+        f"{lane_safety_flag} {lane_guidance_flag} "
         f"> vehicle_control.log 2>&1 < /dev/null &"
     )
     ssh.exec_command(cmd_vehicle)
     print(
         f"[{ip}] Started vehicle_control.py "
         f"(start node {start_node}, "
-        f"tracking offset {tracking_offset_m:.3f} m)."
+        f"tracking offset {tracking_offset_m:.3f} m, mode {control_mode})."
     )
 
     ssh.close()

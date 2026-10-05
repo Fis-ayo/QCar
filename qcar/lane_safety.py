@@ -9,6 +9,161 @@ import time
 LANE_SAFETY_PORT = 18760
 
 
+class BoundaryCategorySafetyMonitor:
+    """Apply speed-only protection to sustained calibrated boundary risk.
+
+    This consumes the shadow advisor's categorical result.  It never creates
+    a steering command.  A stop requires both persistence and inward image
+    movement, preventing a single out-of-range sample from stopping the car.
+    """
+
+    NORMAL = "NORMAL"
+    SLOWDOWN = "SLOWDOWN"
+    STOP = "STOP"
+    UNAVAILABLE = "UNAVAILABLE"
+
+    def __init__(
+        self,
+        slowdown_frames=3,
+        slowdown_gain=0.25,
+        stop_persistence_s=0.50,
+        stop_progress_px=18.0,
+        clear_frames=8,
+        recovery_margin_m=0.010,
+        recovery_progress_px=12.0,
+        recovery_frames=2,
+    ):
+        self.slowdown_frames = int(slowdown_frames)
+        self.slowdown_gain = float(slowdown_gain)
+        self.stop_persistence_s = float(stop_persistence_s)
+        self.stop_progress_px = float(stop_progress_px)
+        self.clear_frames = int(clear_frames)
+        self.recovery_margin_m = float(recovery_margin_m)
+        self.recovery_progress_px = float(recovery_progress_px)
+        self.recovery_frames = int(recovery_frames)
+        self.state = self.UNAVAILABLE
+        self.risk_streak = 0
+        self.clear_streak = 0
+        self.risk_duration_s = 0.0
+        self.entry_x_px = float("nan")
+        self.maximum_x_px = float("nan")
+        self.last_reference_x_px = float("nan")
+        self.stop_latched = False
+        self.recovery_streak = 0
+
+    @property
+    def speed_gain(self):
+        if self.state == self.STOP:
+            return 0.0
+        if self.state == self.SLOWDOWN:
+            return self.slowdown_gain
+        return 1.0
+
+    def update(
+        self,
+        category,
+        reference_x_px,
+        dt,
+        physical_lateral_error_m=float("nan"),
+    ):
+        try:
+            reference_x_px = float(reference_x_px)
+        except (TypeError, ValueError):
+            reference_x_px = float("nan")
+        dt = max(0.0, float(dt))
+        try:
+            physical_lateral_error_m = float(physical_lateral_error_m)
+        except (TypeError, ValueError):
+            physical_lateral_error_m = float("nan")
+        toward = category == "BEYOND_TOWARD_YELLOW_LIMIT"
+        # Merely returning just inside the calibrated range is not sufficient
+        # clearance.  Release requires an explicit away-side observation.
+        release_clear = category == "BEYOND_AWAY_LIMIT"
+        calibrated_recovery = (
+            category == "CALIBRATED"
+            and math.isfinite(physical_lateral_error_m)
+            and physical_lateral_error_m <= -self.recovery_margin_m
+        )
+        release_clear = release_clear or calibrated_recovery
+        safe_observation = category in {"CALIBRATED", "BEYOND_AWAY_LIMIT"}
+
+        if self.stop_latched:
+            self.state = self.STOP
+            return self.snapshot()
+
+        if toward and math.isfinite(reference_x_px):
+            self.last_reference_x_px = reference_x_px
+            self.risk_streak += 1
+            self.clear_streak = 0
+            if not math.isfinite(self.entry_x_px):
+                self.entry_x_px = reference_x_px
+                self.maximum_x_px = reference_x_px
+            self.maximum_x_px = max(self.maximum_x_px, reference_x_px)
+            recovery_from_peak = self.maximum_x_px - reference_x_px
+            self.recovery_streak = (
+                self.recovery_streak + 1
+                if recovery_from_peak >= self.recovery_progress_px else 0
+            )
+            recovering = self.recovery_streak >= self.recovery_frames
+            if self.risk_streak >= self.slowdown_frames:
+                self.state = self.SLOWDOWN
+                self.risk_duration_s += dt
+            progress = self.maximum_x_px - self.entry_x_px
+            if (
+                self.state == self.SLOWDOWN
+                and self.risk_duration_s >= self.stop_persistence_s
+                and progress >= self.stop_progress_px
+                and not recovering
+            ):
+                self.stop_latched = True
+                self.state = self.STOP
+        elif self.state == self.SLOWDOWN:
+            # Do not restore full speed on missing/unsupported observations.
+            if release_clear:
+                self.clear_streak += 1
+                if self.clear_streak >= self.clear_frames:
+                    self._reset(self.NORMAL)
+        elif safe_observation:
+            self._reset(self.NORMAL)
+        else:
+            self.state = self.UNAVAILABLE
+            self.risk_streak = 0
+
+        return self.snapshot()
+
+    def _reset(self, state):
+        self.state = state
+        self.risk_streak = 0
+        self.clear_streak = 0
+        self.risk_duration_s = 0.0
+        self.entry_x_px = float("nan")
+        self.maximum_x_px = float("nan")
+        self.last_reference_x_px = float("nan")
+        self.recovery_streak = 0
+
+    def snapshot(self):
+        progress = (
+            self.maximum_x_px - self.entry_x_px
+            if math.isfinite(self.maximum_x_px) and math.isfinite(self.entry_x_px)
+            else float("nan")
+        )
+        return {
+            "state": self.state,
+            "speed_gain": self.speed_gain,
+            "risk_streak": self.risk_streak,
+            "risk_duration_s": self.risk_duration_s,
+            "inward_progress_px": progress,
+            "recovery_from_peak_px": (
+                max(0.0, self.maximum_x_px - self.last_reference_x_px)
+                if math.isfinite(self.maximum_x_px)
+                and math.isfinite(self.last_reference_x_px)
+                else float("nan")
+            ),
+            "recovery_streak": self.recovery_streak,
+            "stop_latched": self.stop_latched,
+        }
+
+
 class LaneSafetyMonitor:
     """Convert yellow-boundary measurements into bounded speed restrictions.
 
