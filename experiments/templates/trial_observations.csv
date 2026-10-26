@@ -1,2 +1,0 @@
-trial_id,date_time,car_id,route,lap,section,event,start_elapsed_s,end_elapsed_s,vehicle_part,observation_confidence,safety_stop,notes
-EXAMPLE_151_T01,YYYY-MM-DD HH:MM:SS,192.168.0.151,"0-2-4-6-0",1,151_S2,CROSSED_DIVIDER,,,entire_vehicle,HIGH,1,Replace this example row for each observed event
