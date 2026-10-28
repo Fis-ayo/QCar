@@ -40,7 +40,8 @@ else:
 # num_nodes=random.randint(6,10)
 # nodeSequence=valid_nodes[:num_nodes]+[valid_nodes[0]]
 
-nodeSequence=[0,2,4,6,0]
+# nodeSequence=[0,2,4,6,0]
+nodeSequence=[0,2,4,14,16,18,12,0]
 
 print(f"Selected nodes: {nodeSequence}")
 #================ Experiment Configuration ================
@@ -60,8 +61,8 @@ def elapsed_time():
 # - K_p: proportional gain for speed controller
 # - K_i: integral gain for speed controller
 # v_ref = 0.75
-# v_ref = 0.4
 v_ref = 0.4
+# v_ref = 0.2
 # v_ref = 0
 K_p = 0.1
 K_i = 1
@@ -78,9 +79,50 @@ K_stanley = 1.5
 # lefthand steering bias (rad). Negative = steer more right.set
 steering_trim = -0.14
 
-# - gps_scale: GPS positions read ~3.5% too far from the map origin compared
-#   to the roadmap (measured with check_pose.py), so they are divided by this.
-gps_scale = 1.035
+# - gps_scale: GPS x/y are divided by this to line them up with the roadmap.
+#   1.035 fitted the old calibration; with the current one (walls + two
+#   landmarks) readings are within +-5 cm without correction (check_pose round 8).
+# gps_scale = 1.035
+gps_scale = 1.0
+
+# - gps_corrections: sideways GPS errors measured with check_pose.py (round 9,
+#   current calibration, lower part of the map, which has no walls nearby).
+#   Each row is (x, y, dx, dy): at raw GPS position (x, y), add (dx, dy).
+#   Nearby rows are blended (gps_correction_radius, m); ~1 m from every row the
+#   correction fades to zero, so the upper part of the map is unchanged.
+#   Re-measure after any recalibration.
+#   Node 0, mid 0 -> 2 and mid 2 -> 4 are tuned from driving, not the survey.
+#   0 -> 2: round 9 values crossed the divider (drive 4), 6.1 cm away from
+#   the divider put the car on the outer edge (drive 5), so 3 cm away.
+#   2 -> 4: 7.3 cm still left the rear left tyre on the divider (drive 5),
+#   so 9 cm.
+gps_corrections = np.array([
+    # x      y      dx      dy
+    [0.06, -0.06,  0.030,  0.000],   # node 0 (round 9: -0.058, 0.000)
+    [0.27, -0.81,  0.021,  0.021],   # mid 0 -> 2 (round 9: -0.013, -0.013)
+    [1.26, -1.15,  0.000,  0.063],   # node 2
+    [2.04, -0.88, -0.064,  0.064],   # mid 2 -> 4 (round 9: -0.051, 0.052)
+    [2.32,  0.00, -0.061,  0.000],   # node 4
+    [2.29,  1.43, -0.036,  0.000],   # mid 4 -> 14
+])
+gps_correction_radius = 0.35
+
+def correct_gps(x, y):
+    """Raw GPS x/y -> x/y lined up with the roadmap (gps_scale, then the
+    position-dependent gps_corrections)."""
+    x, y = x / gps_scale, y / gps_scale
+    d2 = (gps_corrections[:, 0] - x)**2 + (gps_corrections[:, 1] - y)**2
+    w = np.exp(-d2 / gps_correction_radius**2)
+    # the 0.05 fades the correction out where no row is nearby
+    dx, dy = w @ gps_corrections[:, 2:] / (w.sum() + 0.05)
+    return x + dx, y + dy
+
+# - GPS-jump check: a GPS reading further than gps_max_jump (m) or
+#   gps_max_heading_jump (rad) from the EKF estimate is ignored. If no reading
+#   is accepted for gps_timeout (s), the car is stopped.
+gps_max_jump = 0.3
+gps_max_heading_jump = np.radians(30)
+gps_timeout = 2.0
 
 # Define the calibration pose
 # Calibration pose is either [0,0,-pi/2] or [0,2,-pi/2]
@@ -94,9 +136,21 @@ calibrate = args.calibrate
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 
 #region : Initial setup
+def remove_backward_points(wp):
+    """Drop waypoints that step backwards along the path. generate_path can
+    overshoot a node by a few mm (e.g. node 16), so the next segment points
+    backwards; SteeringController never gets past such a segment and drives
+    off along its extension."""
+    keep = [0, 1]
+    for i in range(2, wp.shape[1]):
+        a, b = wp[:, keep[-2]], wp[:, keep[-1]]
+        if np.dot(wp[:, i] - b, b - a) > 0:
+            keep.append(i)
+    return wp[:, keep]
+
 if enableSteeringControl:
     roadmap = SDCSRoadMap(leftHandTraffic=False)
-    waypointSequence = roadmap.generate_path(nodeSequence)
+    waypointSequence = remove_backward_points(roadmap.generate_path(nodeSequence))
     initialPose = roadmap.get_node_pose(nodeSequence[0]).squeeze()
 else:
     initialPose = [0, 0, 0]
@@ -230,12 +284,15 @@ def controlLoop():
     new = False
     while not new:
         new = gps.readGPS()
-    initPose = np.array([gps.position[0] / gps_scale,
-                         gps.position[1] / gps_scale,
+    initPose = np.array([*correct_gps(gps.position[0], gps.position[1]),
                          gps.orientation[2]
                          ])
+    # Start the EKF from where the car actually is, so the GPS-jump check
+    # doesn't reject the first readings
+    ekf = QCarEKF(x_0=initPose)
     startNodeReached, initWaypointSequence = roadmap.initial_check(initPose, nodeSequence,waypointSequence)
     if not startNodeReached:
+        initWaypointSequence = remove_backward_points(initWaypointSequence)
         initSteeringController = SteeringController(waypoints=initWaypointSequence,
                                                     k=K_stanley,
                                                     cyclic=False)
@@ -245,6 +302,7 @@ def controlLoop():
         t0 = time.time()
         t=0
         startTime = time.time()
+        lastGoodGPS = 0
         while (t < tf+startDelay) and (not KILL_THREAD):
             #region : Loop timing update
             # start = elapsed_time()
@@ -267,17 +325,25 @@ def controlLoop():
 
                 if gps.readGPS():
                     y_gps = np.array([
-                        gps.position[0] / gps_scale,
-                        gps.position[1] / gps_scale,
+                        *correct_gps(gps.position[0], gps.position[1]),
                         gps.orientation[2]
                     ])
+                    # GPS-jump check: ignore readings the car can't have moved to
+                    jump = np.linalg.norm(y_gps[:2] - ekf.x_hat[:2,0])
+                    headingJump = abs(wrap_to_pi(y_gps[2] - ekf.x_hat[2,0]))
+                    if jump < gps_max_jump and headingJump < gps_max_heading_jump:
+                        lastGoodGPS = t
+                    else:
+                        print(f"GPS rejected: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)  jump={jump:.2f} m  heading_jump={np.degrees(headingJump):.0f}deg")
+                        y_gps = None
                     ekf.update(
                         [qcar.motorTach, delta],
                         dt,
                         y_gps,
                         qcar.gyroscope[2],
                     )
-                    print(f"GPS: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)")
+                    if y_gps is not None:
+                        print(f"GPS: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)")
                 else:
                     ekf.update(
                         [qcar.motorTach, delta],
@@ -285,6 +351,11 @@ def controlLoop():
                         None,
                         qcar.gyroscope[2],
                     )
+
+                if t - lastGoodGPS > gps_timeout:
+                    print(f"STOPPED: no GPS reading accepted for {gps_timeout:.0f} s. "
+                          f"Last estimate ({ekf.x_hat[0,0]:.2f},{ekf.x_hat[1,0]:.2f},{np.degrees(ekf.x_hat[2,0]):.0f}deg)")
+                    break
 
                 x = ekf.x_hat[0,0]
                 y = ekf.x_hat[1,0]

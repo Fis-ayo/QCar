@@ -14,7 +14,7 @@ from pal.products.qcar import QCarGPS
 from hal.products.mats import SDCSRoadMap
 
 # Must match vehicle_control.py
-nodeSequence = [0, 2, 4, 6, 0]
+nodeSequence = [0, 2, 4, 14, 16, 18, 12, 0]
 calibrationPose = [0, 2, -np.pi/2]
 
 roadmap = SDCSRoadMap(leftHandTraffic=False)
