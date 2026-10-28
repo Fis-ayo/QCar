@@ -1,0 +1,325 @@
+GPS Server started.
+n= 1/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.021 m (spread +0.021..+0.021)  heading_err=+16.7deg
+n= 2/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.021 m (spread +0.021..+0.021)  heading_err=+16.7deg
+n= 3/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.021 m (spread +0.021..+0.021)  heading_err=+16.7deg
+n= 4/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.021 m (spread +0.021..+0.021)  heading_err=+16.7deg
+n=18/25  GPS=(0.04,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.002 m (spread -0.010..+0.022)  heading_err=+16.9deg
+n=21/25  GPS=(0.04,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.005 m (spread -0.010..+0.031)  heading_err=+16.8deg
+n=24/25  GPS=(0.04,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.008 m (spread -0.010..+0.031)  heading_err=+16.7deg
+n=25/25  GPS=(0.04,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.009 m (spread -0.010..+0.031)  heading_err=+16.6deg
+n=25/25  GPS=(0.05,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.010 m (spread -0.010..+0.031)  heading_err=+16.6deg
+n=25/25  GPS=(0.05,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.014 m (spread -0.010..+0.031)  heading_err=+16.4deg
+n=25/25  GPS=(0.05,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.018 m (spread -0.010..+0.031)  heading_err=+16.4deg
+n=25/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.022 m (spread -0.010..+0.031)  heading_err=+16.3deg
+n=25/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.024 m (spread +0.021..+0.031)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.46,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.024 m (spread +0.021..+0.031)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.024 m (spread +0.021..+0.031)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.025 m (spread +0.021..+0.031)  heading_err=+16.1deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.025 m (spread +0.021..+0.031)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.025 m (spread +0.021..+0.031)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.024 m (spread -0.011..+0.031)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.023 m (spread -0.011..+0.031)  heading_err=+15.9deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.022 m (spread -0.011..+0.031)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.022 m (spread -0.011..+0.031)  heading_err=+15.9deg
+n=25/25  GPS=(0.05,0.45,-90deg)  nearest_path=(0.04,0.48,-107deg)  side_offset=+0.021 m (spread -0.011..+0.032)  heading_err=+15.9deg
+n=25/25  GPS=(0.05,0.45,-90deg)  nearest_path=(0.04,0.48,-107deg)  side_offset=+0.020 m (spread -0.011..+0.033)  heading_err=+16.1deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.021 m (spread -0.011..+0.035)  heading_err=+16.2deg
+n=25/25  GPS=(0.05,0.45,-90deg)  nearest_path=(0.04,0.48,-107deg)  side_offset=+0.021 m (spread -0.011..+0.035)  heading_err=+16.1deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.48,-107deg)  side_offset=+0.021 m (spread -0.011..+0.035)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.022 m (spread -0.010..+0.038)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.48,-107deg)  side_offset=+0.025 m (spread -0.009..+0.038)  heading_err=+16.4deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.026 m (spread -0.009..+0.039)  heading_err=+16.4deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.027 m (spread -0.004..+0.040)  heading_err=+16.4deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.028 m (spread -0.004..+0.040)  heading_err=+16.3deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.026 m (spread -0.004..+0.040)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.027 m (spread -0.004..+0.041)  heading_err=+16.4deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.029 m (spread -0.004..+0.042)  heading_err=+16.2deg
+n=25/25  GPS=(0.06,0.45,-90deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.031 m (spread -0.000..+0.042)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.031 m (spread -0.000..+0.042)  heading_err=+15.9deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.031 m (spread -0.000..+0.042)  heading_err=+15.9deg
+n=25/25  GPS=(0.06,0.45,-89deg)  nearest_path=(0.03,0.44,-104deg)  side_offset=+0.030 m (spread -0.000..+0.042)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.030 m (spread -0.000..+0.042)  heading_err=+15.9deg
+n=25/25  GPS=(0.07,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.032 m (spread +0.008..+0.042)  heading_err=+16.1deg
+n=25/25  GPS=(0.07,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.032 m (spread +0.008..+0.042)  heading_err=+16.0deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.033 m (spread +0.008..+0.042)  heading_err=+15.7deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.032 m (spread +0.008..+0.041)  heading_err=+15.7deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.031 m (spread +0.008..+0.041)  heading_err=+15.6deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.032 m (spread +0.008..+0.041)  heading_err=+15.6deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.031 m (spread +0.008..+0.041)  heading_err=+15.5deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.031 m (spread +0.019..+0.040)  heading_err=+15.6deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.029 m (spread +0.016..+0.039)  heading_err=+15.6deg
+n=25/25  GPS=(0.06,0.44,-89deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.027 m (spread +0.014..+0.038)  heading_err=+15.6deg
+n=25/25  GPS=(0.06,0.44,-90deg)  nearest_path=(0.03,0.43,-104deg)  side_offset=+0.025 m (spread +0.011..+0.037)  heading_err=+15.6deg
+n=25/25  GPS=(0.05,0.44,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.020 m (spread -0.024..+0.035)  heading_err=+15.6deg
+n=25/25  GPS=(0.05,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.016 m (spread -0.028..+0.034)  heading_err=+15.8deg
+n=25/25  GPS=(0.05,0.45,-89deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.013 m (spread -0.028..+0.032)  heading_err=+15.8deg
+n=25/25  GPS=(0.04,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.010 m (spread -0.028..+0.030)  heading_err=+15.9deg
+n=25/25  GPS=(0.04,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.007 m (spread -0.028..+0.024)  heading_err=+15.9deg
+n=25/25  GPS=(0.04,0.45,-90deg)  nearest_path=(0.04,0.47,-106deg)  side_offset=+0.004 m (spread -0.036..+0.024)  heading_err=+15.8deg
+n=25/25  GPS=(0.03,0.45,-90deg)  nearest_path=(0.03,0.46,-106deg)  side_offset=-0.000 m (spread -0.038..+0.021)  heading_err=+15.9deg
+n=25/25  GPS=(0.03,0.46,-89deg)  nearest_path=(0.05,0.49,-108deg)  side_offset=-0.006 m (spread -0.038..+0.018)  heading_err=+16.0deg
+n= 1/25  GPS=(0.03,0.24,-93deg)  nearest_path=(0.00,0.24,-92deg)  side_offset=+0.030 m (spread +0.030..+0.030)  heading_err=-1.3deg
+n= 1/25  GPS=(0.14,-0.40,-76deg)  nearest_path=(0.03,-0.43,-74deg)  side_offset=+0.114 m (spread +0.114..+0.114)  heading_err=-2.0deg
+n= 2/25  GPS=(0.23,-0.76,-62deg)  nearest_path=(0.24,-0.80,-47deg)  side_offset=+0.020 m (spread +0.012..+0.029)  heading_err=-14.4deg
+n= 1/25  GPS=(-0.52,1.42,-129deg)  nearest_path=(0.21,0.79,-130deg)  side_offset=-0.965 m (spread -0.965..-0.965)  heading_err=+1.0deg
+n= 3/25  GPS=(-0.55,1.79,-136deg)  nearest_path=(0.29,0.87,-137deg)  side_offset=-1.247 m (spread -1.248..-1.247)  heading_err=+1.4deg
+n= 3/25  GPS=(-0.58,3.28,-130deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.518 m (spread -2.518..-2.518)  heading_err=+24.0deg
+n= 1/25  GPS=(1.06,3.20,134deg)  nearest_path=(1.06,1.10,180deg)  side_offset=-2.103 m (spread -2.103..-2.103)  heading_err=-46.4deg
+n= 1/25  GPS=(1.07,3.34,135deg)  nearest_path=(1.06,1.10,180deg)  side_offset=-2.236 m (spread -2.236..-2.236)  heading_err=-45.1deg
+n= 1/25  GPS=(1.00,4.30,141deg)  nearest_path=(0.99,1.10,180deg)  side_offset=-3.200 m (spread -3.200..-3.200)  heading_err=-38.7deg
+n= 3/25  GPS=(2.26,2.67,-130deg)  nearest_path=(1.67,1.05,160deg)  side_offset=-1.730 m (spread -1.741..-1.709)  heading_err=+69.7deg
+n= 6/25  GPS=(2.26,2.67,-130deg)  nearest_path=(1.68,1.04,160deg)  side_offset=-1.730 m (spread -1.741..-1.709)  heading_err=+70.1deg
+n= 3/25  GPS=(1.06,3.36,139deg)  nearest_path=(1.04,1.10,180deg)  side_offset=-2.256 m (spread -2.300..-2.234)  heading_err=-41.3deg
+n= 1/25  GPS=(1.04,3.23,140deg)  nearest_path=(1.04,1.10,180deg)  side_offset=-2.133 m (spread -2.133..-2.133)  heading_err=-40.3deg
+n= 3/25  GPS=(1.05,3.39,139deg)  nearest_path=(1.04,1.10,180deg)  side_offset=-2.288 m (spread -2.299..-2.266)  heading_err=-40.6deg
+n= 3/25  GPS=(-0.57,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.477 m (spread -2.487..-2.471)  heading_err=+29.8deg
+n= 6/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.484 m (spread -2.501..-2.471)  heading_err=+29.6deg
+n= 9/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.479 m (spread -2.501..-2.469)  heading_err=+29.5deg
+n=12/25  GPS=(-0.57,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.479 m (spread -2.501..-2.469)  heading_err=+29.6deg
+n=15/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.481 m (spread -2.501..-2.468)  heading_err=+29.6deg
+n=18/25  GPS=(-0.56,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.482 m (spread -2.501..-2.466)  heading_err=+29.6deg
+n=21/25  GPS=(-0.56,3.25,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.481 m (spread -2.501..-2.464)  heading_err=+29.6deg
+n=24/25  GPS=(-0.56,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.479 m (spread -2.501..-2.460)  heading_err=+29.7deg
+n=25/25  GPS=(-0.56,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.477 m (spread -2.501..-2.458)  heading_err=+29.6deg
+n=25/25  GPS=(-0.56,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.474 m (spread -2.501..-2.454)  heading_err=+29.6deg
+n=25/25  GPS=(-0.56,3.25,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.475 m (spread -2.498..-2.454)  heading_err=+29.6deg
+n=25/25  GPS=(-0.56,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.472 m (spread -2.498..-2.449)  heading_err=+29.6deg
+n=25/25  GPS=(-0.56,3.24,-125deg)  nearest_path=(0.50,1.01,-153deg)  side_offset=-2.470 m (spread -2.497..-2.449)  heading_err=+29.5deg
+n=25/25  GPS=(-0.56,3.24,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.464 m (spread -2.494..-2.446)  heading_err=+29.5deg
+n=25/25  GPS=(-0.56,3.23,-125deg)  nearest_path=(0.50,1.01,-153deg)  side_offset=-2.464 m (spread -2.494..-2.445)  heading_err=+29.4deg
+n=25/25  GPS=(-0.56,3.23,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.461 m (spread -2.484..-2.444)  heading_err=+29.4deg
+n=25/25  GPS=(-0.56,3.23,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.460 m (spread -2.484..-2.444)  heading_err=+29.4deg
+n=25/25  GPS=(-0.56,3.23,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.458 m (spread -2.484..-2.444)  heading_err=+29.4deg
+n=25/25  GPS=(-0.56,3.22,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.454 m (spread -2.482..-2.444)  heading_err=+29.5deg
+n=25/25  GPS=(-0.56,3.22,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.452 m (spread -2.476..-2.444)  heading_err=+29.5deg
+n=25/25  GPS=(-0.56,3.22,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.451 m (spread -2.476..-2.444)  heading_err=+29.6deg
+n= 1/25  GPS=(0.39,1.72,-39deg)  nearest_path=(0.61,1.05,-161deg)  side_offset=-0.695 m (spread -0.695..-0.695)  heading_err=+122.0deg
+n= 3/25  GPS=(-0.56,3.23,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.459 m (spread -2.479..-2.449)  heading_err=+29.7deg
+n= 6/25  GPS=(-0.56,3.23,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.458 m (spread -2.479..-2.449)  heading_err=+29.6deg
+n= 9/25  GPS=(-0.57,3.22,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.458 m (spread -2.479..-2.449)  heading_err=+29.5deg
+n=12/25  GPS=(-0.57,3.23,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.460 m (spread -2.488..-2.449)  heading_err=+29.4deg
+n=15/25  GPS=(-0.57,3.23,-126deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.462 m (spread -2.491..-2.449)  heading_err=+29.4deg
+n=18/25  GPS=(-0.57,3.23,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.465 m (spread -2.507..-2.449)  heading_err=+29.4deg
+n=21/25  GPS=(-0.57,3.23,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.466 m (spread -2.507..-2.449)  heading_err=+29.4deg
+n=24/25  GPS=(-0.57,3.23,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.467 m (spread -2.507..-2.449)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.24,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.469 m (spread -2.507..-2.450)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.24,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.473 m (spread -2.507..-2.452)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.24,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.476 m (spread -2.507..-2.454)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.25,-126deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.481 m (spread -2.524..-2.458)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.483 m (spread -2.524..-2.463)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.482 m (spread -2.524..-2.463)  heading_err=+29.5deg
+n=25/25  GPS=(-0.57,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.484 m (spread -2.524..-2.467)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.486 m (spread -2.524..-2.470)  heading_err=+29.4deg
+n=25/25  GPS=(-0.58,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.487 m (spread -2.524..-2.473)  heading_err=+29.4deg
+n=25/25  GPS=(-0.58,3.25,-125deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.488 m (spread -2.524..-2.476)  heading_err=+29.4deg
+n=25/25  GPS=(-0.58,3.25,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.488 m (spread -2.524..-2.477)  heading_err=+29.4deg
+n=25/25  GPS=(-0.58,3.25,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.488 m (spread -2.524..-2.479)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.26,-125deg)  nearest_path=(0.51,1.02,-155deg)  side_offset=-2.489 m (spread -2.515..-2.480)  heading_err=+29.4deg
+n=25/25  GPS=(-0.57,3.26,-126deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.491 m (spread -2.529..-2.481)  heading_err=+29.4deg
+n=25/25  GPS=(-0.58,3.26,-124deg)  nearest_path=(0.50,1.01,-154deg)  side_offset=-2.495 m (spread -2.529..-2.482)  heading_err=+29.3deg
+n= 3/25  GPS=(0.46,-0.93,-38deg)  nearest_path=(0.47,-0.98,-28deg)  side_offset=+0.042 m (spread +0.017..+0.074)  heading_err=-8.9deg
+n= 1/25  GPS=(0.93,-1.07,-7deg)  nearest_path=(0.93,-1.08,0deg)  side_offset=+0.018 m (spread +0.018..+0.018)  heading_err=-6.8deg
+n= 2/25  GPS=(1.22,-1.09,2deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.010 m (spread -0.010..-0.010)  heading_err=+2.4deg
+n= 5/25  GPS=(1.24,-1.07,0deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=+0.016 m (spread -0.010..+0.055)  heading_err=+1.8deg
+n= 8/25  GPS=(1.24,-1.08,0deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=+0.009 m (spread -0.014..+0.055)  heading_err=+1.2deg
+n=11/25  GPS=(1.24,-1.08,0deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=+0.002 m (spread -0.015..+0.055)  heading_err=+1.0deg
+n=14/25  GPS=(1.24,-1.08,2deg)  nearest_path=(1.26,-1.08,0deg)  side_offset=+0.006 m (spread -0.015..+0.055)  heading_err=+1.2deg
+n=17/25  GPS=(1.25,-1.08,2deg)  nearest_path=(1.27,-1.08,0deg)  side_offset=+0.004 m (spread -0.050..+0.055)  heading_err=+1.3deg
+n=20/25  GPS=(1.25,-1.08,2deg)  nearest_path=(1.27,-1.08,0deg)  side_offset=+0.001 m (spread -0.050..+0.055)  heading_err=+1.4deg
+n=23/25  GPS=(1.25,-1.08,-0deg)  nearest_path=(1.28,-1.08,0deg)  side_offset=+0.001 m (spread -0.050..+0.055)  heading_err=+1.2deg
+n=25/25  GPS=(1.26,-1.08,-0deg)  nearest_path=(1.28,-1.08,0deg)  side_offset=-0.000 m (spread -0.056..+0.055)  heading_err=+0.9deg
+n=25/25  GPS=(1.26,-1.09,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.006 m (spread -0.056..+0.052)  heading_err=+0.6deg
+n=25/25  GPS=(1.27,-1.09,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.010 m (spread -0.056..+0.052)  heading_err=+0.4deg
+n=25/25  GPS=(1.27,-1.10,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.011 m (spread -0.056..+0.052)  heading_err=+0.2deg
+n=25/25  GPS=(1.28,-1.10,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.015 m (spread -0.056..+0.051)  heading_err=-0.1deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.021 m (spread -0.056..+0.014)  heading_err=-0.5deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.022 m (spread -0.061..+0.014)  heading_err=-0.9deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.024 m (spread -0.061..+0.012)  heading_err=-1.1deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.029 m (spread -0.061..-0.023)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.29,-1.08,0deg)  side_offset=-0.028 m (spread -0.061..-0.024)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.28,-1.08,0deg)  side_offset=-0.029 m (spread -0.061..-0.025)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.28,-1.08,0deg)  side_offset=-0.030 m (spread -0.061..-0.026)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.11,-1deg)  nearest_path=(1.27,-1.08,0deg)  side_offset=-0.030 m (spread -0.061..-0.027)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.12,-1deg)  nearest_path=(1.27,-1.08,0deg)  side_offset=-0.030 m (spread -0.061..-0.027)  heading_err=-1.2deg
+n=25/25  GPS=(1.28,-1.12,-1deg)  nearest_path=(1.26,-1.08,0deg)  side_offset=-0.032 m (spread -0.063..-0.028)  heading_err=-1.1deg
+n=25/25  GPS=(1.27,-1.12,-1deg)  nearest_path=(1.26,-1.08,0deg)  side_offset=-0.031 m (spread -0.063..-0.028)  heading_err=-1.1deg
+n=25/25  GPS=(1.27,-1.12,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.034 m (spread -0.063..-0.029)  heading_err=-1.1deg
+n=25/25  GPS=(1.26,-1.12,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.034 m (spread -0.063..-0.029)  heading_err=-1.1deg
+n=25/25  GPS=(1.26,-1.12,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.034 m (spread -0.063..-0.028)  heading_err=-1.1deg
+n=25/25  GPS=(1.25,-1.12,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.033 m (spread -0.063..-0.028)  heading_err=-1.1deg
+n=25/25  GPS=(1.25,-1.12,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.034 m (spread -0.063..-0.028)  heading_err=-1.1deg
+n=25/25  GPS=(1.24,-1.12,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.034 m (spread -0.063..-0.026)  heading_err=-1.1deg
+n=25/25  GPS=(1.24,-1.12,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.032 m (spread -0.063..-0.026)  heading_err=-1.1deg
+n=25/25  GPS=(1.24,-1.12,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.032 m (spread -0.063..-0.025)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.028 m (spread -0.061..-0.025)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.028 m (spread -0.061..-0.024)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.027 m (spread -0.061..-0.022)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.026 m (spread -0.061..-0.020)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.025 m (spread -0.061..-0.019)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.11,-1deg)  nearest_path=(1.22,-1.08,0deg)  side_offset=-0.023 m (spread -0.026..-0.016)  heading_err=-1.1deg
+n=25/25  GPS=(1.22,-1.11,-1deg)  nearest_path=(1.22,-1.08,0deg)  side_offset=-0.021 m (spread -0.026..-0.015)  heading_err=-1.1deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.22,-1.08,0deg)  side_offset=-0.020 m (spread -0.025..-0.014)  heading_err=-1.1deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.018 m (spread -0.025..-0.013)  heading_err=-1.2deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.017 m (spread -0.024..-0.012)  heading_err=-1.2deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.016 m (spread -0.022..-0.011)  heading_err=-1.2deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.014 m (spread -0.020..-0.010)  heading_err=-1.2deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.013 m (spread -0.019..-0.009)  heading_err=-1.2deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.012 m (spread -0.016..-0.009)  heading_err=-1.1deg
+n=25/25  GPS=(1.22,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.011 m (spread -0.015..-0.009)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.012 m (spread -0.043..-0.009)  heading_err=-1.2deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.23,-1.08,0deg)  side_offset=-0.011 m (spread -0.043..-0.009)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.012 m (spread -0.043..-0.009)  heading_err=-1.1deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.012 m (spread -0.043..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.014 m (spread -0.046..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.016 m (spread -0.046..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.23,-1.10,-1deg)  nearest_path=(1.24,-1.08,0deg)  side_offset=-0.016 m (spread -0.046..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.24,-1.10,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.017 m (spread -0.046..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.24,-1.10,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.017 m (spread -0.046..-0.009)  heading_err=-1.0deg
+n=25/25  GPS=(1.24,-1.10,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.019 m (spread -0.052..-0.010)  heading_err=-1.0deg
+n=25/25  GPS=(1.24,-1.10,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.019 m (spread -0.052..-0.010)  heading_err=-0.9deg
+n=25/25  GPS=(1.24,-1.11,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.021 m (spread -0.052..-0.011)  heading_err=-0.9deg
+n=25/25  GPS=(1.25,-1.11,-1deg)  nearest_path=(1.25,-1.08,0deg)  side_offset=-0.022 m (spread -0.052..-0.013)  heading_err=-1.0deg
+n=25/25  GPS=(1.25,-1.11,-1deg)  nearest_path=(1.26,-1.08,0deg)  side_offset=-0.021 m (spread -0.052..-0.013)  heading_err=-1.0deg
+n= 1/25  GPS=(1.55,-1.11,7deg)  nearest_path=(1.54,-1.07,12deg)  side_offset=-0.043 m (spread -0.043..-0.043)  heading_err=-5.0deg
+n= 1/25  GPS=(2.02,-0.90,29deg)  nearest_path=(1.97,-0.84,43deg)  side_offset=-0.070 m (spread -0.070..-0.070)  heading_err=-13.9deg
+n= 4/25  GPS=(2.06,-0.87,30deg)  nearest_path=(2.00,-0.82,46deg)  side_offset=-0.082 m (spread -0.094..-0.070)  heading_err=-15.7deg
+n= 1/25  GPS=(2.19,-0.79,36deg)  nearest_path=(2.08,-0.72,54deg)  side_offset=-0.127 m (spread -0.127..-0.127)  heading_err=-17.8deg
+n= 3/25  GPS=(2.20,-0.71,50deg)  nearest_path=(2.11,-0.68,58deg)  side_offset=-0.096 m (spread -0.111..-0.082)  heading_err=-11.3deg
+n= 6/25  GPS=(2.18,-0.75,49deg)  nearest_path=(2.07,-0.73,53deg)  side_offset=-0.099 m (spread -0.119..-0.082)  heading_err=-7.7deg
+n= 3/25  GPS=(2.12,-0.84,43deg)  nearest_path=(2.05,-0.76,50deg)  side_offset=-0.099 m (spread -0.113..-0.092)  heading_err=-7.1deg
+n= 6/25  GPS=(2.10,-0.83,42deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.083 m (spread -0.113..-0.066)  heading_err=-6.7deg
+n= 9/25  GPS=(2.10,-0.83,43deg)  nearest_path=(2.04,-0.77,50deg)  side_offset=-0.080 m (spread -0.113..-0.066)  heading_err=-6.7deg
+n= 2/25  GPS=(2.08,-0.86,43deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.087 m (spread -0.087..-0.087)  heading_err=-4.6deg
+n= 5/25  GPS=(2.08,-0.86,43deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.086 m (spread -0.087..-0.085)  heading_err=-4.3deg
+n= 8/25  GPS=(2.08,-0.86,43deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.085 m (spread -0.087..-0.083)  heading_err=-4.3deg
+n=11/25  GPS=(2.08,-0.86,42deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.089 m (spread -0.107..-0.082)  heading_err=-4.7deg
+n=14/25  GPS=(2.08,-0.86,43deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.090 m (spread -0.128..-0.079)  heading_err=-4.6deg
+n=17/25  GPS=(2.08,-0.86,42deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.089 m (spread -0.128..-0.056)  heading_err=-4.6deg
+n=20/25  GPS=(2.08,-0.86,43deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.082 m (spread -0.128..-0.008)  heading_err=-4.9deg
+n=23/25  GPS=(2.07,-0.85,42deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.077 m (spread -0.128..-0.008)  heading_err=-5.1deg
+n=25/25  GPS=(2.07,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.073 m (spread -0.128..-0.008)  heading_err=-5.4deg
+n=25/25  GPS=(2.07,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.070 m (spread -0.128..-0.008)  heading_err=-5.6deg
+n=25/25  GPS=(2.07,-0.85,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.071 m (spread -0.128..-0.008)  heading_err=-5.8deg
+n=25/25  GPS=(2.07,-0.85,42deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.069 m (spread -0.128..-0.008)  heading_err=-5.9deg
+n=25/25  GPS=(2.07,-0.85,40deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.069 m (spread -0.124..-0.008)  heading_err=-6.0deg
+n=25/25  GPS=(2.07,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.071 m (spread -0.124..-0.008)  heading_err=-6.4deg
+n=25/25  GPS=(2.07,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.075 m (spread -0.116..-0.028)  heading_err=-6.6deg
+n=25/25  GPS=(2.08,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.080 m (spread -0.116..-0.047)  heading_err=-6.7deg
+n=25/25  GPS=(2.08,-0.86,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.083 m (spread -0.116..-0.047)  heading_err=-6.7deg
+n=25/25  GPS=(2.08,-0.86,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.087 m (spread -0.116..-0.047)  heading_err=-6.9deg
+n=25/25  GPS=(2.08,-0.86,42deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.088 m (spread -0.116..-0.057)  heading_err=-7.0deg
+n=25/25  GPS=(2.09,-0.86,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.090 m (spread -0.113..-0.057)  heading_err=-7.2deg
+n=25/25  GPS=(2.09,-0.86,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.090 m (spread -0.110..-0.057)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.85,41deg)  nearest_path=(2.04,-0.77,50deg)  side_offset=-0.088 m (spread -0.110..-0.057)  heading_err=-7.4deg
+n=25/25  GPS=(2.08,-0.85,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.087 m (spread -0.108..-0.056)  heading_err=-7.3deg
+n=25/25  GPS=(2.08,-0.85,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.085 m (spread -0.106..-0.056)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.85,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.087 m (spread -0.106..-0.056)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.85,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.086 m (spread -0.105..-0.056)  heading_err=-7.3deg
+n=25/25  GPS=(2.09,-0.85,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.087 m (spread -0.105..-0.056)  heading_err=-7.3deg
+n=25/25  GPS=(2.09,-0.85,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.087 m (spread -0.106..-0.056)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.85,41deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.086 m (spread -0.106..-0.056)  heading_err=-7.5deg
+n=25/25  GPS=(2.09,-0.85,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.089 m (spread -0.109..-0.056)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.85,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.092 m (spread -0.110..-0.057)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.86,41deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.094 m (spread -0.111..-0.057)  heading_err=-7.4deg
+n=25/25  GPS=(2.09,-0.86,42deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.096 m (spread -0.112..-0.057)  heading_err=-7.2deg
+n=25/25  GPS=(2.10,-0.86,40deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.097 m (spread -0.114..-0.065)  heading_err=-7.4deg
+n=25/25  GPS=(2.10,-0.86,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.099 m (spread -0.116..-0.065)  heading_err=-7.4deg
+n=25/25  GPS=(2.10,-0.86,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.102 m (spread -0.118..-0.065)  heading_err=-7.4deg
+n=25/25  GPS=(2.10,-0.87,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.106 m (spread -0.119..-0.065)  heading_err=-7.2deg
+n=25/25  GPS=(2.10,-0.87,41deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.107 m (spread -0.120..-0.065)  heading_err=-7.2deg
+n=25/25  GPS=(2.10,-0.87,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.110 m (spread -0.122..-0.065)  heading_err=-7.2deg
+n=25/25  GPS=(2.10,-0.87,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.111 m (spread -0.124..-0.065)  heading_err=-7.2deg
+n=25/25  GPS=(2.10,-0.87,42deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.109 m (spread -0.124..-0.065)  heading_err=-7.1deg
+n=25/25  GPS=(2.10,-0.87,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.113 m (spread -0.127..-0.077)  heading_err=-7.0deg
+n=25/25  GPS=(2.10,-0.88,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.115 m (spread -0.129..-0.077)  heading_err=-6.9deg
+n=25/25  GPS=(2.10,-0.88,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.117 m (spread -0.130..-0.077)  heading_err=-6.8deg
+n=25/25  GPS=(2.10,-0.88,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.117 m (spread -0.130..-0.077)  heading_err=-6.9deg
+n=25/25  GPS=(2.10,-0.88,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.118 m (spread -0.132..-0.077)  heading_err=-7.0deg
+n=25/25  GPS=(2.11,-0.88,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.118 m (spread -0.132..-0.077)  heading_err=-7.0deg
+n=25/25  GPS=(2.11,-0.88,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.117 m (spread -0.133..-0.077)  heading_err=-7.1deg
+n=25/25  GPS=(2.11,-0.88,41deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.120 m (spread -0.133..-0.078)  heading_err=-7.1deg
+n=25/25  GPS=(2.11,-0.88,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.122 m (spread -0.133..-0.106)  heading_err=-7.1deg
+n=25/25  GPS=(2.11,-0.88,40deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.124 m (spread -0.133..-0.108)  heading_err=-6.9deg
+n=25/25  GPS=(2.11,-0.88,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.122 m (spread -0.133..-0.108)  heading_err=-7.0deg
+n=25/25  GPS=(2.11,-0.88,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.121 m (spread -0.133..-0.108)  heading_err=-7.0deg
+n=25/25  GPS=(2.10,-0.88,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.118 m (spread -0.133..-0.059)  heading_err=-6.9deg
+n=25/25  GPS=(2.10,-0.88,40deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.118 m (spread -0.133..-0.059)  heading_err=-6.8deg
+n=25/25  GPS=(2.10,-0.88,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.116 m (spread -0.133..-0.059)  heading_err=-6.7deg
+n=25/25  GPS=(2.10,-0.88,40deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.116 m (spread -0.133..-0.059)  heading_err=-6.6deg
+n=25/25  GPS=(2.10,-0.88,40deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.115 m (spread -0.133..-0.059)  heading_err=-6.6deg
+n=25/25  GPS=(2.10,-0.88,42deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.112 m (spread -0.132..-0.059)  heading_err=-6.6deg
+n=25/25  GPS=(2.09,-0.88,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.109 m (spread -0.132..-0.059)  heading_err=-6.6deg
+n=25/25  GPS=(2.09,-0.87,40deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.107 m (spread -0.129..-0.059)  heading_err=-6.6deg
+n=25/25  GPS=(2.09,-0.88,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.109 m (spread -0.129..-0.071)  heading_err=-6.5deg
+n=25/25  GPS=(2.09,-0.88,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.107 m (spread -0.128..-0.071)  heading_err=-6.5deg
+n=25/25  GPS=(2.09,-0.88,40deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.105 m (spread -0.126..-0.071)  heading_err=-6.6deg
+n=25/25  GPS=(2.09,-0.87,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.103 m (spread -0.125..-0.071)  heading_err=-6.6deg
+n=25/25  GPS=(2.09,-0.87,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.098 m (spread -0.121..-0.071)  heading_err=-6.7deg
+n=25/25  GPS=(2.08,-0.87,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.096 m (spread -0.115..-0.071)  heading_err=-6.6deg
+n=25/25  GPS=(2.08,-0.87,41deg)  nearest_path=(2.01,-0.81,47deg)  side_offset=-0.097 m (spread -0.115..-0.074)  heading_err=-6.6deg
+n=25/25  GPS=(2.08,-0.87,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.095 m (spread -0.114..-0.072)  heading_err=-6.6deg
+n=25/25  GPS=(2.08,-0.86,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.092 m (spread -0.111..-0.071)  heading_err=-6.8deg
+n=25/25  GPS=(2.08,-0.86,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.090 m (spread -0.108..-0.070)  heading_err=-6.9deg
+n=25/25  GPS=(2.08,-0.86,40deg)  nearest_path=(2.03,-0.79,49deg)  side_offset=-0.087 m (spread -0.105..-0.069)  heading_err=-7.0deg
+n=25/25  GPS=(2.08,-0.86,40deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.086 m (spread -0.100..-0.069)  heading_err=-7.1deg
+n=25/25  GPS=(2.08,-0.86,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.087 m (spread -0.100..-0.069)  heading_err=-7.0deg
+n=25/25  GPS=(2.08,-0.86,41deg)  nearest_path=(2.01,-0.80,47deg)  side_offset=-0.085 m (spread -0.098..-0.069)  heading_err=-7.2deg
+n=25/25  GPS=(2.08,-0.85,41deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.084 m (spread -0.096..-0.069)  heading_err=-7.3deg
+n=25/25  GPS=(2.08,-0.85,40deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.082 m (spread -0.095..-0.069)  heading_err=-7.5deg
+n=25/25  GPS=(2.08,-0.85,41deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.082 m (spread -0.095..-0.069)  heading_err=-7.6deg
+n=25/25  GPS=(2.09,-0.85,40deg)  nearest_path=(2.03,-0.78,49deg)  side_offset=-0.082 m (spread -0.097..-0.069)  heading_err=-7.7deg
+n=25/25  GPS=(2.09,-0.84,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.082 m (spread -0.101..-0.069)  heading_err=-7.8deg
+n=25/25  GPS=(2.09,-0.85,41deg)  nearest_path=(2.02,-0.79,48deg)  side_offset=-0.083 m (spread -0.103..-0.054)  heading_err=-7.7deg
+n=25/25  GPS=(2.09,-0.84,41deg)  nearest_path=(2.04,-0.77,50deg)  side_offset=-0.078 m (spread -0.103..-0.035)  heading_err=-7.9deg
+n= 2/25  GPS=(2.21,-0.63,57deg)  nearest_path=(2.17,-0.57,65deg)  side_offset=-0.063 m (spread -0.065..-0.062)  heading_err=-9.0deg
+n= 1/25  GPS=(2.35,-0.19,76deg)  nearest_path=(2.25,-0.18,90deg)  side_offset=-0.099 m (spread -0.099..-0.099)  heading_err=-14.0deg
+n= 4/25  GPS=(2.36,-0.14,91deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.104 m (spread -0.127..-0.092)  heading_err=-5.4deg
+n= 7/25  GPS=(2.35,-0.10,92deg)  nearest_path=(2.25,-0.05,90deg)  side_offset=-0.099 m (spread -0.127..-0.092)  heading_err=-2.4deg
+n=10/25  GPS=(2.35,-0.09,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.092 m (spread -0.127..-0.063)  heading_err=-1.9deg
+n=13/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.091 m (spread -0.127..-0.063)  heading_err=-1.6deg
+n=16/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.090 m (spread -0.127..-0.063)  heading_err=-1.4deg
+n=19/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.090 m (spread -0.127..-0.063)  heading_err=-1.3deg
+n=22/25  GPS=(2.35,-0.07,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.092 m (spread -0.127..-0.063)  heading_err=-1.2deg
+n=25/25  GPS=(2.35,-0.07,90deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.093 m (spread -0.127..-0.063)  heading_err=-1.1deg
+n=25/25  GPS=(2.34,-0.06,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.090 m (spread -0.103..-0.063)  heading_err=-0.3deg
+n=25/25  GPS=(2.34,-0.06,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.088 m (spread -0.103..-0.063)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.07,90deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.092 m (spread -0.104..-0.065)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.07,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.093 m (spread -0.104..-0.065)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.07,90deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.094 m (spread -0.104..-0.068)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.07,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.095 m (spread -0.104..-0.068)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.096 m (spread -0.104..-0.069)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.094 m (spread -0.104..-0.066)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.095 m (spread -0.104..-0.066)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.097 m (spread -0.104..-0.062)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,90deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.094 m (spread -0.103..-0.062)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.092 m (spread -0.103..-0.059)  heading_err=-0.6deg
+n=25/25  GPS=(2.35,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.092 m (spread -0.102..-0.059)  heading_err=-0.6deg
+n=25/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.090 m (spread -0.101..-0.059)  heading_err=-0.7deg
+n=25/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.08,90deg)  side_offset=-0.087 m (spread -0.100..-0.052)  heading_err=-0.7deg
+n=25/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.085 m (spread -0.099..-0.050)  heading_err=-0.7deg
+n=25/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.083 m (spread -0.098..-0.050)  heading_err=-0.7deg
+n=25/25  GPS=(2.34,-0.08,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.081 m (spread -0.094..-0.050)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.08,89deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.080 m (spread -0.094..-0.044)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.08,90deg)  nearest_path=(2.25,-0.07,90deg)  side_offset=-0.079 m (spread -0.092..-0.044)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.08,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.076 m (spread -0.090..-0.042)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.074 m (spread -0.088..-0.042)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.072 m (spread -0.085..-0.042)  heading_err=-0.7deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.072 m (spread -0.083..-0.042)  heading_err=-0.7deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.069 m (spread -0.081..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.066 m (spread -0.079..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.065 m (spread -0.077..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.066 m (spread -0.075..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.066 m (spread -0.074..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,90deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.065 m (spread -0.073..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,90deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.064 m (spread -0.071..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.065 m (spread -0.072..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.066 m (spread -0.074..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.32,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.068 m (spread -0.075..-0.036)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.070 m (spread -0.077..-0.037)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.071 m (spread -0.079..-0.037)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,90deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.071 m (spread -0.081..-0.037)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,90deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.074 m (spread -0.083..-0.046)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.09,90deg)  side_offset=-0.076 m (spread -0.085..-0.046)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,90deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.078 m (spread -0.087..-0.046)  heading_err=-0.6deg
+n=25/25  GPS=(2.33,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.078 m (spread -0.089..-0.046)  heading_err=-0.6deg
+n=25/25  GPS=(2.34,-0.07,89deg)  nearest_path=(2.25,-0.06,90deg)  side_offset=-0.080 m (spread -0.092..-0.046)  heading_err=-0.6deg
