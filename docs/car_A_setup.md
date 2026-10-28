@@ -87,9 +87,9 @@ The correction table and any measured offsets belong to one calibration. After r
    ```
    The first `GPS:` line, about 10 s after launch, should read **y ≈ 0.3 to 0.5**. If it is below about 0.25, stop and move the car back.
 5. **Stop:** `stop_all_cars.bat`. The car also stops itself if the GPS-jump check accepts no reading for 2 s (`STOPPED:` in the log).
-6. **Copy the log to the PC.** Each run overwrites it on the car, and copying to `logs/vehicle_control.log` overwrites the previous copy. To keep a run, give it its own name:
+6. **Copy the log to the PC** if you want to keep it. Each run overwrites it on the car, so give each copy its own name:
    ```
-   scp nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/vehicle_control.log logs/vehicle_control_<name>.log
+   scp nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/vehicle_control.log "logs/car A/vehicle_control_<name>.log"
    ```
 
 ---
@@ -167,7 +167,7 @@ python -u check_pose.py | tee -i check_pose.log
 ```
 Press **Ctrl+C** after the last spot (`-i` keeps `tee` running so the last lines are saved), then `exit`. Back on the PC:
 ```
-scp nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/check_pose.log logs/check_pose/check_pose_<round>.log
+scp nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/check_pose.log "logs/car A/check_pose/check_pose_<round>.log"
 ```
 
 ---
