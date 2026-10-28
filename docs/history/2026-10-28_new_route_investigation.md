@@ -1,6 +1,8 @@
 # Car A: New Route Investigation (`0 → 2 → 4 → 14 → 16 → 18 → 12 → 0`)
 
-Car A, tuned on the loop `0 → 2 → 4 → 6 → 0` ([car_A_single_vehicle_setup.md](car_A_single_vehicle_setup.md)), was run on a longer route. It drove 0 → 2 → 4 fine, then went wrong just after entering node 14's lane (the far-right lane, x ≈ 2.25, going up the map).
+> **Historical record (2026-10-27 to 2026-10-28).** How the new route was made to work. Kept as written. Current state: [car_A_setup.md](../car_A_setup.md). "Setup doc §…" references point to [2026-10-26_old_loop_tuning.md](2026-10-26_old_loop_tuning.md).
+
+Car A, tuned on the loop `0 → 2 → 4 → 6 → 0` ([old-loop tuning record](2026-10-26_old_loop_tuning.md)), was run on a longer route. It drove 0 → 2 → 4 fine, then went wrong just after entering node 14's lane (the far-right lane, x ≈ 2.25, going up the map).
 
 **Status (2026-10-28): the new route works.** Drive 6 completed the full route at `v_ref = 0.2`, with the car in its lane ("good enough for now"; further fine-tuning is possible).
 
@@ -18,14 +20,14 @@ Final settings are in §14. **Planned next step:** camera lane correction (§15)
 
 ## 1. What the log showed
 
-Log: [logs/vehicle_control.log](../logs/vehicle_control.log) (route `[0, 2, 4, 14, 16, 18, 12, 0]`, `v_ref = 0.4`).
+Log: [logs/vehicle_control.log](../../logs/vehicle_control.log) (route `[0, 2, 4, 14, 16, 18, 12, 0]`, `v_ref = 0.4`).
 
 - **Tracking was normal up to y ≈ 1.5.** `cross_track` was 0.00 to 0.05 m through 0 → 2, 2 → 4 and the start of 4 → 14, the same as on the old loop.
-- **Then the lidar position fix jumped** ([line 118 → 119](../logs/vehicle_control.log#L118)): `(2.30, 1.48)` → `(1.30, 1.58)`, a 1.00 m jump in one reading. After that it kept switching between unrelated spots: `(2.00, 2.97)`, `(-0.38, 3.59)`, `(-0.08, 1.32, -117°)` (the x = 0 street, facing the opposite way), `(1.04, 4.37)`, …
+- **Then the lidar position fix jumped** ([line 118 → 119](../../logs/vehicle_control.log#L118)): `(2.30, 1.48)` → `(1.30, 1.58)`, a 1.00 m jump in one reading. After that it kept switching between unrelated spots: `(2.00, 2.97)`, `(-0.38, 3.59)`, `(-0.08, 1.32, -117°)` (the x = 0 street, facing the opposite way), `(1.04, 4.37)`, …
 - **The controller followed every bad reading.** The EKF has no plausibility check, so its estimate jumped too, `cross_track` reached −0.97 m and then −2.4 m, and steering saturated. Those were the "untracked turns".
 - **The route progress got corrupted too.** The controller's waypoint index only moves forward, so while the estimate was jumping it advanced into the 14 → 16 and 16 → 18 segments.
 
-- **The car made the route's later turns in the wrong place.** In [lines 159–200](../logs/vehicle_control.log#L159) the estimate traces a smooth 16 → 18 → 12 path ((1.23, 3.66, 146°) → (0.54, 3.41, −137°) → (−0.06, 2.23, −96°)), and the controller followed it with `cross_track` of a few cm. The user saw the car make the intended movements, but early, while still in node 14's lane. The controller was doing its job; it was working from a wrong position.
+- **The car made the route's later turns in the wrong place.** In [lines 159–200](../../logs/vehicle_control.log#L159) the estimate traces a smooth 16 → 18 → 12 path ((1.23, 3.66, 146°) → (0.54, 3.41, −137°) → (−0.06, 2.23, −96°)), and the controller followed it with `cross_track` of a few cm. The user saw the car make the intended movements, but early, while still in node 14's lane. The controller was doing its job; it was working from a wrong position.
 
 The old loop turns left at y ≈ 1.1, so car A had never driven x = 2.25, y > 1.2 before this run.
 
@@ -46,7 +48,7 @@ No code changes were made for these.
 - **Yes, at certain spots:** the lidar can't get a reliable fix on that stretch. Look at what the lidar sees from there (open space, people, symmetric walls) or recalibrate.
 - **No, stable everywhere:** the problem only happens while driving. Next is the GPS-jump safety check (setup doc next step 3), which makes the car reject impossible readings or stop instead of following them.
 
-[qcar/check_pose.py](../qcar/check_pose.py) already has `nodeSequence = [0, 2, 4, 14, 16, 18, 12, 0]`.
+[qcar/check_pose.py](../../qcar/check_pose.py) already has `nodeSequence = [0, 2, 4, 14, 16, 18, 12, 0]`.
 
 ### Where to place the car
 
@@ -90,7 +92,7 @@ scp nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_
 
 ## 4. Results
 
-Log: [logs/check_pose/check_pose_round3_new_route.log](../logs/check_pose/check_pose_round3_new_route.log). The car was held still, centred in the x = 2.25 lane and pointing up the map (+90°). GPS values are raw (`gps_scale` not applied).
+Log: [logs/check_pose/check_pose_round3_new_route.log](../../logs/check_pose/check_pose_round3_new_route.log). The car was held still, centred in the x = 2.25 lane and pointing up the map (+90°). GPS values are raw (`gps_scale` not applied).
 
 | Spot | Log lines | What the GPS reported | Verdict |
 |---|---|---|---|
@@ -120,7 +122,7 @@ Log: [logs/check_pose/check_pose_round3_new_route.log](../logs/check_pose/check_
 
 ## 5. Round 4: walls put back
 
-Log: [logs/check_pose/check_pose_round4_walls_back.log](../logs/check_pose/check_pose_round4_walls_back.log). All 7 spots, **middle** of the car on each mark, rolled between spots. GPS values are raw.
+Log: [logs/check_pose/check_pose_round4_walls_back.log](../../logs/check_pose/check_pose_round4_walls_back.log). All 7 spots, **middle** of the car on each mark, rolled between spots. GPS values are raw.
 
 | Spot | Expected y | Log lines | Reported | Verdict |
 |---|---|---|---|---|
@@ -141,7 +143,7 @@ Log: [logs/check_pose/check_pose_round4_walls_back.log](../logs/check_pose/check
 
 ## 6. Round 5: recalibrated, spots 5–7
 
-Log: [logs/check_pose/check_pose_round5_recalibrated.log](../logs/check_pose/check_pose_round5_recalibrated.log). Recalibrated with the walls in their current place; only spots 5–7 surveyed. Expected y includes the fixed +0.2 m marker offset from round 4.
+Log: [logs/check_pose/check_pose_round5_recalibrated.log](../../logs/check_pose/check_pose_round5_recalibrated.log). Recalibrated with the walls in their current place; only spots 5–7 surveyed. Expected y includes the fixed +0.2 m marker offset from round 4.
 
 | Spot | Expected y | Log lines | Reported | Verdict |
 |---|---|---|---|---|
@@ -160,7 +162,7 @@ Log: [logs/check_pose/check_pose_round5_recalibrated.log](../logs/check_pose/che
 
 ## 7. Round 6: landmark near node 14, recalibrated, node 14 onward
 
-Log: [logs/check_pose/check_pose_round6_landmark.log](../logs/check_pose/check_pose_round6_landmark.log). Landmark placed near node 14, then recalibrated. Spots A–G from node 14 to node 12, using the node markers.
+Log: [logs/check_pose/check_pose_round6_landmark.log](../../logs/check_pose/check_pose_round6_landmark.log). Landmark placed near node 14, then recalibrated. Spots A–G from node 14 to node 12, using the node markers.
 
 | Spot | Log lines | Reported | Expected | Verdict |
 |---|---|---|---|---|
@@ -183,7 +185,7 @@ Log: [logs/check_pose/check_pose_round6_landmark.log](../logs/check_pose/check_p
 
 ## 8. Round 7: second landmark by the top road, recalibrated
 
-Log: [logs/check_pose/check_pose_round7_top_road.log](../logs/check_pose/check_pose_round7_top_road.log). A second landmark was placed beside the top road, then the car was recalibrated. Spots B, C and D, rolled between them.
+Log: [logs/check_pose/check_pose_round7_top_road.log](../../logs/check_pose/check_pose_round7_top_road.log). A second landmark was placed beside the top road, then the car was recalibrated. Spots B, C and D, rolled between them.
 
 | Spot | Log lines | Reported | Expected (path) | Verdict |
 |---|---|---|---|---|
@@ -204,7 +206,7 @@ Log: [logs/check_pose/check_pose_round7_top_road.log](../logs/check_pose/check_p
 
 ## 9. GPS-jump check (added to `vehicle_control.py`)
 
-Settings, next to `gps_scale` in [qcar/vehicle_control.py](../qcar/vehicle_control.py):
+Settings, next to `gps_scale` in [qcar/vehicle_control.py](../../qcar/vehicle_control.py):
 
 | Setting | Value | What it does |
 |---|---|---|
@@ -216,11 +218,11 @@ Settings, next to `gps_scale` in [qcar/vehicle_control.py](../qcar/vehicle_contr
 - **Stop:** the log shows `STOPPED: no GPS reading accepted for 2 s. Last estimate (…)`. This happens when the readings stay wrong, or when the estimate itself has drifted so far that correct readings are rejected. Either way, stopping is the safe outcome; check the log and restart.
 - **EKF start:** the EKF now starts from the first GPS reading instead of node 0's pose. The car starts about 30 cm before node 0, so otherwise the check could reject the first readings.
 
-**Replay check:** running the failed drive's GPS readings ([logs/vehicle_control.log](../logs/vehicle_control.log)) through the same rule gives no rejections before the first jump. The jump at line 119 (1.00 m) and every reading after it are rejected, and the car would have stopped at about line 132, about 2 s after the first bad reading, instead of steering toward the wrong positions.
+**Replay check:** running the failed drive's GPS readings ([logs/vehicle_control.log](../../logs/vehicle_control.log)) through the same rule gives no rejections before the first jump. The jump at line 119 (1.00 m) and every reading after it are rejected, and the car would have stopped at about line 132, about 2 s after the first bad reading, instead of steering toward the wrong positions.
 
 ## 10. Round 8: `gps_scale` survey (current calibration)
 
-Log: [logs/check_pose/check_pose_round8_scale.log](../logs/check_pose/check_pose_round8_scale.log). Order: node 0, node 2, halfway round 2 → 4, halfway up 4 → 14 (unstable), node 18, node 12, halfway up 4 → 14 again (stable).
+Log: [logs/check_pose/check_pose_round8_scale.log](../../logs/check_pose/check_pose_round8_scale.log). Order: node 0, node 2, halfway round 2 → 4, halfway up 4 → 14 (unstable), node 18, node 12, halfway up 4 → 14 again (stable).
 
 **Trusted readings** (from rounds 7 and 8, current calibration). Sideways error = raw GPS minus lane centre, measured across the lane. The last column shows what dividing by 1.035 would give.
 
@@ -245,21 +247,21 @@ Log: [logs/check_pose/check_pose_round8_scale.log](../logs/check_pose/check_pose
 
 ## 11. First test drive on the new route
 
-Settings changed in [qcar/vehicle_control.py](../qcar/vehicle_control.py) for this drive: `gps_scale = 1.0` (was 1.035, §10) and `v_ref = 0.2` (was 0.4). The GPS-jump check (§9) is active. Unchanged: `K_stanley = 1.5`, `steering_trim = -0.14`, tracked point 0.1 m.
+Settings changed in [qcar/vehicle_control.py](../../qcar/vehicle_control.py) for this drive: `gps_scale = 1.0` (was 1.035, §10) and `v_ref = 0.2` (was 0.4). The GPS-jump check (§9) is active. Unchanged: `K_stanley = 1.5`, `steering_trim = -0.14`, tracked point 0.1 m.
 
 What to look for in `vehicle_control.log`:
 - `GPS rejected:` lines: where they happen and how many in a row
 - `STOPPED:` line: where the car was when it stopped
 - `cross_track` on each segment, especially 14 → 16 (corner and top road) and the first right turn, 16 → 18
 
-### Drive 1 result (log: [logs/vehicle_control.log](../logs/vehicle_control.log))
+### Drive 1 result (log: [logs/vehicle_control.log](../../logs/vehicle_control.log))
 
 - **The car started past node 0,** with a first GPS reading of (0.06, −0.07). Node 0 is at (0, 0.13). The roadmap's `initial_check` only starts the route if the car is within 0.1 m of node 0 (Dubins distance), so it drove an approach path first: 0 → 2 → 4 → 6 → 0 (the old loop). This is the same thing as setup doc §3.2.
 - **The approach lap tracked cleanly:** 181 GPS readings, **0 rejected**, through the 0 → 2 curve, the bottom lane, the 2 → 4 curve, up to y ≈ 0.5 on the right lane and 6 → 0. This includes the area where the round 8 survey lost its position, so that loss was probably caused by handling the car rather than by the calibration.
 - **The route itself started** at about (0.03, 0.40) (`pose=` lines from line 188), and the log ends 1.5 s later. No `STOPPED:` line, so the run was ended from outside.
 - **Placement note:** the GPS reads about 0.2 m further along the lane than the mat marker. Place the car about **50 cm before the node 0 marker**, and check that the first `GPS:` line reads y ≈ 0.3–0.5.
 
-### Drive 2 result (log: [logs/vehicle_control.log](../logs/vehicle_control.log))
+### Drive 2 result (log: [logs/vehicle_control.log](../../logs/vehicle_control.log))
 
 Start placement correct (first GPS (0.03, 0.53)), so the route started straight away. **0 GPS readings rejected.**
 
@@ -273,7 +275,7 @@ Start placement correct (first GPS (0.03, 0.53)), so the route started straight 
 
 **Node 16: a path bug, not localization.** `generate_path` ends the 14 → 16 segment at (0.909, 3.704), 6 mm *past* node 16. The 16 → 18 segment then starts at the node itself, (0.908, 3.710). That leaves one 6 mm segment pointing **backwards** (heading +99° instead of −81°). `SteeringController` only moves to the next segment once the car is past the end of the current one, which can never happen on a backward segment. So it stayed on it and followed its extension in a straight line (logged `path_pt` from (0.91, 3.67) to (1.66, −0.81), heading ≈ −80°). The GPS readings show the car really drove that line, so the localization was correct.
 
-**Fix:** `remove_backward_points()` in [qcar/vehicle_control.py](../qcar/vehicle_control.py) drops any waypoint that steps backwards along the path. It is applied to the route and to the approach path. It removes exactly 1 point on the new route and 0 on the old loop. In a simulation of the same controller (kinematic car, `v_ref = 0.2`), the car on the unfixed path missed node 18 by 0.30 m and went up to 0.94 m off the route; with the fix it stayed within 0.03 m through 16 → 18 → 12.
+**Fix:** `remove_backward_points()` in [qcar/vehicle_control.py](../../qcar/vehicle_control.py) drops any waypoint that steps backwards along the path. It is applied to the route and to the approach path. It removes exactly 1 point on the new route and 0 on the old loop. In a simulation of the same controller (kinematic car, `v_ref = 0.2`), the car on the unfixed path missed node 18 by 0.30 m and went up to 0.94 m off the route; with the fix it stayed within 0.03 m through 16 → 18 → 12.
 
 **Not specific to node 16:** the function was run on the generated path between every pair of nodes on the map, to check that it works for any node sequence:
 
@@ -288,7 +290,7 @@ The old loop `0 → 2 → 4 → 6 → 0` happens to have none, which is why this
 
 **2 → 4 divider crossing:** the controller kept its estimate on the path (`cross_track` ≤ 3 cm), so this comes from the localization. With `gps_scale = 1.0`, the bottom and right lanes read about 4–5 cm too far outward (round 8), which puts the real car 4–5 cm toward the divider, on top of the body cutting the inside of the curve. Still to be addressed.
 
-### Drive 3 result (log: [logs/vehicle_control.log](../logs/vehicle_control.log))
+### Drive 3 result (log: [logs/vehicle_control.log](../../logs/vehicle_control.log))
 
 Same settings as drive 2, plus `remove_backward_points()`. **Full lap of the new route completed** and the second lap started (the log ends early in the second 0 → 2). **0 GPS readings rejected, no stop.**
 
@@ -312,7 +314,7 @@ A single `gps_scale` cannot fix both: 1.035 corrects the lower part but moves th
 
 ## 12. Round 9: lower part survey
 
-Log: [logs/check_pose/check_pose_round9_lower.log](../logs/check_pose/check_pose_round9_lower.log). Middle of the car on each mark, rolled between spots. There are no walls near the lower part of the mat. `side_offset`: **+ = reading is left of the path (toward the divider), − = right of the path (toward the outer edge)**. The controller moves the real car the opposite way, so a negative reading puts the real car toward the divider.
+Log: [logs/check_pose/check_pose_round9_lower.log](../../logs/check_pose/check_pose_round9_lower.log). Middle of the car on each mark, rolled between spots. There are no walls near the lower part of the mat. `side_offset`: **+ = reading is left of the path (toward the divider), − = right of the path (toward the outer edge)**. The controller moves the real car the opposite way, so a negative reading puts the real car toward the divider.
 
 | Spot | Log lines | Raw GPS | `side_offset` mean | Range at rest | Effect on the real car |
 |---|---|---|---|---|---|
@@ -332,7 +334,7 @@ Log: [logs/check_pose/check_pose_round9_lower.log](../logs/check_pose/check_pose
 
 ## 13. GPS correction table (added to `vehicle_control.py`)
 
-`gps_corrections` and `correct_gps()` in [qcar/vehicle_control.py](../qcar/vehicle_control.py) replace the plain `gps_scale` division in both places it was used (start-position check and EKF update). `gps_scale` stays at 1.0 and is still applied first.
+`gps_corrections` and `correct_gps()` in [qcar/vehicle_control.py](../../qcar/vehicle_control.py) replace the plain `gps_scale` division in both places it was used (start-position check and EKF update). `gps_scale` stays at 1.0 and is still applied first.
 
 - **Table:** one row per round 9 spot, `(x, y, dx, dy)`. The correction is the measured sideways error, turned into an x/y shift across the lane.
 
@@ -355,7 +357,7 @@ Log: [logs/check_pose/check_pose_round9_lower.log](../logs/check_pose/check_pose
 ### Drive 4 result and change to the 0 → 2 rows
 
 - **What the car did (user):** 2 → 4 crossed less than before, but the car was still close to the divider. It **crossed a bit on the 0 → 2 curve**.
-- **Drive 4 log** ([logs/vehicle_control.log](../logs/vehicle_control.log), run with the round 9 rows): the route started at once. **0 GPS readings rejected.** `cross_track` stayed between −0.039 and +0.047 m, so the controller held the corrected estimate on the path. The log ends on 4 → 14 at y ≈ 2.3. It can't show where the real car was in the lane, because the correction moves the estimate and the real car together.
+- **Drive 4 log** ([logs/vehicle_control.log](../../logs/vehicle_control.log), run with the round 9 rows): the route started at once. **0 GPS readings rejected.** `cross_track` stayed between −0.039 and +0.047 m, so the controller held the corrected estimate on the path. The log ends on 4 → 14 at y ≈ 2.3. It can't show where the real car was in the lane, because the correction moves the estimate and the real car together.
 - **Why 0 → 2 got worse:** round 9 measured node 0 and mid 0 → 2 reading *toward* the divider (+5.8 and +1.8 cm), so their rows shifted the real car up to 6 cm **toward** the divider. In drive 3, with no correction, the car was already close to the divider there. So the static readings at those two spots don't match how the car behaves when driving.
 - **Change (user's suggestion):** the node 0 and mid 0 → 2 rows now use the 2 → 4 average, 6.1 cm **away from** the divider: node 0 `(+0.061, 0.000)`, mid 0 → 2 `(+0.043, +0.043)`. The round 9 values are kept as comments.
 
@@ -403,7 +405,7 @@ Shift of the real car away from the divider now:
 
 ## 14. Final settings (car A, new route)
 
-All in [qcar/vehicle_control.py](../qcar/vehicle_control.py).
+All in [qcar/vehicle_control.py](../../qcar/vehicle_control.py).
 
 | Setting | Value | Notes |
 |---|---|---|
@@ -422,7 +424,7 @@ All in [qcar/vehicle_control.py](../qcar/vehicle_control.py).
 - Try `v_ref = 0.4`.
 - Fine-tune the correction rows in 1–2 cm steps.
 - Walls near the lower part of the map, to reduce the ±2–3 cm wander. This needs a recalibration, a full re-survey and a new correction table.
-- The remaining items from [car_A_single_vehicle_setup.md](car_A_single_vehicle_setup.md) §7: per-car settings in `config.txt`, then camera lane correction (see §15) and multi-vehicle.
+- The remaining items from [old-loop tuning record](2026-10-26_old_loop_tuning.md) §7: per-car settings in `config.txt`, then camera lane correction (see §15) and multi-vehicle.
 
 ## 15. Next step: camera lane correction (the better fix for the lower part)
 
@@ -440,8 +442,8 @@ The correction table (§13) treats the symptom: it adds back an error measured o
 **It does not replace the GPS.** The lidar position is still needed to know where the car is on the map, when to turn and which route to follow. The camera only corrects the sideways position within the lane. **Keep the correction table until the camera is proven:** at intersections, or wherever the lines aren't visible, the car falls back to GPS steering, and the table keeps that fallback accurate on the lower part.
 
 **How it would fit the current code:**
-- **Where it runs:** [qcar/yolo_server.py](../qcar/yolo_server.py) already reads every RealSense frame. It can also detect the lane lines and send the sideways offset to `vehicle_control.py`, the same way it sends detections now, so there is no second process competing for the camera.
-- **Detection:** start simple. Find the yellow divider by colour, then convert the image to a top-down view to get the offset in cm (`LaneKeeping` in `hal.content.qcar_functions` already has that camera geometry). [skills_activities/06-lane_keeping/](../skills_activities/06-lane_keeping/) shows the steps, but it is written for QLabs with keyboard driving and needs adapting.
+- **Where it runs:** [qcar/yolo_server.py](../../qcar/yolo_server.py) already reads every RealSense frame. It can also detect the lane lines and send the sideways offset to `vehicle_control.py`, the same way it sends detections now, so there is no second process competing for the camera.
+- **Detection:** start simple. Find the yellow divider by colour, then convert the image to a top-down view to get the offset in cm (`LaneKeeping` in `hal.content.qcar_functions` already has that camera geometry). [skills_activities/06-lane_keeping/](../../skills_activities/06-lane_keeping/) shows the steps, but it is written for QLabs with keyboard driving and needs adapting.
 - **Controller:** when the line is detected confidently, the camera offset replaces the GPS cross-track error in the Stanley term. Otherwise the controller falls back to GPS (with the correction table) as now.
 
 **Plan (measure first, then steer):**

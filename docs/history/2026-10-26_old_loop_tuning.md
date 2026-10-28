@@ -1,5 +1,7 @@
 # Car A: Single-Vehicle Route Following
 
+> **Historical record (2026-10-26).** Car A tuned on the old loop `0 → 2 → 4 → 6 → 0`. Kept as written; settings here (e.g. `gps_scale = 1.035`) are **not** current. Current state: [car_A_setup.md](../car_A_setup.md). "Setup doc §…" references in later records point to the sections of this file.
+
 How we got one physical QCar 2 (car A, `192.168.0.151`) to drive a fixed route and stay in its lane, what was wrong along the way, and the settings that came out of it.
 
 **Result:** car A drives the loop `0 → 2 → 4 → 6 → 0` continuously and stays in its own lane. The body stays inside the lane; on the left curves the inside rear wheel can still touch the lane divider. That is close to the accuracy limit of GPS-based lane keeping on this mat (see [Known limitations](#6-known-limitations)).
@@ -10,7 +12,7 @@ How we got one physical QCar 2 (car A, `192.168.0.151`) to drive a fixed route a
 
 ## 1. Current configuration
 
-All values are in [qcar/vehicle_control.py](../qcar/vehicle_control.py).
+All values are in [qcar/vehicle_control.py](../../qcar/vehicle_control.py).
 
 | Setting | Value | What it does |
 |---|---|---|
@@ -28,9 +30,9 @@ All values are in [qcar/vehicle_control.py](../qcar/vehicle_control.py).
 
 | File | Change |
 |---|---|
-| [qcar/vehicle_control.py](../qcar/vehicle_control.py) | Settings above; `gps_scale` applied to GPS x/y in two places (start-position check and EKF update); `steering_trim` in `qcar.write`; two debug prints (§3.1); `self.ect` stored in `SteeringController.update` for the print |
-| [python/start.py](../python/start.py) | `vehicle_control.py` output saved to `vehicle_control.log` on the car (§3.1) |
-| [qcar/check_pose.py](../qcar/check_pose.py) | New: static localization check (§5) |
+| [qcar/vehicle_control.py](../../qcar/vehicle_control.py) | Settings above; `gps_scale` applied to GPS x/y in two places (start-position check and EKF update); `steering_trim` in `qcar.write`; two debug prints (§3.1); `self.ect` stored in `SteeringController.update` for the print |
+| [python/start.py](../../python/start.py) | `vehicle_control.py` output saved to `vehicle_control.log` on the car (§3.1) |
+| [qcar/check_pose.py](../../qcar/check_pose.py) | New: static localization check (§5) |
 
 ---
 
@@ -41,7 +43,7 @@ All values are in [qcar/vehicle_control.py](../qcar/vehicle_control.py).
    - On the car over SSH: `python vehicle_control.py -c 1`. The script exits once calibration is done.
    - Calibration is stored **on that car**. Calibrating one car does nothing for another.
 2. **Place the car at the start:** in node 0's lane, about **30 cm before node 0** (around y ≈ 0.45), facing down the lane (−90°). Don't place it on or past node 0 (see [§3.2](#32-the-car-drove-a-full-extra-lap-before-starting-the-route)).
-3. **Start:** **save all files first**, then run `run_all_cars.bat` on the PC. It reads [config.txt](../config.txt) and calls [python/start.py](../python/start.py), which uploads every `qcar/*.py` file to the car at launch. A change saved after launching is not used in that run. (This happened once: the first `steering_trim` test ran without the trim.)
+3. **Start:** **save all files first**, then run `run_all_cars.bat` on the PC. It reads [config.txt](../../config.txt) and calls [python/start.py](../../python/start.py), which uploads every `qcar/*.py` file to the car at launch. A change saved after launching is not used in that run. (This happened once: the first `steering_trim` test ran without the trim.)
 4. **Watch the log live** (optional), from a second terminal on the PC:
    ```
    ssh nvidia@192.168.0.151
@@ -61,7 +63,7 @@ Each problem is listed with the evidence that identified it and the fix.
 
 ### 3.1 No visibility into what the car was doing
 - **Problem:** `start.py` launches `vehicle_control.py` in the background over SSH and closes the connection, so all output, including crash messages, was discarded.
-- **Fix:** [python/start.py](../python/start.py) now runs `python -u vehicle_control.py > vehicle_control.log 2>&1 &`. `-u` stops Python buffering output so lines appear immediately.
+- **Fix:** [python/start.py](../../python/start.py) now runs `python -u vehicle_control.py > vehicle_control.log 2>&1 &`. `-u` stops Python buffering output so lines appear immediately.
 - `vehicle_control.py` prints two debug lines:
   - `GPS: (x, y, heading)`: every GPS reading, already divided by `gps_scale` (logs from before that change show unscaled values).
   - `pose=… path_pt=… cross_track=…`: twice per second while on the route. `cross_track` is the sideways distance (m) between the tracked point and the path. **Negative = car left of the path.**
@@ -88,7 +90,7 @@ Each problem is listed with the evidence that identified it and the fix.
 
 ### 3.4 Tracking looked perfect, but the car still cut into the other lane: localization scale
 - **Evidence:** with ~1.5 cm tracking in the log, the car still crossed the divider, worst on the 2 → 4 curve. Halving the speed (`v_ref = 0.2`) changed nothing, which ruled out localization lag.
-- **Static check:** [qcar/check_pose.py](../qcar/check_pose.py) (see [§5](#5-diagnostic-tools)), with the car held still and centered in its lane at several spots, before and after recalibrating:
+- **Static check:** [qcar/check_pose.py](../../qcar/check_pose.py) (see [§5](#5-diagnostic-tools)), with the car held still and centered in its lane at several spots, before and after recalibrating:
 
   | Spot | Round 1 | Round 2 (recalibrated) |
   |---|---|---|
@@ -158,7 +160,7 @@ See [§3.1](#31-no-visibility-into-what-the-car-was-doing). Useful patterns:
 - `cross_track` small while the car is visibly off: localization or path problem; use `check_pose.py`.
 
 ### `check_pose.py`
-[qcar/check_pose.py](../qcar/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
+[qcar/check_pose.py](../../qcar/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
 - `side_offset`: sideways distance from the route path. **Positive = left of the path.**
 - `spread`: min..max over the window, i.e. jitter at rest.
 - `heading_err`: car heading minus path direction.
@@ -190,5 +192,5 @@ Place the car centered in its lane, pointing along it, wait for `n=25/25`, then 
 1. **Per-car settings.** Move `steering_trim` and `gps_scale` out of the code into per-car lists in `config.txt` (same order as `QCAR_IPS`), passed through `run_all_cars.bat` → `start.py` → `vehicle_control.py` arguments, with `type=float`/`type=int` on all arguments (also fixes the `-c`/`-n` issue). Required before adding car B.
 2. **Calibrating a new car.** Repeat the car A procedure: calibrate, start ~30 cm before the first node, run with `steering_trim = 0`, read the average `cross_track`, and set `steering_trim ≈ average × K_stanley / v_ref` (a negative average gives a negative trim; car A: −0.037 × 1.5 / 0.4 ≈ −0.14). Then check `gps_scale` with `check_pose.py`.
 3. **GPS-jump safety stop.** Stop the car if a GPS reading jumps further than the car could physically have moved since the last one.
-4. **Camera lane correction** (skill activity 06, [skills_activities/06-lane_keeping/](../skills_activities/06-lane_keeping/)). Use camera lane detection to correct the remaining few cm of sideways error against the painted lines, with the map-based controller still handling the route. This is the way past the GPS accuracy limit.
+4. **Camera lane correction** (skill activity 06, [skills_activities/06-lane_keeping/](../../skills_activities/06-lane_keeping/)). Use camera lane detection to correct the remaining few cm of sideways error against the painted lines, with the map-based controller still handling the route. This is the way past the GPS accuracy limit.
 5. **Multi-vehicle.** Once the above are in place: separate routes per car, then coordination at shared intersections.
