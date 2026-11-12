@@ -10,6 +10,7 @@ Students will implement a vehicle speed and steering controller.
 Please review Lab Guide - vehicle control PDF
 """
 import signal
+import socket
 import numpy as np
 from threading import Thread
 import time
@@ -61,8 +62,8 @@ def elapsed_time():
 # - K_p: proportional gain for speed controller
 # - K_i: integral gain for speed controller
 # v_ref = 0.75
-v_ref = 0.4
-# v_ref = 0.2
+# v_ref = 0.4
+v_ref = 0.2   # first camera-steering tests (2026-11-11); back to 0.4 once proven
 # v_ref = 0
 K_p = 0.1
 K_i = 1
@@ -106,12 +107,17 @@ gps_corrections = np.array([
     [2.29,  1.43, -0.036,  0.000],   # mid 4 -> 14
 ])
 gps_correction_radius = 0.35
+# - use_gps_table: False = gps_corrections is ignored (camera lane correction
+#   replaces it, 2026-11-11). The table is kept above as a fallback.
+use_gps_table = False
 
 def correct_gps(x, y):
     """Raw GPS x/y -> x/y lined up with the roadmap (gps_scale, then the
-    position-dependent gps_corrections)."""
+    position-dependent gps_corrections if use_gps_table)."""
     x, y = x / gps_scale, y / gps_scale
-    d2 = (gps_corrections[:, 0] - x)**2 + (gps_corrections[:, 1] - y)**2
+    if not use_gps_table:
+        return x, y
+    d2 =(gps_corrections[:, 0] - x)**2 + (gps_corrections[:, 1] - y)**2
     w = np.exp(-d2 / gps_correction_radius**2)
     # the 0.05 fades the correction out where no row is nearby
     dx, dy = w @ gps_corrections[:, 2:] / (w.sum() + 0.05)
@@ -123,6 +129,24 @@ def correct_gps(x, y):
 gps_max_jump = 0.3
 gps_max_heading_jump = np.radians(30)
 gps_timeout = 2.0
+
+# - Camera lane correction (plan step 5, 2026-11-11). lane_camera.py sends the
+#   car's offset from the lane centre over UDP. While the camera is trusted,
+#   cam_bias = camera offset - GPS offset (low-pass, cam_tau s) is learned; it
+#   is held when the camera isn't trusted (curves, intersections). The point
+#   Stanley steers from is shifted sideways by cam_bias, so on straights the
+#   cross-track equals the camera's offset. Learned while parked during
+#   startDelay too, so the car starts from the camera's view of the lane.
+#   Trusted = mode 'both', conf >= cam_min_conf, younger than cam_max_age, and
+#   (once driving) within cam_max_disagree of GPS + cam_bias. |cam_bias| is
+#   capped at cam_max_bias. Start lane_camera.py BEFORE this script.
+use_camera = True
+cam_port = 18555
+cam_tau = 0.3
+cam_min_conf = 0.6
+cam_max_age = 0.2
+cam_max_disagree = 0.10
+cam_max_bias = 0.15
 
 # Define the calibration pose
 # Calibration pose is either [0,0,-pi/2] or [0,2,-pi/2]
@@ -245,6 +269,43 @@ class SteeringController:
         
         # return 0
 
+class CameraReceiver:
+    """Latest lane_camera.py result from UDP (non-blocking)."""
+
+    def __init__(self, port):
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self.sock.bind(('127.0.0.1', port))
+        self.sock.setblocking(False)
+        self.t, self.mode, self.offset, self.heading, self.conf = 0.0, 'none', np.nan, np.nan, 0.0
+        self.count = 0
+
+    def read(self):
+        """Drain the socket and keep the newest message."""
+        while True:
+            try:
+                data = self.sock.recv(256)
+            except (BlockingIOError, socket.error):
+                return
+            try:
+                t, mode, off, head, conf = data.decode().split(',')
+                self.t, self.mode = float(t), mode
+                self.offset = float(off) / 100       # cm -> m, + = left of lane centre
+                self.heading = np.radians(float(head))
+                self.conf = float(conf)
+                self.count += 1
+            except ValueError:
+                pass
+
+def path_left_offset(ctrl, p):
+    """Sideways distance of point p from the controller's current path
+    segment, + = left of the path (same sign as the camera offset).
+    Also returns the left unit normal of the segment."""
+    wp_1 = ctrl.wp[:, np.mod(ctrl.wpi, ctrl.N-1)]
+    wp_2 = ctrl.wp[:, np.mod(ctrl.wpi+1, ctrl.N-1)]
+    t = (wp_2 - wp_1) / np.linalg.norm(wp_2 - wp_1)
+    n_left = np.array([-t[1], t[0]])
+    return float(np.dot(p - wp_1, n_left)), n_left
+
 def controlLoop():
     #region controlLoop setup
     global KILL_THREAD
@@ -296,6 +357,9 @@ def controlLoop():
         initSteeringController = SteeringController(waypoints=initWaypointSequence,
                                                     k=K_stanley,
                                                     cyclic=False)
+    cam = CameraReceiver(cam_port) if (use_camera and enableSteeringControl) else None
+    camBias = 0.0
+    camStartReported = False
     with qcar, gps, yolo:
         if calibrate:
             return
@@ -362,7 +426,35 @@ def controlLoop():
                 th = ekf.x_hat[2,0]
                 p = ( np.array([x, y])
                     + np.array([np.cos(th), np.sin(th)]) * 0.1)
-                
+
+                # Camera lane correction: learn cam_bias while the camera is
+                # trusted, hold it otherwise, and steer from p shifted by it.
+                p_steer = p
+                camUsed = False
+                if cam is not None:
+                    cam.read()
+                    ctrl = steeringController if startNodeReached else initSteeringController
+                    gpsOff, nLeft = path_left_offset(ctrl, p)
+                    camOk = (cam.mode == 'both' and cam.conf >= cam_min_conf
+                             and time.time() - cam.t < cam_max_age)
+                    if camOk and t >= startDelay:
+                        # watchdog once driving; while parked the first
+                        # (possibly large) bias must be allowed in
+                        camOk = abs(cam.offset - (gpsOff + camBias)) < cam_max_disagree
+                    if camOk:
+                        a = 1 - np.exp(-dt / cam_tau)
+                        camBias = float(np.clip(camBias + a*(cam.offset - gpsOff - camBias),
+                                                -cam_max_bias, cam_max_bias))
+                        camUsed = True
+                    p_steer = p + nLeft * camBias
+                    if not camStartReported and t >= startDelay:
+                        camStartReported = True
+                        if cam.count == 0:
+                            print("CAMERA: no data from lane_camera.py, driving on GPS only (cam_bias = 0)")
+                        else:
+                            print(f"CAMERA: bias at start {camBias*100:+.1f} cm  "
+                                  f"(camera {cam.offset*100:+.1f} cm, GPS {gpsOff*100:+.1f} cm, {cam.count} messages)")
+
             v = qcar.motorTach
             #endregion
 
@@ -383,11 +475,15 @@ def controlLoop():
                         distToStart = np.linalg.norm(waypointSequence[:,0]-p)
                         startNodeReached = distToStart < 0.2
                         # if the start node is not reached, use the initial steering controller
-                        delta = initSteeringController.update(p, th, v)
+                        delta = initSteeringController.update(p_steer, th, v)
                     else:
-                        delta = steeringController.update(p, th, v)
+                        delta = steeringController.update(p_steer, th, v)
                         if int(t*2) != int((t-dt)*2):   # about twice per second
-                            print(f"pose=({x:.2f},{y:.2f},{np.degrees(th):.0f}deg)  path_pt=({steeringController.p_ref[0]:.2f},{steeringController.p_ref[1]:.2f})  cross_track={steeringController.ect:.3f} m")
+                            camTxt = ""
+                            if cam is not None:
+                                camTxt = (f"  cam={cam.mode}/{cam.offset*100:+.1f}cm  "
+                                          f"bias={camBias*100:+.1f}cm  used={int(camUsed)}")
+                            print(f"pose=({x:.2f},{y:.2f},{np.degrees(th):.0f}deg)  path_pt=({steeringController.p_ref[0]:.2f},{steeringController.p_ref[1]:.2f})  cross_track={steeringController.ect:.3f} m{camTxt}  t_epoch={time.time():.2f}")
                 else:
                     delta = 0
                 #endregion

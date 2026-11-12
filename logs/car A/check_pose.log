@@ -1,0 +1,32 @@
+GPS Server started.
+n= 1/25  GPS=(-0.88,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 2/25  GPS=(-0.88,1.98,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 3/25  GPS=(-0.88,1.99,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 4/25  GPS=(-0.88,1.97,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.88,2.00,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.88,1.93,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.88,2.20,-92deg)  nearest_path=(0.00,2.19,-91deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-1.2deg
+n= 3/25  GPS=(-0.88,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 6/25  GPS=(-0.88,1.95,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.88,2.20,-92deg)  nearest_path=(0.00,2.19,-91deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-1.2deg
+n= 1/25  GPS=(-0.88,1.90,-93deg)  nearest_path=(0.00,1.89,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 2/25  GPS=(-0.88,1.95,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 5/25  GPS=(-0.88,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-3.0deg
+n= 1/25  GPS=(-0.84,1.33,-93deg)  nearest_path=(0.00,1.33,-90deg)  side_offset=-0.843 m (spread -0.843..-0.843)  heading_err=-2.9deg
+n= 2/25  GPS=(-0.88,2.26,-93deg)  nearest_path=(0.00,2.23,-94deg)  side_offset=-0.879 m (spread -0.881..-0.877)  heading_err=+0.4deg
+n= 3/25  GPS=(-0.88,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 6/25  GPS=(-0.88,1.95,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 9/25  GPS=(-0.88,1.95,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 2/25  GPS=(-0.88,1.98,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-3.0deg
+n= 5/25  GPS=(-0.88,1.98,-93deg)  nearest_path=(0.00,1.99,-90deg)  side_offset=-0.876 m (spread -0.876..-0.876)  heading_err=-2.9deg
+n= 2/25  GPS=(-0.88,2.26,-93deg)  nearest_path=(0.00,2.22,-93deg)  side_offset=-0.879 m (spread -0.879..-0.879)  heading_err=+0.5deg
+n= 3/25  GPS=(-0.88,1.94,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.875 m (spread -0.876..-0.875)  heading_err=-3.0deg
+n= 6/25  GPS=(-0.87,1.94,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.875 m (spread -0.876..-0.874)  heading_err=-2.9deg
+n= 9/25  GPS=(-0.87,1.94,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.874 m (spread -0.876..-0.873)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.87,1.93,-93deg)  nearest_path=(0.00,1.93,-90deg)  side_offset=-0.871 m (spread -0.871..-0.871)  heading_err=-2.9deg
+n= 4/25  GPS=(-0.87,1.95,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.871 m (spread -0.871..-0.871)  heading_err=-2.9deg
+n= 7/25  GPS=(-0.87,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.870 m (spread -0.871..-0.869)  heading_err=-2.9deg
+n=10/25  GPS=(-0.87,1.95,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.870 m (spread -0.871..-0.869)  heading_err=-2.9deg
+n= 1/25  GPS=(-0.87,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.868 m (spread -0.868..-0.868)  heading_err=-3.2deg
+n= 4/25  GPS=(-0.87,1.95,-93deg)  nearest_path=(0.00,1.89,-90deg)  side_offset=-0.867 m (spread -0.868..-0.867)  heading_err=-2.7deg
+n= 7/25  GPS=(-0.87,1.96,-93deg)  nearest_path=(0.00,1.96,-90deg)  side_offset=-0.867 m (spread -0.868..-0.867)  heading_err=-2.8deg

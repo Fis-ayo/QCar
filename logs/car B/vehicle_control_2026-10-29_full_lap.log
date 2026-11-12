@@ -1,0 +1,416 @@
+Selected nodes: [0, 2, 4, 14, 16, 18, 12, 0]
+QCar configured successfully.
+YOLO Server error: status check failed.
+GPS Server started.
+YOLO Server error: status check failed.
+Reconnected to yolo Server
+GPS: (-0.01,1.96,-90deg)
+GPS: (-0.01,1.96,-90deg)
+GPS: (-0.01,1.93,-90deg)
+GPS: (-0.01,1.76,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.73,-92deg)
+GPS: (-0.01,1.66,-93deg)
+GPS: (-0.01,1.56,-93deg)
+GPS: (-0.01,1.50,-93deg)
+GPS: (-0.01,1.40,-93deg)
+GPS: (-0.01,1.33,-93deg)
+GPS: (-0.01,1.26,-93deg)
+GPS: (-0.04,1.16,-92deg)
+GPS: (-0.04,1.10,-92deg)
+GPS: (-0.01,1.00,-90deg)
+GPS: (-0.01,0.93,-90deg)
+GPS: (-0.01,0.83,-91deg)
+GPS: (-0.01,0.76,-92deg)
+GPS: (-0.00,0.70,-93deg)
+GPS: (-0.00,0.63,-93deg)
+GPS: (-0.03,0.53,-94deg)
+GPS: (-0.02,0.43,-93deg)
+GPS: (-0.02,0.40,-92deg)
+pose=(-0.02,0.35,-92deg)  path_pt=(0.00,0.25)  cross_track=0.023 m
+GPS: (-0.02,0.30,-91deg)
+GPS: (0.02,0.20,-91deg)
+GPS: (0.02,0.13,-91deg)
+pose=(0.02,0.12,-92deg)  path_pt=(0.00,0.02)  cross_track=-0.017 m
+GPS: (-0.01,0.06,-94deg)
+GPS: (-0.02,-0.03,-95deg)
+pose=(-0.02,-0.08,-95deg)  path_pt=(0.00,-0.18)  cross_track=0.028 m
+GPS: (-0.02,-0.10,-94deg)
+GPS: (-0.01,-0.20,-93deg)
+GPS: (-0.01,-0.27,-91deg)
+pose=(-0.01,-0.27,-90deg)  path_pt=(0.02,-0.37)  cross_track=0.032 m
+GPS: (-0.01,-0.33,-88deg)
+GPS: (0.02,-0.43,-83deg)
+pose=(0.03,-0.47,-80deg)  path_pt=(0.08,-0.56)  cross_track=0.038 m
+GPS: (0.02,-0.49,-79deg)
+GPS: (0.06,-0.55,-74deg)
+GPS: (0.09,-0.62,-69deg)
+pose=(0.09,-0.62,-69deg)  path_pt=(0.16,-0.70)  cross_track=0.032 m
+GPS: (0.16,-0.68,-64deg)
+GPS: (0.20,-0.72,-60deg)
+pose=(0.22,-0.75,-58deg)  path_pt=(0.27,-0.84)  cross_track=0.002 m
+GPS: (0.23,-0.78,-57deg)
+GPS: (0.30,-0.85,-54deg)
+GPS: (0.34,-0.88,-50deg)
+pose=(0.34,-0.88,-49deg)  path_pt=(0.42,-0.95)  cross_track=0.016 m
+GPS: (0.41,-0.94,-44deg)
+GPS: (0.51,-0.98,-39deg)
+pose=(0.55,-1.01,-35deg)  path_pt=(0.63,-1.05)  cross_track=0.017 m
+GPS: (0.54,-1.01,-34deg)
+GPS: (0.64,-1.03,-29deg)
+GPS: (0.71,-1.06,-24deg)
+pose=(0.71,-1.06,-24deg)  path_pt=(0.80,-1.08)  cross_track=0.021 m
+GPS: (0.77,-1.08,-20deg)
+GPS: (0.87,-1.06,-14deg)
+pose=(0.91,-1.07,-11deg)  path_pt=(1.01,-1.08)  cross_track=0.009 m
+GPS: (0.90,-1.03,-9deg)
+GPS: (1.00,-1.05,-7deg)
+GPS: (1.10,-1.05,-8deg)
+pose=(1.11,-1.05,-8deg)  path_pt=(1.21,-1.08)  cross_track=-0.017 m
+GPS: (1.17,-1.05,-9deg)
+GPS: (1.23,-1.05,-9deg)
+pose=(1.28,-1.06,-9deg)  path_pt=(1.38,-1.08)  cross_track=-0.009 m
+GPS: (1.33,-1.09,-9deg)
+GPS: (1.40,-1.09,-8deg)
+GPS: (1.50,-1.08,-2deg)
+pose=(1.50,-1.08,-2deg)  path_pt=(1.59,-1.06)  cross_track=0.033 m
+GPS: (1.56,-1.05,2deg)
+GPS: (1.62,-1.05,8deg)
+pose=(1.67,-1.04,11deg)  path_pt=(1.75,-0.99)  cross_track=0.026 m
+GPS: (1.70,-1.01,13deg)
+GPS: (1.75,-1.00,18deg)
+GPS: (1.81,-0.97,22deg)
+pose=(1.82,-0.97,22deg)  path_pt=(1.90,-0.91)  cross_track=0.025 m
+GPS: (1.88,-0.90,26deg)
+GPS: (1.91,-0.83,31deg)
+pose=(1.95,-0.80,34deg)  path_pt=(2.05,-0.76)  cross_track=-0.022 m
+GPS: (1.98,-0.79,35deg)
+GPS: (2.04,-0.72,37deg)
+GPS: (2.11,-0.69,41deg)
+pose=(2.12,-0.68,42deg)  path_pt=(2.16,-0.60)  cross_track=0.037 m
+GPS: (2.18,-0.59,48deg)
+GPS: (2.17,-0.56,53deg)
+pose=(2.20,-0.52,56deg)  path_pt=(2.22,-0.43)  cross_track=0.035 m
+GPS: (2.21,-0.50,59deg)
+GPS: (2.21,-0.44,66deg)
+GPS: (2.24,-0.36,71deg)
+pose=(2.24,-0.35,71deg)  path_pt=(2.25,-0.26)  cross_track=0.017 m
+GPS: (2.27,-0.30,75deg)
+GPS: (2.26,-0.20,79deg)
+pose=(2.27,-0.15,81deg)  path_pt=(2.25,-0.05)  cross_track=0.032 m
+GPS: (2.23,-0.13,83deg)
+GPS: (2.23,-0.06,86deg)
+GPS: (2.26,0.03,85deg)
+pose=(2.26,0.04,85deg)  path_pt=(2.25,0.14)  cross_track=0.013 m
+GPS: (2.26,0.10,84deg)
+GPS: (2.26,0.20,85deg)
+pose=(2.27,0.25,85deg)  path_pt=(2.25,0.35)  cross_track=0.019 m
+GPS: (2.26,0.23,85deg)
+GPS: (2.26,0.37,86deg)
+GPS: (2.27,0.40,87deg)
+pose=(2.27,0.41,87deg)  path_pt=(2.25,0.51)  cross_track=0.017 m
+GPS: (2.28,0.53,87deg)
+GPS: (2.29,0.60,87deg)
+pose=(2.29,0.65,88deg)  path_pt=(2.25,0.75)  cross_track=0.037 m
+GPS: (2.29,0.67,88deg)
+GPS: (2.30,0.77,89deg)
+GPS: (2.30,0.80,91deg)
+pose=(2.30,0.81,91deg)  path_pt=(2.25,0.91)  cross_track=0.042 m
+GPS: (2.29,0.90,92deg)
+GPS: (2.29,1.00,92deg)
+pose=(2.28,1.05,92deg)  path_pt=(2.25,1.15)  cross_track=0.027 m
+GPS: (2.25,1.07,92deg)
+GPS: (2.28,1.17,91deg)
+GPS: (2.28,1.23,88deg)
+pose=(2.28,1.24,89deg)  path_pt=(2.25,1.34)  cross_track=0.032 m
+GPS: (2.25,1.30,88deg)
+GPS: (2.28,1.36,88deg)
+pose=(2.28,1.42,88deg)  path_pt=(2.25,1.51)  cross_track=0.034 m
+GPS: (2.25,1.46,88deg)
+GPS: (2.28,1.53,89deg)
+GPS: (2.28,1.63,88deg)
+pose=(2.29,1.64,88deg)  path_pt=(2.25,1.74)  cross_track=0.034 m
+GPS: (2.28,1.70,89deg)
+GPS: (2.25,1.76,89deg)
+pose=(2.25,1.81,89deg)  path_pt=(2.25,1.91)  cross_track=0.001 m
+GPS: (2.29,1.86,90deg)
+GPS: (2.29,1.96,89deg)
+GPS: (2.26,2.00,89deg)
+pose=(2.26,2.00,89deg)  path_pt=(2.25,2.10)  cross_track=0.011 m
+GPS: (2.30,2.10,90deg)
+GPS: (2.28,2.19,89deg)
+pose=(2.28,2.24,90deg)  path_pt=(2.25,2.34)  cross_track=0.026 m
+GPS: (2.28,2.29,91deg)
+GPS: (2.28,2.36,90deg)
+GPS: (2.28,2.43,90deg)
+pose=(2.28,2.44,90deg)  path_pt=(2.25,2.54)  cross_track=0.028 m
+GPS: (2.28,2.46,89deg)
+GPS: (2.28,2.59,89deg)
+pose=(2.28,2.64,89deg)  path_pt=(2.25,2.74)  cross_track=0.030 m
+GPS: (2.28,2.66,89deg)
+GPS: (2.28,2.76,90deg)
+GPS: (2.28,2.83,90deg)
+pose=(2.28,2.84,90deg)  path_pt=(2.25,2.94)  cross_track=0.027 m
+GPS: (2.28,2.86,89deg)
+GPS: (2.28,2.96,90deg)
+pose=(2.28,3.01,90deg)  path_pt=(2.25,3.11)  cross_track=0.027 m
+GPS: (2.28,3.03,90deg)
+GPS: (2.28,3.16,90deg)
+GPS: (2.28,3.19,89deg)
+pose=(2.28,3.20,89deg)  path_pt=(2.25,3.30)  cross_track=0.027 m
+GPS: (2.28,3.29,90deg)
+GPS: (2.28,3.36,89deg)
+pose=(2.28,3.41,89deg)  path_pt=(2.25,3.51)  cross_track=0.027 m
+GPS: (2.25,3.49,90deg)
+GPS: (2.25,3.53,90deg)
+GPS: (2.28,3.59,87deg)
+pose=(2.28,3.60,87deg)  path_pt=(2.25,3.70)  cross_track=0.031 m
+GPS: (2.28,3.69,86deg)
+GPS: (2.28,3.76,87deg)
+pose=(2.28,3.81,89deg)  path_pt=(2.25,3.90)  cross_track=0.035 m
+GPS: (2.28,3.86,89deg)
+GPS: (2.28,3.93,92deg)
+GPS: (2.24,3.99,98deg)
+pose=(2.24,4.00,99deg)  path_pt=(2.20,4.09)  cross_track=0.029 m
+GPS: (2.20,4.06,103deg)
+GPS: (2.16,4.16,109deg)
+pose=(2.15,4.20,112deg)  path_pt=(2.08,4.27)  cross_track=0.042 m
+GPS: (2.13,4.23,114deg)
+GPS: (2.06,4.29,121deg)
+GPS: (1.99,4.33,127deg)
+pose=(1.98,4.33,128deg)  path_pt=(1.91,4.40)  cross_track=0.012 m
+GPS: (1.91,4.39,134deg)
+GPS: (1.88,4.39,139deg)
+pose=(1.84,4.42,143deg)  path_pt=(1.76,4.47)  cross_track=0.012 m
+GPS: (1.77,4.42,147deg)
+GPS: (1.70,4.48,153deg)
+GPS: (1.63,4.48,158deg)
+pose=(1.63,4.48,159deg)  path_pt=(1.53,4.49)  cross_track=0.029 m
+GPS: (1.56,4.48,166deg)
+GPS: (1.46,4.47,173deg)
+pose=(1.41,4.48,177deg)  path_pt=(1.33,4.44)  cross_track=0.039 m
+GPS: (1.39,4.47,180deg)
+GPS: (1.32,4.43,-174deg)
+GPS: (1.25,4.39,-167deg)
+pose=(1.24,4.39,-166deg)  path_pt=(1.16,4.35)  cross_track=0.023 m
+GPS: (1.19,4.39,-161deg)
+GPS: (1.15,4.29,-154deg)
+pose=(1.11,4.27,-151deg)  path_pt=(1.03,4.21)  cross_track=0.008 m
+GPS: (1.05,4.25,-147deg)
+GPS: (1.02,4.18,-140deg)
+GPS: (0.99,4.11,-134deg)
+pose=(0.98,4.10,-133deg)  path_pt=(0.93,4.02)  cross_track=0.021 m
+GPS: (0.92,4.04,-126deg)
+GPS: (0.93,3.97,-120deg)
+pose=(0.90,3.93,-116deg)  path_pt=(0.90,3.83)  cross_track=0.043 m
+GPS: (0.90,3.90,-112deg)
+GPS: (0.90,3.83,-106deg)
+GPS: (0.87,3.73,-97deg)
+pose=(0.87,3.72,-97deg)  path_pt=(0.92,3.63)  cross_track=0.059 m
+GPS: (0.90,3.66,-93deg)
+GPS: (0.90,3.56,-91deg)
+pose=(0.90,3.52,-93deg)  path_pt=(0.89,3.42)  cross_track=-0.011 m
+GPS: (0.90,3.50,-95deg)
+GPS: (0.90,3.43,-101deg)
+GPS: (0.83,3.37,-108deg)
+pose=(0.83,3.36,-108deg)  path_pt=(0.81,3.26)  cross_track=0.017 m
+GPS: (0.79,3.30,-114deg)
+GPS: (0.75,3.24,-120deg)
+pose=(0.73,3.20,-124deg)  path_pt=(0.68,3.11)  cross_track=0.004 m
+GPS: (0.72,3.18,-126deg)
+GPS: (0.61,3.11,-131deg)
+GPS: (0.58,3.08,-136deg)
+pose=(0.57,3.07,-136deg)  path_pt=(0.52,2.98)  cross_track=0.037 m
+GPS: (0.51,3.02,-137deg)
+GPS: (0.44,2.95,-137deg)
+pose=(0.41,2.92,-138deg)  path_pt=(0.35,2.83)  cross_track=0.033 m
+GPS: (0.38,2.92,-137deg)
+GPS: (0.31,2.85,-136deg)
+GPS: (0.28,2.78,-136deg)
+pose=(0.27,2.78,-136deg)  path_pt=(0.21,2.69)  cross_track=0.021 m
+GPS: (0.21,2.75,-135deg)
+GPS: (0.14,2.68,-133deg)
+pose=(0.11,2.65,-131deg)  path_pt=(0.10,2.54)  cross_track=0.061 m
+GPS: (0.11,2.61,-130deg)
+GPS: (0.08,2.51,-124deg)
+GPS: (0.05,2.48,-120deg)
+pose=(0.04,2.47,-120deg)  path_pt=(0.03,2.37)  cross_track=0.034 m
+GPS: (0.02,2.41,-115deg)
+GPS: (0.02,2.31,-110deg)
+pose=(0.00,2.26,-107deg)  path_pt=(0.00,2.17)  cross_track=0.025 m
+GPS: (0.02,2.24,-105deg)
+GPS: (0.03,2.17,-101deg)
+GPS: (-0.01,2.10,-98deg)
+pose=(-0.01,2.09,-98deg)  path_pt=(0.00,2.00)  cross_track=0.020 m
+GPS: (-0.00,1.97,-96deg)
+GPS: (-0.00,1.90,-95deg)
+pose=(-0.01,1.86,-94deg)  path_pt=(0.00,1.76)  cross_track=0.014 m
+GPS: (-0.00,1.84,-94deg)
+GPS: (-0.00,1.77,-94deg)
+GPS: (-0.00,1.67,-94deg)
+pose=(-0.00,1.66,-94deg)  path_pt=(0.00,1.56)  cross_track=0.008 m
+GPS: (-0.00,1.57,-94deg)
+GPS: (-0.00,1.54,-94deg)
+pose=(-0.00,1.49,-94deg)  path_pt=(0.00,1.39)  cross_track=0.010 m
+GPS: (0.00,1.44,-94deg)
+GPS: (0.00,1.34,-94deg)
+GPS: (0.00,1.27,-94deg)
+pose=(0.00,1.26,-94deg)  path_pt=(0.00,1.16)  cross_track=0.006 m
+GPS: (-0.03,1.20,-94deg)
+GPS: (-0.03,1.10,-93deg)
+pose=(-0.03,1.06,-92deg)  path_pt=(0.00,0.96)  cross_track=0.036 m
+GPS: (-0.03,1.04,-92deg)
+GPS: (-0.03,0.94,-91deg)
+GPS: (-0.02,0.87,-90deg)
+pose=(-0.02,0.86,-90deg)  path_pt=(0.00,0.76)  cross_track=0.025 m
+GPS: (-0.02,0.80,-90deg)
+GPS: (-0.02,0.74,-90deg)
+pose=(-0.02,0.69,-90deg)  path_pt=(0.00,0.59)  cross_track=0.021 m
+GPS: (0.02,0.64,-90deg)
+GPS: (0.02,0.57,-91deg)
+GPS: (0.03,0.47,-93deg)
+pose=(0.03,0.46,-93deg)  path_pt=(0.00,0.36)  cross_track=-0.024 m
+GPS: (-0.00,0.40,-96deg)
+GPS: (0.00,0.31,-98deg)
+pose=(-0.00,0.26,-97deg)  path_pt=(0.00,0.16)  cross_track=0.016 m
+GPS: (0.01,0.27,-97deg)
+GPS: (0.01,0.17,-95deg)
+GPS: (-0.02,0.10,-94deg)
+pose=(-0.02,0.10,-95deg)  path_pt=(0.00,-0.00)  cross_track=0.031 m
+GPS: (-0.02,0.00,-94deg)
+GPS: (-0.02,-0.03,-93deg)
+pose=(-0.02,-0.08,-92deg)  path_pt=(0.00,-0.18)  cross_track=0.025 m
+GPS: (-0.02,-0.16,-91deg)
+GPS: (-0.02,-0.23,-91deg)
+GPS: (-0.02,-0.33,-88deg)
+pose=(-0.02,-0.33,-88deg)  path_pt=(0.03,-0.42)  cross_track=0.043 m
+GPS: (0.02,-0.39,-85deg)
+GPS: (0.06,-0.46,-79deg)
+pose=(0.06,-0.50,-77deg)  path_pt=(0.09,-0.59)  cross_track=0.008 m
+GPS: (0.06,-0.52,-76deg)
+GPS: (0.13,-0.61,-72deg)
+GPS: (0.16,-0.68,-69deg)
+pose=(0.16,-0.69,-68deg)  path_pt=(0.21,-0.77)  cross_track=0.014 m
+GPS: (0.16,-0.71,-65deg)
+GPS: (0.20,-0.74,-61deg)
+pose=(0.22,-0.78,-58deg)  path_pt=(0.29,-0.85)  cross_track=0.022 m
+GPS: (0.24,-0.81,-57deg)
+GPS: (0.31,-0.84,-52deg)
+GPS: (0.38,-0.91,-47deg)
+pose=(0.38,-0.91,-47deg)  path_pt=(0.46,-0.97)  cross_track=0.017 m
+GPS: (0.45,-0.94,-42deg)
+GPS: (0.51,-0.97,-38deg)
+pose=(0.55,-1.00,-35deg)  path_pt=(0.64,-1.05)  cross_track=0.011 m
+GPS: (0.58,-1.04,-33deg)
+GPS: (0.65,-1.03,-29deg)
+GPS: (0.74,-1.05,-22deg)
+pose=(0.75,-1.05,-22deg)  path_pt=(0.84,-1.08)  cross_track=0.006 m
+GPS: (0.81,-1.07,-18deg)
+GPS: (0.91,-1.06,-13deg)
+pose=(0.96,-1.07,-10deg)  path_pt=(1.05,-1.08)  cross_track=0.004 m
+GPS: (0.97,-1.05,-9deg)
+GPS: (1.04,-1.05,-7deg)
+GPS: (1.11,-1.05,-7deg)
+pose=(1.11,-1.05,-7deg)  path_pt=(1.21,-1.08)  cross_track=-0.019 m
+GPS: (1.21,-1.08,-8deg)
+GPS: (1.31,-1.08,-8deg)
+pose=(1.35,-1.09,-7deg)  path_pt=(1.45,-1.08)  cross_track=0.022 m
+GPS: (1.38,-1.08,-6deg)
+GPS: (1.44,-1.08,-3deg)
+GPS: (1.54,-1.08,2deg)
+pose=(1.54,-1.08,2deg)  path_pt=(1.63,-1.04)  cross_track=0.036 m
+GPS: (1.60,-1.08,6deg)
+GPS: (1.65,-1.05,11deg)
+pose=(1.69,-1.04,14deg)  path_pt=(1.77,-0.98)  cross_track=0.033 m
+GPS: (1.73,-1.01,18deg)
+GPS: (1.76,-0.97,22deg)
+GPS: (1.85,-0.94,26deg)
+pose=(1.86,-0.93,26deg)  path_pt=(1.94,-0.87)  cross_track=0.019 m
+GPS: (1.89,-0.87,28deg)
+GPS: (1.95,-0.80,33deg)
+pose=(1.99,-0.78,35deg)  path_pt=(2.08,-0.73)  cross_track=-0.009 m
+GPS: (2.02,-0.77,35deg)
+GPS: (2.08,-0.70,39deg)
+GPS: (2.12,-0.63,44deg)
+pose=(2.12,-0.63,45deg)  path_pt=(2.18,-0.55)  cross_track=0.015 m
+GPS: (2.18,-0.57,51deg)
+GPS: (2.18,-0.51,56deg)
+pose=(2.21,-0.47,60deg)  path_pt=(2.24,-0.38)  cross_track=0.022 m
+GPS: (2.21,-0.48,63deg)
+GPS: (2.24,-0.40,68deg)
+GPS: (2.24,-0.31,73deg)
+pose=(2.24,-0.30,74deg)  path_pt=(2.25,-0.21)  cross_track=0.016 m
+GPS: (2.24,-0.28,78deg)
+GPS: (2.27,-0.18,82deg)
+pose=(2.27,-0.13,83deg)  path_pt=(2.25,-0.03)  cross_track=0.029 m
+GPS: (2.23,-0.12,83deg)
+GPS: (2.23,-0.02,85deg)
+GPS: (2.26,0.05,84deg)
+pose=(2.26,0.06,84deg)  path_pt=(2.25,0.15)  cross_track=0.019 m
+GPS: (2.26,0.15,84deg)
+GPS: (2.26,0.21,85deg)
+pose=(2.27,0.27,86deg)  path_pt=(2.25,0.37)  cross_track=0.020 m
+GPS: (2.26,0.31,87deg)
+GPS: (2.27,0.35,87deg)
+GPS: (2.27,0.45,88deg)
+pose=(2.27,0.45,88deg)  path_pt=(2.25,0.55)  cross_track=0.020 m
+GPS: (2.28,0.55,88deg)
+GPS: (2.29,0.61,88deg)
+pose=(2.29,0.66,88deg)  path_pt=(2.25,0.76)  cross_track=0.038 m
+GPS: (2.30,0.68,89deg)
+GPS: (2.30,0.78,90deg)
+GPS: (2.26,0.84,90deg)
+pose=(2.26,0.85,90deg)  path_pt=(2.25,0.95)  cross_track=0.007 m
+GPS: (2.26,0.91,91deg)
+GPS: (2.25,1.01,90deg)
+pose=(2.25,1.06,89deg)  path_pt=(2.25,1.16)  cross_track=-0.000 m
+GPS: (2.25,1.11,88deg)
+GPS: (2.28,1.18,86deg)
+GPS: (2.28,1.24,85deg)
+pose=(2.28,1.25,85deg)  path_pt=(2.25,1.35)  cross_track=0.037 m
+GPS: (2.28,1.31,87deg)
+GPS: (2.28,1.41,89deg)
+pose=(2.28,1.46,90deg)  path_pt=(2.25,1.56)  cross_track=0.027 m
+GPS: (2.28,1.51,90deg)
+GPS: (2.28,1.54,90deg)
+GPS: (2.28,1.68,90deg)
+pose=(2.28,1.68,90deg)  path_pt=(2.25,1.78)  cross_track=0.024 m
+GPS: (2.28,1.74,89deg)
+GPS: (2.28,1.84,90deg)
+pose=(2.28,1.89,90deg)  path_pt=(2.25,1.99)  cross_track=0.028 m
+GPS: (2.28,1.88,89deg)
+GPS: (2.29,2.01,89deg)
+GPS: (2.29,2.04,90deg)
+pose=(2.29,2.05,90deg)  path_pt=(2.25,2.15)  cross_track=0.038 m
+GPS: (2.30,2.15,90deg)
+GPS: (2.27,2.21,91deg)
+pose=(2.27,2.26,91deg)  path_pt=(2.25,2.36)  cross_track=0.015 m
+GPS: (2.31,2.28,91deg)
+GPS: (2.27,2.38,90deg)
+GPS: (2.27,2.45,91deg)
+pose=(2.27,2.46,91deg)  path_pt=(2.25,2.56)  cross_track=0.017 m
+GPS: (2.27,2.55,91deg)
+GPS: (2.27,2.62,90deg)
+pose=(2.27,2.66,89deg)  path_pt=(2.25,2.76)  cross_track=0.021 m
+GPS: (2.27,2.72,89deg)
+GPS: (2.27,2.75,88deg)
+GPS: (2.27,2.88,88deg)
+pose=(2.27,2.89,88deg)  path_pt=(2.25,2.99)  cross_track=0.022 m
+GPS: (2.27,2.92,88deg)
+GPS: (2.27,3.05,88deg)
+pose=(2.27,3.10,88deg)  path_pt=(2.25,3.20)  cross_track=0.022 m
+GPS: (2.27,3.09,89deg)
+pose=(2.28,3.25,89deg)  path_pt=(2.25,3.35)  cross_track=0.023 m
+pose=(2.28,3.45,89deg)  path_pt=(2.25,3.55)  cross_track=0.027 m
+pose=(2.28,3.65,90deg)  path_pt=(2.25,3.75)  cross_track=0.028 m
+pose=(2.28,3.84,91deg)  path_pt=(2.24,3.94)  cross_track=0.037 m
+STOPPED: no GPS reading accepted for 2 s. Last estimate (2.28,3.88,93deg)
