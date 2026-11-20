@@ -62,8 +62,8 @@ def elapsed_time():
 # - K_p: proportional gain for speed controller
 # - K_i: integral gain for speed controller
 # v_ref = 0.75
-# v_ref = 0.4
-v_ref = 0.2   # first camera-steering tests (2026-11-11); back to 0.4 once proven
+v_ref = 0.4   # camera steering at 0.4 m/s from 2026-11-18 (camera report §41)
+# v_ref = 0.2   # first camera-steering drives (2026-11-11 ... 11-18, §36-§40)
 # v_ref = 0
 K_p = 0.1
 K_i = 1
@@ -78,7 +78,32 @@ K_stanley = 1.5
 
 # - sterring_trim: offset added to the steering command to cancel the car's
 # lefthand steering bias (rad). Negative = steer more right.set
-steering_trim = -0.14
+#   2026-11-19 (camera report §47): -0.14 -> -0.04. Gyro + speed in the 11-18 and
+#   11-19 drives: with -0.14 the controller had to command ~+6 deg to drive straight
+#   (car held 1-2 cm right of centre) and only ~21 deg of left steering was reached at
+#   the 30 deg limit (roundabout needs ~22). Straight-ahead point measured at
+#   trim + 5.7 deg ~ -2.3 deg. REVERT: set back to -0.14 (tuned 2026-10-28 from GPS).
+# steering_trim = -0.14
+steering_trim = -0.04
+
+# - K_soft: Stanley softening speed (m/s), cross-track term atan(K_stanley*e/(v+K_soft)).
+#   Keeps the term finite when the car is (nearly) stopped, e.g. at the start
+#   (2026-11-19, §47). REVERT: K_soft = 0.0 gives the old controller exactly.
+K_soft = 0.05
+
+# - Curvature speed limit (camera steering only, 2026-11-19, §47): the speed target is
+#   min(v_ref, sqrt(v_curve_alat / k)) for the largest |map curvature| k from
+#   cs_wheelbase behind to v_curve_ahead m ahead of the front axle (looking ahead is
+#   for speed planning only, not steering), and never below v_curve_min. With 0.13
+#   m/s^2: straights 0.4, 0 -> 2 / 2 -> 4 (k 1.12) 0.34, roundabout (k 1.48) 0.30,
+#   16 -> 18 (k 1.61) 0.28 m/s. More camera frames per metre and less delay in the
+#   tight curves. REVERT: use_curve_speed = False.
+#   OFF for the next drive (user, 2026-11-19): test the new trim alone first, then
+#   switch this on and compare the same curves (report "Where to pick up").
+use_curve_speed = False
+v_curve_alat = 0.13         # m/s^2
+v_curve_min = 0.2           # m/s
+v_curve_ahead = 0.5         # m
 
 # - gps_scale: GPS x/y are divided by this to line them up with the roadmap.
 #   1.035 fitted the old calibration; with the current one (walls + two
@@ -86,42 +111,12 @@ steering_trim = -0.14
 # gps_scale = 1.035
 gps_scale = 1.0
 
-# - gps_corrections: sideways GPS errors measured with check_pose.py (round 9,
-#   current calibration, lower part of the map, which has no walls nearby).
-#   Each row is (x, y, dx, dy): at raw GPS position (x, y), add (dx, dy).
-#   Nearby rows are blended (gps_correction_radius, m); ~1 m from every row the
-#   correction fades to zero, so the upper part of the map is unchanged.
-#   Re-measure after any recalibration.
-#   Node 0, mid 0 -> 2 and mid 2 -> 4 are tuned from driving, not the survey.
-#   0 -> 2: round 9 values crossed the divider (drive 4), 6.1 cm away from
-#   the divider put the car on the outer edge (drive 5), so 3 cm away.
-#   2 -> 4: 7.3 cm still left the rear left tyre on the divider (drive 5),
-#   so 9 cm.
-gps_corrections = np.array([
-    # x      y      dx      dy
-    [0.06, -0.06,  0.030,  0.000],   # node 0 (round 9: -0.058, 0.000)
-    [0.27, -0.81,  0.021,  0.021],   # mid 0 -> 2 (round 9: -0.013, -0.013)
-    [1.26, -1.15,  0.000,  0.063],   # node 2
-    [2.04, -0.88, -0.064,  0.064],   # mid 2 -> 4 (round 9: -0.051, 0.052)
-    [2.32,  0.00, -0.061,  0.000],   # node 4
-    [2.29,  1.43, -0.036,  0.000],   # mid 4 -> 14
-])
-gps_correction_radius = 0.35
-# - use_gps_table: False = gps_corrections is ignored (camera lane correction
-#   replaces it, 2026-11-11). The table is kept above as a fallback.
-use_gps_table = False
+# (The position-dependent gps_corrections table was removed on 2026-11-19, camera
+#  report §43: the camera does the lane keeping, nothing is tuned per place.)
 
 def correct_gps(x, y):
-    """Raw GPS x/y -> x/y lined up with the roadmap (gps_scale, then the
-    position-dependent gps_corrections if use_gps_table)."""
-    x, y = x / gps_scale, y / gps_scale
-    if not use_gps_table:
-        return x, y
-    d2 =(gps_corrections[:, 0] - x)**2 + (gps_corrections[:, 1] - y)**2
-    w = np.exp(-d2 / gps_correction_radius**2)
-    # the 0.05 fades the correction out where no row is nearby
-    dx, dy = w @ gps_corrections[:, 2:] / (w.sum() + 0.05)
-    return x + dx, y + dy
+    """Raw GPS x/y -> x/y lined up with the roadmap (gps_scale only)."""
+    return x / gps_scale, y / gps_scale
 
 # - GPS-jump check: a GPS reading further than gps_max_jump (m) or
 #   gps_max_heading_jump (rad) from the EKF estimate is ignored. If no reading
@@ -140,13 +135,92 @@ gps_timeout = 2.0
 #   Trusted = mode 'both', conf >= cam_min_conf, younger than cam_max_age, and
 #   (once driving) within cam_max_disagree of GPS + cam_bias. |cam_bias| is
 #   capped at cam_max_bias. Start lane_camera.py BEFORE this script.
-use_camera = True
+use_camera = False
 cam_port = 18555
 cam_tau = 0.3
 cam_min_conf = 0.6
 cam_max_age = 0.2
 cam_max_disagree = 0.10
 cam_max_bias = 0.15
+
+# - Camera steering (plan step C3, camera report §35, 2026-11-18). When on, the
+#   car steers from the camera's offset and heading to the lane, not from the
+#   GPS sideways position (which was ~8 cm off at the start, §34):
+#   * position along the route s (front axle) = start from the first GPS reading
+#     (nearest route point whose direction matches the GPS heading, anywhere on
+#     the route) + enc_scale * encoder distance, nudged towards the GPS position
+#     along the route when a reading agrees within cs_gps_gate (gain cs_gps_gain).
+#   * the map's lane curvature around s is sent to lane_camera.py (profile_port),
+#     which fits the lane lines with that shape and returns offset + heading.
+#   * between camera fits (and where it is blind, e.g. the start of 0 -> 2) the
+#     offset and heading are carried on with the encoder and the gyro.
+#   * Stanley steers from the front axle point placed at that offset from the
+#     route, with that heading. On an arc its heading term then gives the turn.
+#   * safety stops: no camera fit for cs_dr_max m, |offset| > cs_max_offset, or
+#     no message from lane_camera.py for cs_cam_timeout s. The GPS timeout stop
+#     is off in this mode (the GPS isn't needed to steer).
+#   Start parked on the route, pointing along it (within cs_start_lat of it by
+#   GPS), ideally where the camera sees the lane, and start lane_camera.py (with
+#   UDP) BEFORE this script. use_camera must be False.
+use_camera_steer = True
+enc_scale = 0.98            # encoder over-reads distance by 2 % (§34)
+gps_front_ahead = 0.11      # m, front axle ahead of the GPS/EKF point (§34)
+cs_gps_gain = 0.2           # fraction of the along-route GPS difference applied per accepted reading
+cs_gps_gate = 0.10          # m, larger along-route differences are ignored
+cs_gps_lat_gate = 0.15      # m, GPS readings further than this from the route are ignored
+cs_max_head = np.radians(8)     # camera heading used only within this of the expected heading
+cs_head_rms = 0.10          # cm, ... and only from a fit with less rms than this
+cs_dr_max = 2.3             # m driven without a camera fit -> stop (0 -> 2 is bridged for up to ~1.8 m since §40; was 1.8)
+cs_max_offset = 0.12        # m, |offset| beyond this -> stop
+cs_cam_timeout = 0.5        # s without a lane_camera.py message -> stop
+cs_wheelbase = 0.256        # m
+cs_start_lat = 0.15         # m, refuse to start if the first GPS reading is further than this from the route
+cs_start_head = np.radians(90)  # route points pointing more than this away from the GPS heading aren't start candidates
+# jump gate (§36): a camera offset further than cs_gate0 + cs_gate_per_m * (m since
+# the last accepted fit) from the predicted one is ignored, unless the camera keeps
+# saying the same (sd < cs_relock_sd) for cs_relock_dist m. Catches single bad fits
+# (edge search on the divider near node 14: -27 cm; intersection edge at node 2: +9 cm).
+cs_gate0 = 0.04             # m
+cs_gate_per_m = 0.03        # m per m of dead reckoning
+cs_relock_dist = 0.15       # m
+cs_relock_sd = 0.02         # m
+# confirmation (§36): after cs_confirm_after m without an accepted fit, a new fit is
+# used only when the next fit agrees with it within cs_confirm_tol (an isolated
+# edge fit in the 0 -> 2 curve was 6 cm wrong and steered the car to the divider).
+cs_confirm_after = 0.30     # m
+cs_confirm_tol = 0.02       # m
+# re-lock faster (§37): cs_relock_n consecutive ignored fits within cs_relock_n_sd
+# of each other are accepted too (the gate had locked onto a drifted estimate).
+cs_relock_n = 3
+cs_relock_n_sd = 0.015      # m
+# no camera heading near curve starts/ends (§37): if the map curvature changes by
+# more than cs_head_kchange between cs_head_window m behind and ahead of the front
+# axle, the fit's heading isn't used (offset/heading are ambiguous there, §24); the
+# gyro carries the heading. A -25 deg heading at the 0 -> 2 exit made the car steer
+# left onto the divider at node 2.
+# whole fit rejected (offset too) if its heading is further than this from the
+# expected heading (§40): near the 0 -> 2 exit / node 2 approach, edge fits read
+# +9.5 ... +2 cm with -44 ... -35 deg (expected -16); acting on them pushed the car
+# to the outer edge. Real fits in all drives so far were within 13 deg.
+cs_max_head_fit = np.radians(15)
+cs_head_window = (-0.30, 0.60)
+cs_head_kchange = 0.3       # 1/m
+# In camera steering, Stanley's heading error uses the exact lane tangent at the front
+# axle (route.heading(s)), not the waypoint segment's direction (§45). (Curvature
+# feedforward was tried and removed, §44-§46: front-axle Stanley already turns in at
+# the rate the body rotates.)
+profile_port = 18556
+profile_s = np.round(np.arange(-0.30, 1.0001, 0.05), 3)   # keep identical to lane_camera.PROFILE_S
+profile_period = 0.02       # s between curvature messages
+
+# - Odometry log (camera report §32, 2026-11-18): logging only, no effect on
+#   driving. Every odo_log_period s one row to odo_log_file with the same
+#   columns as odometry_log.py's odometry.csv (so c2_offline_test.py reads it),
+#   plus the EKF pose and the steering command. The gyro bias is averaged while
+#   parked during startDelay; gyro_z_raw is logged too, to redo it offline.
+log_odometry = True
+odo_log_file = 'odometry_drive.csv'
+odo_log_period = 0.02
 
 # Define the calibration pose
 # Calibration pose is either [0,0,-pi/2] or [0,2,-pi/2]
@@ -171,6 +245,56 @@ def remove_backward_points(wp):
         if np.dot(wp[:, i] - b, b - a) > 0:
             keep.append(i)
     return wp[:, keep]
+
+class RoutePath:
+    """The route as a function of the distance s along it (m, 0 = first node,
+    cyclic: s is taken modulo the route length L, also for s < 0). Used by the
+    camera steering (C3)."""
+
+    def __init__(self, wp, step=0.01):
+        xy = wp.T
+        keep = np.r_[True, np.hypot(*np.diff(xy, axis=0).T) > 1e-6]
+        xy = xy[keep]
+        sw = np.r_[0, np.cumsum(np.hypot(*np.diff(xy, axis=0).T))]
+        self.L = sw[-1]
+        self.s = np.arange(0, self.L, step)
+        self.x = np.interp(self.s, sw, xy[:, 0])
+        self.y = np.interp(self.s, sw, xy[:, 1])
+        self.th = np.unwrap(np.arctan2(np.gradient(self.y), np.gradient(self.x)))
+        self.k = np.gradient(self.th, self.s)
+
+    def xy(self, s):
+        sm = np.mod(np.asarray(s, float), self.L)
+        return np.stack([np.interp(sm, self.s, self.x), np.interp(sm, self.s, self.y)], -1)
+
+    def heading(self, s):
+        return np.interp(np.mod(np.asarray(s, float), self.L), self.s, self.th)
+
+    def curvature(self, s):
+        return np.interp(np.mod(np.asarray(s, float), self.L), self.s, self.k)
+
+    def locate(self, x, y, th, max_head):
+        """Start position: nearest route point to (x, y) anywhere on the route,
+        among the points whose direction is within max_head of heading th (so a
+        crossing road at an intersection isn't picked). -> (s, sideways
+        distance, + = left of the route); falls back to the nearest point."""
+        d2 = (self.x - x) ** 2 + (self.y - y) ** 2
+        dh = np.abs(np.arctan2(np.sin(self.th - th), np.cos(self.th - th)))
+        ok = dh < max_head
+        i = int(np.argmin(np.where(ok, d2, np.inf))) if np.any(ok) else int(np.argmin(d2))
+        lat = -np.sin(self.th[i]) * (x - self.x[i]) + np.cos(self.th[i]) * (y - self.y[i])
+        return float(self.s[i]), float(lat)
+
+    def project(self, x, y, s_guess, win):
+        """Position along the route of point (x, y), searched within +-win of
+        s_guess. -> (s, sideways distance, + = left of the route)."""
+        cand = np.arange(s_guess - win, s_guess + win, 0.005)
+        p = self.xy(cand)
+        i = int(np.argmin((p[:, 0] - x) ** 2 + (p[:, 1] - y) ** 2))
+        th = float(self.heading(cand[i]))
+        lat = -np.sin(th) * (x - p[i, 0]) + np.cos(th) * (y - p[i, 1])
+        return float(cand[i]), float(lat)
+
 
 if enableSteeringControl:
     roadmap = SDCSRoadMap(leftHandTraffic=False)
@@ -216,7 +340,7 @@ class SpeedController:
 
 class SteeringController:
 
-    def __init__(self, waypoints, k=1, cyclic=True):
+    def __init__(self, waypoints, k=1, cyclic=True, k_soft=0.0):
         self.maxSteeringAngle = np.pi/6
 
         self.wp = waypoints
@@ -224,13 +348,17 @@ class SteeringController:
         self.wpi = 0
 
         self.k = k
+        self.k_soft = k_soft
         self.cyclic = cyclic
 
         self.p_ref = (0, 0)
         self.th_ref = 0
 
     # ==============  SECTION B -  Steering Control  ====================
-    def update(self, p, th, speed):
+    def update(self, p, th, speed, tangent_ref=None):
+        """Stanley: heading error + atan(k * cross-track / (speed + k_soft)).
+        tangent_ref: lane direction for the heading error (rad); default = the
+        current waypoint segment's direction (camera report §45)."""
         wp_1 = self.wp[:, np.mod(self.wpi, self.N-1)]
         wp_2 = self.wp[:, np.mod(self.wpi+1, self.N-1)]
         
@@ -254,7 +382,7 @@ class SteeringController:
         dir = wrap_to_pi(np.arctan2(ct[1], ct[0]) - tangent)
 
         ect = np.linalg.norm(ct) * np.sign(dir)
-        psi = wrap_to_pi(tangent-th)
+        psi = wrap_to_pi((tangent if tangent_ref is None else tangent_ref) - th)
 
         self.p_ref = ep
         self.th_ref = tangent
@@ -263,36 +391,49 @@ class SteeringController:
         self.ect = ect
 
         return np.clip(
-            wrap_to_pi(psi + np.arctan2(self.k*ect, speed)),
+            wrap_to_pi(psi + np.arctan2(self.k*ect, speed + self.k_soft)),
             -self.maxSteeringAngle,
             self.maxSteeringAngle)
         
         # return 0
 
 class CameraReceiver:
-    """Latest lane_camera.py result from UDP (non-blocking)."""
+    """Latest lane_camera.py result from UDP (non-blocking). Since 2026-11-18 the
+    message also carries the map-shape fit (mf_*, camera steering C3)."""
 
     def __init__(self, port):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.sock.bind(('127.0.0.1', port))
         self.sock.setblocking(False)
         self.t, self.mode, self.offset, self.heading, self.conf = 0.0, 'none', np.nan, np.nan, 0.0
+        self.mf_src, self.mf_d, self.mf_h, self.mf_rms, self.mf_s = 'none', np.nan, np.nan, np.nan, np.nan
         self.count = 0
+        self.tRecv = 0.0      # local time of the newest message
 
     def read(self):
-        """Drain the socket and keep the newest message."""
+        """Drain the socket and keep the newest message. -> True if a new one arrived."""
+        new = False
         while True:
             try:
-                data = self.sock.recv(256)
+                data = self.sock.recv(512)
             except (BlockingIOError, socket.error):
-                return
+                return new
             try:
-                t, mode, off, head, conf = data.decode().split(',')
+                f = data.decode().split(',')
+                t, mode, off, head, conf = f[:5]
                 self.t, self.mode = float(t), mode
                 self.offset = float(off) / 100       # cm -> m, + = left of lane centre
                 self.heading = np.radians(float(head))
                 self.conf = float(conf)
+                if len(f) >= 10:
+                    self.mf_src = f[5]
+                    self.mf_d = float(f[6]) / 100    # cm -> m
+                    self.mf_h = np.radians(float(f[7]))
+                    self.mf_rms = float(f[8])        # cm
+                    self.mf_s = float(f[9])
                 self.count += 1
+                self.tRecv = time.time()
+                new = True
             except ValueError:
                 pass
 
@@ -325,7 +466,8 @@ def controlLoop():
     if enableSteeringControl:
         steeringController = SteeringController(
             waypoints=waypointSequence,
-            k=K_stanley
+            k=K_stanley,
+            k_soft=K_soft
         )
     #endregion
 
@@ -356,13 +498,59 @@ def controlLoop():
         initWaypointSequence = remove_backward_points(initWaypointSequence)
         initSteeringController = SteeringController(waypoints=initWaypointSequence,
                                                     k=K_stanley,
-                                                    cyclic=False)
+                                                    cyclic=False,
+                                                    k_soft=K_soft)
     cam = CameraReceiver(cam_port) if (use_camera and enableSteeringControl) else None
     camBias = 0.0
     camStartReported = False
+    odoFile = None
+
+    # Camera steering (C3) setup
+    cs = None
+    csAbort = None
+    if use_camera_steer and enableSteeringControl:
+        route = RoutePath(waypointSequence)
+        sGps0, lat0 = route.locate(initPose[0], initPose[1], initPose[2], cs_start_head)
+        s0 = sGps0 + gps_front_ahead
+        print(f"CAMSTEER: start at s = {s0:+.2f} m along the route (front axle, route length "
+              f"{route.L:.2f} m), {lat0*100:+.1f} cm from it by GPS")
+        if use_camera:
+            csAbort = "use_camera and use_camera_steer are both on; turn use_camera off"
+        elif abs(lat0) > cs_start_lat:
+            csAbort = (f"start position {lat0*100:+.1f} cm from the route by GPS "
+                       f"(need within {cs_start_lat*100:.0f} cm, pointing along it)")
+        camRx = CameraReceiver(cam_port)
+        profSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        cs = dict(s=s0, d=0.0, h=0.0, enc=None, biasSum=0.0, biasN=0, bias=None,
+                  fitS=s0, lastProf=-1.0, hExpPrev=0.0, src='none', nFit=0, nGps=0,
+                  rejS=None, rejVals=[], nRej=0, pend=None, nWait=0, nHbad=0)
+        startNodeReached = True      # main controller from the start (the car starts on the route)
+        # Stanley's waypoint index starts at 0 (node 0); move it to the segment the car is on
+        wpS = np.r_[0, np.cumsum(np.hypot(*np.diff(steeringController.wp, axis=1)))]
+        steeringController.wpi = int(np.clip(np.searchsorted(wpS, np.mod(s0, route.L), 'right') - 1,
+                                             0, steeringController.N - 2))
+
     with qcar, gps, yolo:
         if calibrate:
             return
+        if csAbort:
+            print(f"CAMSTEER: not starting: {csAbort}")
+            return
+        if cs is not None:
+            csCps = getattr(qcar, 'CPS_TO_MPS', None)
+            if csCps is None:
+                print("CAMSTEER: not starting: qcar.CPS_TO_MPS not available")
+                return
+        if log_odometry:
+            odoFile = open(odo_log_file, 'w')
+            odoFile.write('t_epoch,encoder,dist_m,tach_mps,dist_tach_m,gyro_z,heading_deg,'
+                          'gyro_z_raw,x,y,th_deg,delta,cs_s,cs_d_cm,cs_h_deg,cs_src\n')
+            cpsToMps = getattr(qcar, 'CPS_TO_MPS', np.nan)
+            odoEnc0 = None
+            odoBiasSum, odoBiasN, odoBias = 0.0, 0, None
+            odoHeading = odoDistTach = 0.0
+            odoLast = 0.0
+            print(f"ODOMETRY: logging to {odo_log_file} (CPS_TO_MPS = {cpsToMps})")
         t0 = time.time()
         t=0
         startTime = time.time()
@@ -385,6 +573,8 @@ def controlLoop():
                                          yolo.cars, 
                                          yolo.yieldSign,
                                          yolo.person)
+            gpsRaw = None
+            vTarget = v_ref                 # speed target (lowered in curves by the curvature speed limit)
             if enableSteeringControl:
 
                 if gps.readGPS():
@@ -392,13 +582,14 @@ def controlLoop():
                         *correct_gps(gps.position[0], gps.position[1]),
                         gps.orientation[2]
                     ])
+                    gpsRaw = y_gps.copy()     # before the jump check (camera steering has its own gate)
                     # GPS-jump check: ignore readings the car can't have moved to
                     jump = np.linalg.norm(y_gps[:2] - ekf.x_hat[:2,0])
                     headingJump = abs(wrap_to_pi(y_gps[2] - ekf.x_hat[2,0]))
                     if jump < gps_max_jump and headingJump < gps_max_heading_jump:
                         lastGoodGPS = t
                     else:
-                        print(f"GPS rejected: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)  jump={jump:.2f} m  heading_jump={np.degrees(headingJump):.0f}deg")
+                        print(f"GPS rejected: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)  jump={jump:.2f} m  heading_jump={np.degrees(headingJump):.0f}deg  t_epoch={time.time():.2f}")
                         y_gps = None
                     ekf.update(
                         [qcar.motorTach, delta],
@@ -407,7 +598,7 @@ def controlLoop():
                         qcar.gyroscope[2],
                     )
                     if y_gps is not None:
-                        print(f"GPS: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)")
+                        print(f"GPS: ({y_gps[0]:.2f},{y_gps[1]:.2f},{np.degrees(y_gps[2]):.0f}deg)  t_epoch={time.time():.2f}")
                 else:
                     ekf.update(
                         [qcar.motorTach, delta],
@@ -416,7 +607,7 @@ def controlLoop():
                         qcar.gyroscope[2],
                     )
 
-                if t - lastGoodGPS > gps_timeout:
+                if cs is None and t - lastGoodGPS > gps_timeout:
                     print(f"STOPPED: no GPS reading accepted for {gps_timeout:.0f} s. "
                           f"Last estimate ({ekf.x_hat[0,0]:.2f},{ekf.x_hat[1,0]:.2f},{np.degrees(ekf.x_hat[2,0]):.0f}deg)")
                     break
@@ -455,7 +646,155 @@ def controlLoop():
                             print(f"CAMERA: bias at start {camBias*100:+.1f} cm  "
                                   f"(camera {cam.offset*100:+.1f} cm, GPS {gpsOff*100:+.1f} cm, {cam.count} messages)")
 
+                # Camera steering (C3): position along the route, offset and
+                # heading to the lane, and the point Stanley steers from.
+                thSteer = th
+                tanRef = None
+                if cs is not None:
+                    newCam = camRx.read()
+                    enc = int(qcar.motorEncoder[0])
+                    gzRaw = float(qcar.gyroscope[2])
+                    if cs['enc'] is None:
+                        cs['enc'] = enc
+                    if t < startDelay:
+                        cs['biasSum'] += gzRaw
+                        cs['biasN'] += 1
+                    elif cs['bias'] is None:
+                        cs['bias'] = cs['biasSum'] / max(cs['biasN'], 1)
+                    # encoder: along the route; offset/heading carried on (dead reckoning)
+                    ds = enc_scale * (enc - cs['enc']) * csCps
+                    cs['enc'] = enc
+                    sPrev = cs['s']
+                    cs['s'] += ds
+                    thPath = float(route.heading(cs['s']))
+                    hExp = float(wrap_to_pi(float(route.heading(cs['s'] - cs_wheelbase)) - thPath))
+                    cs['d'] += np.sin(cs['h'] - cs['hExpPrev']) * ds
+                    if cs['bias'] is not None:
+                        cs['h'] = float(wrap_to_pi(cs['h'] + (gzRaw - cs['bias']) * dt
+                                                   - wrap_to_pi(thPath - float(route.heading(sPrev)))))
+                    cs['hExpPrev'] = hExp
+                    # GPS: position along the route only, when it agrees
+                    if gpsRaw is not None:
+                        sG, latG = route.project(gpsRaw[0], gpsRaw[1], cs['s'] - gps_front_ahead, 0.4)
+                        innov = sG + gps_front_ahead - cs['s']
+                        if abs(innov) < cs_gps_gate and abs(latG) < cs_gps_lat_gate:
+                            cs['s'] += cs_gps_gain * innov
+                            cs['nGps'] += 1
+                    # camera: offset (and heading when clean and plausible)
+                    if newCam:
+                        accept = False
+                        status = 'DR'
+                        headBad = (camRx.mf_src in ('YE', 'E', 'Y')
+                                   and abs(wrap_to_pi(camRx.mf_h - hExp)) > cs_max_head_fit)
+                        if camRx.mf_src not in ('YE', 'E', 'Y') or headBad:
+                            cs['pend'] = None            # a frame without a usable fit breaks a confirmation pair
+                            if headBad:
+                                status = 'hbad'
+                                cs['nHbad'] += 1
+                        elif (t >= startDelay and cs['s'] - cs['fitS'] > cs_confirm_after
+                              and (cs['pend'] is None or abs(camRx.mf_d - cs['pend']) > cs_confirm_tol)):
+                            # after a gap without fits: wait for a second fit that agrees (§36)
+                            cs['pend'] = camRx.mf_d
+                            cs['nWait'] += 1
+                            status = 'wait'
+                        else:
+                            cs['pend'] = None
+                            gate = cs_gate0 + cs_gate_per_m * (cs['s'] - cs['fitS'])
+                            if t < startDelay or abs(camRx.mf_d - cs['d']) <= gate:
+                                accept = True
+                            else:
+                                # jump gate: ignore, unless the camera keeps saying the same
+                                if cs['rejS'] is None:
+                                    cs['rejS'], cs['rejVals'] = cs['s'], []
+                                cs['rejVals'].append(camRx.mf_d)
+                                cs['nRej'] += 1
+                                if ((cs['s'] - cs['rejS'] > cs_relock_dist
+                                        and np.std(cs['rejVals'][-5:]) < cs_relock_sd)
+                                        or (len(cs['rejVals']) >= cs_relock_n
+                                            and np.std(cs['rejVals'][-cs_relock_n:]) < cs_relock_n_sd)):
+                                    accept = True
+                                    print(f"CAMSTEER: re-lock to the camera at s = {cs['s']:.2f} m: offset "
+                                          f"{cs['d']*100:+.1f} -> {camRx.mf_d*100:+.1f} cm  t_epoch={time.time():.2f}")
+                                else:
+                                    status = 'rej'
+                                    if cs['nRej'] <= 50:
+                                        print(f"CAMSTEER: camera offset {camRx.mf_d*100:+.1f} cm ignored "
+                                              f"(predicted {cs['d']*100:+.1f}, gate {gate*100:.1f} cm, "
+                                              f"{camRx.mf_src}) s = {cs['s']:.2f} m  t_epoch={time.time():.2f}")
+                        if accept:
+                            cs['rejS'] = None
+                            cs['d'] = camRx.mf_d
+                            kWin = route.curvature(cs['s'] + np.linspace(cs_head_window[0], cs_head_window[1], 37))
+                            if (np.ptp(kWin) <= cs_head_kchange and camRx.mf_rms < cs_head_rms
+                                    and abs(wrap_to_pi(camRx.mf_h - hExp)) < cs_max_head):
+                                cs['h'] = camRx.mf_h
+                            cs['fitS'], cs['src'] = cs['s'], camRx.mf_src
+                            cs['nFit'] += 1
+                        elif t < startDelay and camRx.mode == 'both':
+                            cs['d'], cs['h'] = camRx.offset, camRx.heading
+                            cs['fitS'], cs['src'] = cs['s'], 'both'
+                        else:
+                            cs['src'] = status
+                    # lane curvature around the car -> lane_camera.py
+                    if t - cs['lastProf'] >= profile_period:
+                        cs['lastProf'] = t
+                        kk = route.curvature(cs['s'] + profile_s)
+                        msg = f"{time.time():.3f},{cs['s']:.4f}," + ','.join(f"{v:.4f}" for v in kk)
+                        profSock.sendto(msg.encode(), ('127.0.0.1', profile_port))
+                    # Stanley steers from the front axle point at the offset, with the heading
+                    nL = np.array([-np.sin(thPath), np.cos(thPath)])
+                    p_steer = route.xy(cs['s']) + nL * cs['d']
+                    tanRef = thPath           # heading error from the exact lane tangent at the front axle
+                    thSteer = thPath + cs['h']
+                    # curvature speed limit (speed planning: looks ahead, steering doesn't)
+                    if use_curve_speed:
+                        kMax = float(np.max(np.abs(route.curvature(
+                            cs['s'] + np.linspace(-cs_wheelbase, v_curve_ahead, 40)))))
+                        if kMax > 1e-6:
+                            vTarget = min(v_ref, max(v_curve_min, float(np.sqrt(v_curve_alat / kMax))))
+                    # safety stops (once driving)
+                    stopWhy = None
+                    if t >= startDelay:
+                        if time.time() - camRx.tRecv > cs_cam_timeout:
+                            stopWhy = (f"no message from lane_camera.py for {cs_cam_timeout:.1f} s "
+                                       f"({camRx.count} received; is it running with UDP on?)")
+                        elif cs['s'] - cs['fitS'] > cs_dr_max:
+                            stopWhy = f"no camera fit for {cs['s'] - cs['fitS']:.2f} m"
+                        elif abs(cs['d']) > cs_max_offset:
+                            stopWhy = f"offset {cs['d']*100:+.1f} cm"
+                    if stopWhy:
+                        print(f"STOPPED (camera steering): {stopWhy}. s = {cs['s']:.2f} m, "
+                              f"offset {cs['d']*100:+.1f} cm, heading {np.degrees(cs['h']):+.1f} deg  "
+                              f"t_epoch={time.time():.2f}")
+                        break
+
             v = qcar.motorTach
+
+            # Odometry log (no effect on driving)
+            if odoFile is not None:
+                gzRaw = float(qcar.gyroscope[2])
+                tach = float(qcar.motorTach[0]) if np.ndim(qcar.motorTach) else float(qcar.motorTach)
+                enc = int(qcar.motorEncoder[0])
+                if odoEnc0 is None:
+                    odoEnc0 = enc
+                if t < startDelay:
+                    odoBiasSum += gzRaw
+                    odoBiasN += 1
+                elif odoBias is None:
+                    odoBias = odoBiasSum / max(odoBiasN, 1)
+                    print(f"ODOMETRY: gyro bias {odoBias:+.5f} rad/s from {odoBiasN} samples")
+                gz = gzRaw - (odoBias or 0.0)
+                if odoBias is not None:
+                    odoHeading += gz * dt
+                odoDistTach += tach * dt
+                if t - odoLast >= odo_log_period:
+                    odoLast = t
+                    e = enc - odoEnc0
+                    csTxt = (f"{cs['s']:.4f},{cs['d']*100:.2f},{np.degrees(cs['h']):.2f},{cs['src']}"
+                             if cs is not None else "nan,nan,nan,")
+                    odoFile.write(f"{time.time():.3f},{e},{e * cpsToMps:.4f},{tach:.4f},{odoDistTach:.4f},"
+                                  f"{gz:.5f},{np.degrees(odoHeading):.2f},{gzRaw:.5f},"
+                                  f"{x:.3f},{y:.3f},{np.degrees(th):.2f},{delta:.4f},{csTxt}\n")
             #endregion
 
             #region : Update controllers and write to car
@@ -464,7 +803,7 @@ def controlLoop():
                 delta = 0
             else:
                 #region : Speed controller update
-                u = speedController.update(v, v_ref*vGain, dt)
+                u = speedController.update(v, vTarget*vGain, dt)
                 #endregion
 
                 #region : Steering controller update
@@ -476,14 +815,25 @@ def controlLoop():
                         startNodeReached = distToStart < 0.2
                         # if the start node is not reached, use the initial steering controller
                         delta = initSteeringController.update(p_steer, th, v)
+                        activeController = initSteeringController
                     else:
-                        delta = steeringController.update(p_steer, th, v)
-                        if int(t*2) != int((t-dt)*2):   # about twice per second
-                            camTxt = ""
-                            if cam is not None:
-                                camTxt = (f"  cam={cam.mode}/{cam.offset*100:+.1f}cm  "
-                                          f"bias={camBias*100:+.1f}cm  used={int(camUsed)}")
-                            print(f"pose=({x:.2f},{y:.2f},{np.degrees(th):.0f}deg)  path_pt=({steeringController.p_ref[0]:.2f},{steeringController.p_ref[1]:.2f})  cross_track={steeringController.ect:.3f} m{camTxt}  t_epoch={time.time():.2f}")
+                        delta = steeringController.update(p_steer, thSteer, v, tanRef)
+                        activeController = steeringController
+                    # pose= line about twice per second, also while the start
+                    # controller is active (2026-11-17: a whole 0->2->4 drive ran on
+                    # it and logged no pose= lines, camera report §21)
+                    if int(t*2) != int((t-dt)*2):
+                        camTxt = ""
+                        if cam is not None:
+                            camTxt = (f"  cam={cam.mode}/{cam.offset*100:+.1f}cm  "
+                                      f"bias={camBias*100:+.1f}cm  used={int(camUsed)}")
+                        if cs is not None:
+                            camTxt = (f"  cs: s={cs['s']:.2f} m  offset={cs['d']*100:+.1f}cm  "
+                                      f"heading={np.degrees(cs['h']):+.1f}deg  src={cs['src']}  "
+                                      f"fits={cs['nFit']}  rej={cs['nRej']}  wait={cs['nWait']}  hbad={cs['nHbad']}  gps_s={cs['nGps']}  "
+                                      f"v_target={vTarget:.2f}")
+                        initTxt = "" if startNodeReached else "  init=1"
+                        print(f"pose=({x:.2f},{y:.2f},{np.degrees(th):.0f}deg)  path_pt=({activeController.p_ref[0]:.2f},{activeController.p_ref[1]:.2f})  cross_track={activeController.ect:.3f} m{camTxt}{initTxt}  t_epoch={time.time():.2f}")
                 else:
                     delta = 0
                 #endregion
@@ -491,6 +841,9 @@ def controlLoop():
             # end = elapsed_time()
             continue
         qcar.read_write_std(throttle= 0, steering= 0)
+        if odoFile is not None:
+            odoFile.close()
+            print(f"ODOMETRY: saved {odo_log_file}")
 
 # -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
 

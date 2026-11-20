@@ -1,6 +1,8 @@
 # Plan: Camera Lane Correction
 
-**Status (end of 2026-11-11):** steps 0–2 and 4 done; car A recalibrated; **step 5 written and driven once: straight start, but it crossed the divider on the 0 → 2 curve.** **Open: a camera method for curves** (the user is researching one; option discussed: the visible edge + the map's curvature, [report](../history/2026-11-10_camera_lane_correction.md) §12). Where to pick up: that report, §13. The goal is now for the camera to **replace** the `gps_corrections` table, not blend with it. All results so far: one combined [report](../history/2026-11-10_camera_lane_correction.md). Known limits: the localization fails on 4 → 14 at y ≈ 1.0–1.3 after the recalibration (every drive stops there, not yet investigated), and the front camera sees nothing from node 0 through the 0 → 2 curve. Methods chosen 2026-10-30, from the [new-route record](../history/2026-10-28_new_route_investigation.md) §15.
+**Status (2026-11-17): direction changed. The camera steers and the GPS only gives the route position. See "Direction change" below; it replaces method 4 and the table-based fallback.** Curves: right edge + map radius works offline ([report](../history/2026-11-10_camera_lane_correction.md) §19). Driven recordings are blocked by a new false GPS solution on the 0 → 2 curve (§22).
+
+**Earlier status (end of 2026-11-11):** steps 0–2 and 4 done; car A recalibrated; **step 5 written and driven once: straight start, but it crossed the divider on the 0 → 2 curve.** **Open: a camera method for curves** (the user is researching one; option discussed: the visible edge + the map's curvature, [report](../history/2026-11-10_camera_lane_correction.md) §12). Where to pick up: that report, §13. The goal is now for the camera to **replace** the `gps_corrections` table, not blend with it. All results so far: one combined [report](../history/2026-11-10_camera_lane_correction.md). Known limits: the localization fails on 4 → 14 at y ≈ 1.0–1.3 after the recalibration (every drive stops there, not yet investigated), and the front camera sees nothing from node 0 through the 0 → 2 curve. Methods chosen 2026-10-30, from the [new-route record](../history/2026-10-28_new_route_investigation.md) §15.
 
 ## Why
 
@@ -19,7 +21,38 @@ The GPS correction table ([car_A_setup.md](../car_A_setup.md) §1) treats the sy
 
 **It does not replace the GPS.** The lidar position is still needed to know where the car is on the map, when to turn and which route to follow. The camera only corrects the sideways position within the lane.
 
-**Keep the correction table until the camera is proven.** At intersections, or wherever the lines aren't visible, the car falls back to GPS steering, and the table keeps that fallback accurate on the lower part.
+**Keep the correction table until the camera is proven.** At intersections, or wherever the lines aren't visible, the car falls back to GPS steering, and the table keeps that fallback accurate on the lower part. *(Superseded 2026-11-17, see below.)*
+
+## Direction change (2026-11-17): camera steers, GPS for route position
+
+**Decided with the user** after drive 2 crossed the divider when a false GPS solution was accepted ([report](../history/2026-11-10_camera_lane_correction.md) §22).
+
+**Why:** steering needs the sideways position to 1–2 cm. In this room the lidar position is off by 5–10 cm, varying by place and with every room change. The table, recalibration and re-tuning only chase that error. And as long as steering follows the GPS position (including step 5, which only shifts it by the camera bias), a GPS jump steers the car out of its lane.
+
+**Roles:**
+
+| Job | Source |
+|---|---|
+| Staying centred: offset from the lane centre + angle to the lane, at the front axle | **Camera** (straights: both lines or one; curves: the visible boundary + the map radius, §19) |
+| Where curves start (needed for the curve fit, §20) | **Camera** sees the bend ~30–60 cm ahead; then the **wheel encoder** counts the distance to it |
+| Which curve comes next (direction, radius), turns at intersections | Map + GPS, coarse (±20–30 cm is enough) |
+| Short stretches without lines (intersections, ~30–50 cm) | Wheel encoder + gyro from the last camera measurement; yellow line alone where it's visible |
+
+**Consequences:**
+- **No `gps_corrections` table.** Recalibrate only when the GPS is grossly wrong (> 20–30 cm).
+- A GPS jump no longer steers the car directly. The jump check must still not lock onto a wrong estimate (§22).
+
+**Steps:**
+- **C1 (offline):** check on the existing recordings that the camera can see where each curve starts on the approach (0 → 2 from node 0, 2 → 4 from node 2), using the yellow line near intersections.
+  **Partial, 2026-11-17 ([report](../history/2026-11-10_camera_lane_correction.md) §23):** the right edge shows the curve entry (48 → 40 cm ahead, consistent with the motion) and the 0 → 2 exit (33–35 cm). Each change point is visible for ~0.5 s. The yellow line needs one centre point per row. At node 0 the yellow and edge disagree, so the paint may not match the map. To finish: the hand-rolled and drive 1 frames, from the car.
+  **Done, 2026-11-17 (§24):** all 4 curve ends seen on the right edge, first at 40–45 cm and lost below ~33 cm, offsets within ±3 cm of the truth. Curve starts right after intersections (node 0, node 2) are **not** usable: the lane there doesn't follow the map's shape. Design consequence: bridge from the last straight reading before the intersection with encoder + gyro (~0.5 m) until a clean arc fit appears. Start the car on the straight before node 0.
+- **C2 needs:** encoder distance per frame. Proposed: a logger for the encoder + gyro only, run with `lane_camera.py --save-raw` on a hand-rolled, centred pass.
+  **First result, 2026-11-17 ([report](../history/2026-11-10_camera_lane_correction.md) §25):** with the position along the path right, −2.3 … +3.1 cm on all of 0 → 2 → 4 except the first ~0.8 m of 0 → 2. Open: the camera's forward distance scale (likely why the position needed a 0.35 m shift), robust curve-end corrections, and bridging the start of 0 → 2 (gyro with the axle lag, or the left camera).
+  **Forward check, 2026-11-17 (§26):** the paper strips (30/45/60 cm) disagree with the curve geometry (radius confirmed by encoder + gyro). Most likely the borrowed fisheye intrinsics. **Next: checkerboard calibration of the front CSI camera** (step 1 said "only if later checks show a distortion error"; they now do).
+  **Checkerboard calibration, 2026-11-18 (§27–§30):** done (`calib_capture.py` on the car, `calib_solve.py` on the PC). Strips, lane width and curve radius now all agree (`road_check.py`); the ×0.724 scale is gone. In `lane_camera.py` since 2026-11-18. On arcs a car following the lane points ~16° off the lane direction at the front axle (turn centre level with the rear axle), so C2 must expect that heading, not 0°.
+- **C2 (offline):** curve start tracked with the distance travelled, plus the boundary fit, gives a continuous offset through straight → curve → straight.
+- **C3:** move the method into `lane_camera.py` (send offset, heading and mode; take the route curvature and the distance travelled as input). Change `vehicle_control.py` so Stanley steers on the camera's offset and heading when trusted, with the GPS used only for route progress and curvature feedforward.
+- **C4:** drive with the table off. Intersections and the jump check are handled alongside.
 
 ## Chosen methods
 
