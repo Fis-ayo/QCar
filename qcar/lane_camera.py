@@ -89,7 +89,8 @@ _MF_S = np.arange(-0.30, 1.0, 0.008)     # lane curve samples (0.004 gives the s
 LOG_COLUMNS = ['t_epoch', 't', 'mode', 'offset_cm', 'heading_deg', 'conf',
                'yellow_cm', 'edge_cm', 'width_cm', 'curv_1pm',
                'n_yellow', 'n_edge', 'rms_yellow_cm', 'rms_edge_cm', 'proc_ms',
-               'mf_src', 'mf_d_cm', 'mf_h_deg', 'mf_rms_cm', 'mf_s', 'mf_ms']
+               'mf_src', 'mf_d_cm', 'mf_h_deg', 'mf_rms_cm', 'mf_s', 'mf_ms',
+               'sh_m', 'sh_rms0', 'sh_rms', 'sh_ok']     # along-route shift fit (§57)
 
 MAP1, MAP2 = cv2.initUndistortRectifyMap(K, DIST, None, K, (IMG_W, IMG_H), cv2.CV_16SC2)
 
@@ -322,6 +323,60 @@ def fit_boundary(p, c, n, side, iters=15):
     return 100 * d, float(np.degrees(psi)), 100 * float(np.sqrt(np.mean(e ** 2)))
 
 
+SHIFT_MAX = 0.30            # m, along-route shifts tried: -SHIFT_MAX ... +SHIFT_MAX (§55-§57)
+SHIFT_COARSE, SHIFT_FINE = 0.06, 0.02   # m, coarse grid, then +-2 fine steps around its best
+SHIFT_MIN_DK = 0.5          # 1/m: curvature change needed within the fit window (else s is unobservable)
+SHIFT_MIN_GAIN = 0.10       # rms(shift 0) - rms(best) must exceed this (same units as fit_boundary rms)
+SHIFT_PERIOD = 0.2          # s, shift_fit at most this often in the live loop (~80 ms per call on the PC)
+
+
+def shift_fit(dbg, k):
+    """Along-route position check (camera report §55-§57): refit the map lane shape with
+    the curvature profile k (at PROFILE_S around the car's s) shifted along the route,
+    coarse grid then fine steps around its best. Observable only where the curvature
+    changes within the view (curve starts / ends).
+    -> dict(sh_m: best shift (m, + = the lane is further along than the profile's s),
+            sh_rms0, sh_rms: rms at shift 0 / at the best shift, sh_ok: usable)."""
+    bad = dict(sh_m=np.nan, sh_rms0=np.nan, sh_rms=np.nan, sh_ok=False)
+    win = (PROFILE_S >= 0) & (PROFILE_S <= MF_FIT_MAX)
+    if np.ptp(np.asarray(k)[win]) < SHIFT_MIN_DK:
+        return bad
+    ypts, epts = boundary_points(dbg)
+    pts = []
+    for p, side in ((ypts, LANE_W / 2), (epts, -LANE_W / 2)):
+        if len(p) >= MIN_POINTS // 2:
+            if len(p) > MF_MAX_PTS:
+                p = p[np.linspace(0, len(p) - 1, MF_MAX_PTS).astype(int)]
+            pts.append((p, side))
+    if not pts:
+        return bad
+    cache = {}
+
+    def rms_at(sh):
+        sh = round(float(sh), 3)
+        if sh not in cache:
+            c, n = lane_from_profile(np.interp(PROFILE_S + sh, PROFILE_S, k))
+            acc = m = 0
+            for p, side in pts:
+                dd, hh, rr = fit_boundary(p, c, n, side)
+                if abs(dd) < MF_MAX_D and abs(hh) < MF_MAX_H:
+                    acc += rr ** 2 * len(p)
+                    m += len(p)
+            cache[sh] = np.sqrt(acc / m) if m else np.inf
+        return cache[sh]
+
+    coarse = np.round(np.arange(-SHIFT_MAX, SHIFT_MAX + 1e-9, SHIFT_COARSE), 3)
+    best = min(coarse, key=rms_at)
+    for sh in best + SHIFT_FINE * np.array([-2, -1, 1, 2]):
+        if abs(sh) <= SHIFT_MAX + 1e-9:
+            rms_at(sh)
+    best = min(cache, key=cache.get)
+    rb, r0 = cache[best], rms_at(0.0)
+    ok = (abs(best) < SHIFT_MAX - 1e-9 and np.isfinite(r0) and r0 - rb > SHIFT_MIN_GAIN
+          and rb < MF_MAX_RMS)               # the best fit itself must be clean (§56: roundabout exit noise)
+    return dict(sh_m=float(best), sh_rms0=float(r0), sh_rms=float(rb), sh_ok=bool(ok))
+
+
 def map_fit(dbg, k):
     """Map-shape fit of one frame. -> dict(mf_src, mf_d_cm, mf_h_deg, mf_rms_cm)."""
     c, n = lane_from_profile(k)
@@ -382,6 +437,8 @@ def main():
     ap.add_argument('--save-raw', action='store_true',
                     help='also save raw front + left frames to raw_frames/<start time>/ for offline curve tests')
     ap.add_argument('--raw-every', type=float, default=0.2, help='seconds between raw frame pairs')
+    ap.add_argument('--no-shift', dest='shift', action='store_false',
+                    help='do not run the along-route shift fit (camera report §57); REVERT switch')
     args = ap.parse_args()
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM) if args.udp_port else None
     # Lane curvature from vehicle_control.py (camera steering, C3); only with UDP on
@@ -409,7 +466,7 @@ def main():
     logf = open(args.log, 'w')
     logf.write(','.join(LOG_COLUMNS) + '\n')
     t_start = time.time()
-    last_dbg = last_print = last_proc = 0.0
+    last_dbg = last_print = last_proc = last_shift = 0.0
     n = 0
     try:
         while not args.duration or time.time() - t_start < args.duration:
@@ -454,15 +511,22 @@ def main():
                 except ValueError:
                     pass
             out.update(mf_src='none', mf_d_cm=np.nan, mf_h_deg=np.nan, mf_rms_cm=np.nan,
-                       mf_s=np.nan, mf_ms=np.nan)
+                       mf_s=np.nan, mf_ms=np.nan, sh_m=np.nan, sh_rms0=np.nan, sh_rms=np.nan, sh_ok=0)
             if profile is not None and time.time() - profile[0] < PROFILE_MAX_AGE:
                 t_mf = time.time()
                 out.update(map_fit(dbg, profile[2]))
+                if args.shift and now - last_shift >= SHIFT_PERIOD:
+                    sf = shift_fit(dbg, profile[2])
+                    if np.isfinite(sf['sh_rms0']):      # it ran (curvature change in view)
+                        last_shift = now
+                    out.update(sf)
+                    out['sh_ok'] = int(sf['sh_ok'])
                 out['mf_s'], out['mf_ms'] = profile[1], 1000 * (time.time() - t_mf)
             logf.write(','.join(fmt(out[c]) for c in LOG_COLUMNS) + '\n')
             if sock:
                 msg = ','.join(fmt(out[c]) for c in ['t_epoch', 'mode', 'offset_cm', 'heading_deg', 'conf',
-                                                      'mf_src', 'mf_d_cm', 'mf_h_deg', 'mf_rms_cm', 'mf_s'])
+                                                      'mf_src', 'mf_d_cm', 'mf_h_deg', 'mf_rms_cm', 'mf_s',
+                                                      'sh_m', 'sh_ok', 'sh_rms'])
                 sock.sendto(msg.encode(), ('127.0.0.1', args.udp_port))
             n += 1
             if args.debug_every and now - last_dbg >= args.debug_every:
@@ -473,6 +537,8 @@ def main():
                 if not np.isnan(out['mf_s']):
                     mf = (f"  map-fit {out['mf_src']:4s} d={out['mf_d_cm']:+5.1f} cm h={out['mf_h_deg']:+5.1f} deg "
                           f"s={out['mf_s']:+.2f} m {out['mf_ms']:.0f} ms")
+                    if out['sh_ok']:
+                        mf += f"  shift {out['sh_m']:+.2f} m"
                 print(f"t={out['t']:6.1f}  {out['mode']:6s}  offset={out['offset_cm']:+6.1f} cm  "
                       f"heading={out['heading_deg']:+5.1f} deg  conf={out['conf']:.2f}  "
                       f"width={out['width_cm']:5.1f} cm  {out['proc_ms']:.0f} ms/frame{mf}")

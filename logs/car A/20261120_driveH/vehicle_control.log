@@ -1,0 +1,212 @@
+Selected nodes: [0, 2, 4, 14, 16, 18, 12, 0]
+QCar configured successfully.
+YOLO Server error: status check failed.
+GPS Server started.
+CAMSTEER: start at s = +13.53 m along the route (front axle, route length 13.74 m), +5.9 cm from it by GPS
+CAMSTEER: estimator = fusion filter (dead reckoning axle, encoder = front axle)
+ODOMETRY: logging to odometry_drive.csv (CPS_TO_MPS = 6.865916376933291e-06)
+YOLO Server error: status check failed.
+Reconnected to yolo Server
+GPS: (0.06,0.43,-91deg)  t_epoch=1795218512.60
+GPS: (0.06,0.46,-91deg)  t_epoch=1795218513.12
+ODOMETRY: gyro bias +0.00500 rad/s from 936 samples
+pose=(0.06,0.46,-91deg)  path_pt=(0.00,0.35)  cross_track=0.003 m  cs: s=13.54 m  offset=-0.3cm  heading=-1.0deg  src=YE  fits=7  rej=0  wait=0  hbad=0  gps_s=2  shift=0  gps_rej=0  sd_d=0.4cm  sd_s=3.9cm  v_target=0.40  t_epoch=1795218513.13
+GPS: (0.06,0.43,-91deg)  t_epoch=1795218513.65
+pose=(0.06,0.43,-91deg)  path_pt=(0.00,0.29)  cross_track=0.003 m  cs: s=13.59 m  offset=-0.3cm  heading=-0.6deg  src=YE  fits=10  rej=0  wait=0  hbad=0  gps_s=3  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=4.0cm  v_target=0.34  t_epoch=1795218513.65
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.02
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.02
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.02
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.02
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.03
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.03
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.04
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.04
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.05
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.05
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.06
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.06
+GPS: (0.06,0.26,-90deg)  t_epoch=1795218514.07
+pose=(0.06,0.24,-90deg)  path_pt=(0.00,0.15)  cross_track=0.002 m  cs: s=13.74 m  offset=-0.2cm  heading=+0.1deg  src=DR  fits=13  rej=0  wait=0  hbad=0  gps_s=4  shift=0  gps_rej=0  sd_d=0.8cm  sd_s=0.4cm  v_target=0.34  t_epoch=1795218514.13
+GPS: (0.06,0.20,-90deg)  t_epoch=1795218514.18
+GPS: (0.06,0.13,-90deg)  t_epoch=1795218514.38
+GPS: (0.06,0.06,-90deg)  t_epoch=1795218514.57
+pose=(0.06,0.05,-90deg)  path_pt=(0.00,0.03)  cross_track=-0.002 m  cs: s=13.84 m  offset=+0.2cm  heading=+0.4deg  src=DR  fits=15  rej=0  wait=0  hbad=0  gps_s=7  shift=0  gps_rej=0  sd_d=0.9cm  sd_s=2.9cm  v_target=0.34  t_epoch=1795218514.63
+GPS: (0.06,-0.00,-90deg)  t_epoch=1795218514.78
+GPS: (0.06,-0.10,-90deg)  t_epoch=1795218514.97
+pose=(0.06,-0.15,-91deg)  path_pt=(0.00,-0.15)  cross_track=-0.010 m  cs: s=14.02 m  offset=+1.0cm  heading=+0.3deg  src=E  fits=17  rej=0  wait=0  hbad=0  gps_s=9  shift=0  gps_rej=0  sd_d=0.7cm  sd_s=3.2cm  v_target=0.34  t_epoch=1795218515.13
+GPS: (0.06,-0.17,-91deg)  t_epoch=1795218515.17
+GPS: (0.06,-0.24,-93deg)  t_epoch=1795218515.37
+GPS: (0.06,-0.27,-93deg)  t_epoch=1795218515.58
+pose=(0.06,-0.29,-92deg)  path_pt=(0.01,-0.32)  cross_track=0.003 m  cs: s=14.19 m  offset=-0.3cm  heading=-8.0deg  src=DR  fits=19  rej=0  wait=0  hbad=0  gps_s=12  shift=0  gps_rej=0  sd_d=0.9cm  sd_s=3.4cm  v_target=0.34  t_epoch=1795218515.63
+GPS: (0.06,-0.34,-91deg)  t_epoch=1795218515.78
+GPS: (0.06,-0.40,-89deg)  t_epoch=1795218515.98
+pose=(0.06,-0.45,-87deg)  path_pt=(0.05,-0.48)  cross_track=0.008 m  cs: s=14.36 m  offset=-0.8cm  heading=-12.7deg  src=DR  fits=19  rej=0  wait=0  hbad=0  gps_s=14  shift=0  gps_rej=0  sd_d=1.5cm  sd_s=3.6cm  v_target=0.34  t_epoch=1795218516.13
+GPS: (0.06,-0.44,-87deg)  t_epoch=1795218516.18
+GPS: (0.10,-0.54,-83deg)  t_epoch=1795218516.38
+GPS: (0.10,-0.60,-80deg)  t_epoch=1795218516.58
+pose=(0.10,-0.62,-79deg)  path_pt=(0.12,-0.64)  cross_track=0.013 m  cs: s=14.53 m  offset=-1.3cm  heading=-15.1deg  src=DR  fits=19  rej=0  wait=0  hbad=0  gps_s=17  shift=0  gps_rej=0  sd_d=1.9cm  sd_s=3.6cm  v_target=0.34  t_epoch=1795218516.63
+GPS: (0.13,-0.67,-76deg)  t_epoch=1795218516.78
+GPS: (0.17,-0.70,-71deg)  t_epoch=1795218516.99
+pose=(0.19,-0.75,-68deg)  path_pt=(0.21,-0.77)  cross_track=0.008 m  cs: s=14.70 m  offset=-0.8cm  heading=-14.8deg  src=DR  fits=19  rej=0  wait=0  hbad=0  gps_s=19  shift=0  gps_rej=0  sd_d=2.4cm  sd_s=3.7cm  v_target=0.33  t_epoch=1795218517.13
+GPS: (0.21,-0.77,-66deg)  t_epoch=1795218517.18
+GPS: (0.24,-0.83,-62deg)  t_epoch=1795218517.38
+GPS: (0.28,-0.87,-58deg)  t_epoch=1795218517.58
+pose=(0.29,-0.88,-58deg)  path_pt=(0.33,-0.89)  cross_track=0.012 m  cs: s=14.86 m  offset=-1.2cm  heading=-15.4deg  src=DR  fits=19  rej=0  wait=0  hbad=0  gps_s=22  shift=0  gps_rej=0  sd_d=2.7cm  sd_s=3.6cm  v_target=0.30  t_epoch=1795218517.63
+GPS: (0.35,-0.93,-54deg)  t_epoch=1795218517.78
+GPS: (0.38,-0.97,-50deg)  t_epoch=1795218517.99
+pose=(0.40,-0.99,-47deg)  path_pt=(0.45,-0.97)  cross_track=0.011 m  cs: s=15.01 m  offset=-1.1cm  heading=-15.4deg  src=hbad  fits=19  rej=0  wait=0  hbad=5  gps_s=24  shift=0  gps_rej=0  sd_d=3.0cm  sd_s=3.6cm  v_target=0.28  t_epoch=1795218518.13
+GPS: (0.42,-0.96,-46deg)  t_epoch=1795218518.18
+GPS: (0.45,-1.03,-43deg)  t_epoch=1795218518.38
+GPS: (0.49,-1.03,-41deg)  t_epoch=1795218518.58
+pose=(0.50,-1.04,-40deg)  path_pt=(0.53,-1.01)  cross_track=-0.008 m  cs: s=15.10 m  offset=+0.8cm  heading=-14.4deg  src=E  fits=20  rej=0  wait=0  hbad=10  gps_s=27  shift=0  gps_rej=0  sd_d=1.4cm  sd_s=3.1cm  v_target=0.34  t_epoch=1795218518.63
+GPS: (0.52,-1.03,-38deg)  t_epoch=1795218518.78
+GPS: (0.59,-1.06,-35deg)  t_epoch=1795218518.98
+pose=(0.63,-1.09,-31deg)  path_pt=(0.69,-1.06)  cross_track=0.010 m  cs: s=15.27 m  offset=-1.0cm  heading=-16.2deg  src=DR  fits=23  rej=0  wait=0  hbad=10  gps_s=29  shift=0  gps_rej=0  sd_d=0.9cm  sd_s=3.3cm  v_target=0.34  t_epoch=1795218519.13
+GPS: (0.66,-1.09,-30deg)  t_epoch=1795218519.18
+GPS: (0.73,-1.12,-25deg)  t_epoch=1795218519.38
+GPS: (0.80,-1.15,-20deg)  t_epoch=1795218519.59
+pose=(0.82,-1.16,-18deg)  path_pt=(0.91,-1.08)  cross_track=0.029 m  cs: s=15.48 m  offset=-2.9cm  heading=-16.7deg  src=E  fits=29  rej=0  wait=0  hbad=10  gps_s=32  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=3.1cm  v_target=0.34  t_epoch=1795218519.63
+GPS: (0.87,-1.12,-14deg)  t_epoch=1795218519.79
+GPS: (0.93,-1.11,-8deg)  t_epoch=1795218519.99
+pose=(0.99,-1.12,-6deg)  path_pt=(1.07,-1.08)  cross_track=0.010 m  cs: s=15.65 m  offset=-1.0cm  heading=-5.7deg  src=E  fits=30  rej=0  wait=0  hbad=10  gps_s=34  shift=0  gps_rej=0  sd_d=0.7cm  sd_s=3.5cm  v_target=0.34  t_epoch=1795218520.13
+GPS: (1.00,-1.14,-4deg)  t_epoch=1795218520.19
+GPS: (1.07,-1.11,-2deg)  t_epoch=1795218520.38
+GPS: (1.14,-1.11,-0deg)  t_epoch=1795218520.58
+pose=(1.15,-1.11,0deg)  path_pt=(1.25,-1.08)  cross_track=0.001 m  cs: s=15.83 m  offset=-0.1cm  heading=-1.3deg  src=DR  fits=31  rej=0  wait=0  hbad=10  gps_s=37  shift=0  gps_rej=0  sd_d=0.9cm  sd_s=3.7cm  v_target=0.34  t_epoch=1795218520.63
+GPS: (1.20,-1.11,0deg)  t_epoch=1795218520.79
+GPS: (1.27,-1.07,1deg)  t_epoch=1795218521.00
+pose=(1.31,-1.07,1deg)  path_pt=(1.42,-1.08)  cross_track=-0.007 m  cs: s=15.99 m  offset=+0.7cm  heading=-3.3deg  src=Y  fits=32  rej=0  wait=0  hbad=10  gps_s=39  shift=0  gps_rej=0  sd_d=1.0cm  sd_s=4.0cm  v_target=0.34  t_epoch=1795218521.13
+GPS: (1.34,-1.11,1deg)  t_epoch=1795218521.19
+GPS: (1.44,-1.11,2deg)  t_epoch=1795218521.40
+GPS: (1.50,-1.07,3deg)  t_epoch=1795218521.59
+pose=(1.51,-1.07,4deg)  path_pt=(1.59,-1.05)  cross_track=-0.002 m  cs: s=16.17 m  offset=+0.2cm  heading=-11.7deg  src=DR  fits=33  rej=0  wait=0  hbad=10  gps_s=42  shift=0  gps_rej=0  sd_d=1.3cm  sd_s=3.9cm  v_target=0.34  t_epoch=1795218521.66
+GPS: (1.57,-1.07,5deg)  t_epoch=1795218521.80
+GPS: (1.64,-1.04,7deg)  t_epoch=1795218521.99
+pose=(1.68,-1.03,8deg)  path_pt=(1.71,-1.01)  cross_track=-0.020 m  cs: s=16.30 m  offset=+2.0cm  heading=-14.6deg  src=E  fits=40  rej=0  wait=0  hbad=10  gps_s=44  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=3.1cm  v_target=0.34  t_epoch=1795218522.13
+GPS: (1.70,-1.04,8deg)  t_epoch=1795218522.19
+GPS: (1.77,-1.00,11deg)  t_epoch=1795218522.39
+GPS: (1.80,-1.03,13deg)  t_epoch=1795218522.59
+pose=(1.82,-1.03,14deg)  path_pt=(1.87,-0.93)  cross_track=-0.005 m  cs: s=16.48 m  offset=+0.5cm  heading=-17.9deg  src=E  fits=46  rej=0  wait=0  hbad=10  gps_s=47  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=2.7cm  v_target=0.34  t_epoch=1795218522.63
+GPS: (1.87,-0.96,17deg)  t_epoch=1795218522.79
+GPS: (1.94,-0.93,22deg)  t_epoch=1795218522.99
+pose=(1.99,-0.91,26deg)  path_pt=(2.00,-0.81)  cross_track=-0.003 m  cs: s=16.66 m  offset=+0.3cm  heading=-18.4deg  src=E  fits=53  rej=0  wait=0  hbad=10  gps_s=49  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=2.6cm  v_target=0.34  t_epoch=1795218523.14
+GPS: (2.00,-0.86,27deg)  t_epoch=1795218523.20
+GPS: (2.03,-0.82,31deg)  t_epoch=1795218523.38
+GPS: (2.10,-0.78,37deg)  t_epoch=1795218523.58
+pose=(2.11,-0.78,38deg)  path_pt=(2.11,-0.68)  cross_track=-0.003 m  cs: s=16.83 m  offset=+0.3cm  heading=-17.8deg  src=E  fits=59  rej=0  wait=0  hbad=10  gps_s=52  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=2.6cm  v_target=0.34  t_epoch=1795218523.63
+GPS: (2.13,-0.72,41deg)  t_epoch=1795218523.79
+GPS: (2.16,-0.68,46deg)  t_epoch=1795218523.98
+pose=(2.20,-0.64,49deg)  path_pt=(2.19,-0.54)  cross_track=-0.006 m  cs: s=16.99 m  offset=+0.6cm  heading=-16.8deg  src=E  fits=65  rej=0  wait=0  hbad=10  gps_s=54  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=2.8cm  v_target=0.34  t_epoch=1795218524.13
+GPS: (2.20,-0.61,50deg)  t_epoch=1795218524.18
+GPS: (2.23,-0.54,55deg)  t_epoch=1795218524.38
+GPS: (2.26,-0.47,59deg)  t_epoch=1795218524.58
+pose=(2.27,-0.46,61deg)  path_pt=(2.24,-0.37)  cross_track=-0.004 m  cs: s=17.16 m  offset=+0.4cm  heading=-17.3deg  src=E  fits=71  rej=0  wait=0  hbad=10  gps_s=57  shift=0  gps_rej=0  sd_d=0.7cm  sd_s=2.8cm  v_target=0.34  t_epoch=1795218524.63
+GPS: (2.29,-0.40,64deg)  t_epoch=1795218524.78
+GPS: (2.29,-0.37,68deg)  t_epoch=1795218524.98
+pose=(2.31,-0.32,71deg)  path_pt=(2.25,-0.21)  cross_track=-0.002 m  cs: s=17.32 m  offset=+0.2cm  heading=-16.8deg  src=E  fits=79  rej=0  wait=0  hbad=10  gps_s=59  shift=0  gps_rej=0  sd_d=0.6cm  sd_s=2.7cm  v_target=0.34  t_epoch=1795218525.13
+GPS: (2.29,-0.30,72deg)  t_epoch=1795218525.17
+GPS: (2.28,-0.27,76deg)  t_epoch=1795218525.37
+GPS: (2.28,-0.20,80deg)  t_epoch=1795218525.58
+pose=(2.29,-0.18,80deg)  path_pt=(2.25,-0.07)  cross_track=-0.009 m  cs: s=17.47 m  offset=+0.9cm  heading=-9.0deg  src=E  fits=85  rej=0  wait=0  hbad=10  gps_s=62  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=3.0cm  v_target=0.34  t_epoch=1795218525.63
+GPS: (2.28,-0.13,82deg)  t_epoch=1795218525.77
+GPS: (2.31,-0.03,85deg)  t_epoch=1795218525.97
+pose=(2.32,0.02,86deg)  path_pt=(2.25,0.12)  cross_track=-0.012 m  cs: s=17.65 m  offset=+1.2cm  heading=-4.5deg  src=E  fits=92  rej=0  wait=0  hbad=10  gps_s=64  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=3.4cm  v_target=0.40  t_epoch=1795218526.13
+GPS: (2.31,0.00,86deg)  t_epoch=1795218526.18
+GPS: (2.31,0.10,86deg)  t_epoch=1795218526.37
+GPS: (2.31,0.17,87deg)  t_epoch=1795218526.58
+pose=(2.31,0.19,87deg)  path_pt=(2.25,0.31)  cross_track=-0.013 m  cs: s=17.84 m  offset=+1.3cm  heading=-2.5deg  src=E  fits=99  rej=0  wait=0  hbad=10  gps_s=67  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=3.6cm  v_target=0.40  t_epoch=1795218526.63
+GPS: (2.31,0.27,88deg)  t_epoch=1795218526.78
+GPS: (2.31,0.34,88deg)  t_epoch=1795218526.98
+pose=(2.32,0.40,88deg)  path_pt=(2.25,0.51)  cross_track=-0.010 m  cs: s=18.05 m  offset=+1.0cm  heading=-1.8deg  src=E  fits=105  rej=0  wait=0  hbad=10  gps_s=69  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=3.9cm  v_target=0.40  t_epoch=1795218527.13
+GPS: (2.31,0.40,88deg)  t_epoch=1795218527.18
+GPS: (2.31,0.50,88deg)  t_epoch=1795218527.38
+GPS: (2.31,0.57,88deg)  t_epoch=1795218527.58
+pose=(2.32,0.59,88deg)  path_pt=(2.25,0.71)  cross_track=-0.009 m  cs: s=18.24 m  offset=+0.9cm  heading=-1.5deg  src=E  fits=112  rej=0  wait=0  hbad=10  gps_s=72  shift=0  gps_rej=0  sd_d=0.5cm  sd_s=4.1cm  v_target=0.40  t_epoch=1795218527.63
+GPS: (2.31,0.67,88deg)  t_epoch=1795218527.78
+GPS rejected: (2.32,0.40,88deg)  jump=0.34 m  heading_jump=0deg  t_epoch=1795218527.98
+pose=(2.32,0.81,88deg)  path_pt=(2.25,0.91)  cross_track=-0.008 m  cs: s=18.44 m  offset=+0.8cm  heading=-1.2deg  src=E  fits=119  rej=0  wait=0  hbad=10  gps_s=73  shift=0  gps_rej=1  sd_d=0.5cm  sd_s=4.5cm  v_target=0.40  t_epoch=1795218528.13
+GPS rejected: (2.32,0.50,88deg)  jump=0.32 m  heading_jump=0deg  t_epoch=1795218528.18
+GPS rejected: (2.32,0.57,88deg)  jump=0.33 m  heading_jump=1deg  t_epoch=1795218528.38
+GPS rejected: (2.32,0.64,88deg)  jump=0.35 m  heading_jump=1deg  t_epoch=1795218528.58
+pose=(2.32,1.01,89deg)  path_pt=(2.25,1.11)  cross_track=-0.005 m  cs: s=18.64 m  offset=+0.5cm  heading=-1.2deg  src=E  fits=126  rej=0  wait=0  hbad=10  gps_s=73  shift=0  gps_rej=4  sd_d=0.5cm  sd_s=5.0cm  v_target=0.40  t_epoch=1795218528.63
+GPS rejected: (2.32,0.27,87deg)  jump=0.80 m  heading_jump=1deg  t_epoch=1795218528.79
+GPS: (2.32,1.17,88deg)  t_epoch=1795218528.98
+pose=(2.32,1.23,88deg)  path_pt=(2.25,1.32)  cross_track=-0.001 m  cs: s=18.85 m  offset=+0.1cm  heading=-1.3deg  src=YE  fits=132  rej=0  wait=0  hbad=10  gps_s=74  shift=0  gps_rej=5  sd_d=0.4cm  sd_s=4.6cm  v_target=0.40  t_epoch=1795218529.13
+GPS: (2.32,1.24,88deg)  t_epoch=1795218529.19
+GPS rejected: (2.35,0.17,87deg)  jump=1.15 m  heading_jump=1deg  t_epoch=1795218529.40
+GPS rejected: (3.25,2.37,86deg)  jump=1.35 m  heading_jump=3deg  t_epoch=1795218529.59
+pose=(2.32,1.42,88deg)  path_pt=(2.25,1.51)  cross_track=0.001 m  cs: s=19.04 m  offset=-0.1cm  heading=-0.9deg  src=YE  fits=138  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=7  sd_d=0.4cm  sd_s=4.9cm  v_target=0.40  t_epoch=1795218529.63
+GPS rejected: (3.25,2.47,87deg)  jump=1.36 m  heading_jump=2deg  t_epoch=1795218529.79
+GPS rejected: (3.29,3.00,86deg)  jump=1.73 m  heading_jump=2deg  t_epoch=1795218529.99
+pose=(2.33,1.62,89deg)  path_pt=(2.25,1.71)  cross_track=-0.000 m  cs: s=19.24 m  offset=+0.0cm  heading=-0.4deg  src=YE  fits=144  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=9  sd_d=0.4cm  sd_s=5.4cm  v_target=0.40  t_epoch=1795218530.13
+GPS rejected: (3.25,2.20,83deg)  jump=1.08 m  heading_jump=6deg  t_epoch=1795218530.19
+GPS rejected: (3.29,2.67,86deg)  jump=1.35 m  heading_jump=3deg  t_epoch=1795218530.39
+GPS rejected: (3.29,2.43,85deg)  jump=1.15 m  heading_jump=4deg  t_epoch=1795218530.59
+pose=(2.33,1.82,89deg)  path_pt=(2.25,1.90)  cross_track=-0.001 m  cs: s=19.44 m  offset=+0.1cm  heading=-0.1deg  src=YE  fits=151  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=12  sd_d=0.4cm  sd_s=5.8cm  v_target=0.40  t_epoch=1795218530.63
+GPS rejected: (3.29,2.50,84deg)  jump=1.14 m  heading_jump=5deg  t_epoch=1795218530.79
+GPS rejected: (3.25,2.00,83deg)  jump=0.92 m  heading_jump=6deg  t_epoch=1795218530.99
+pose=(2.33,2.02,89deg)  path_pt=(2.25,2.10)  cross_track=-0.003 m  cs: s=19.63 m  offset=+0.3cm  heading=+0.1deg  src=E  fits=158  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=14  sd_d=0.4cm  sd_s=6.2cm  v_target=0.40  t_epoch=1795218531.13
+GPS rejected: (3.25,2.06,84deg)  jump=0.92 m  heading_jump=5deg  t_epoch=1795218531.18
+GPS rejected: (3.25,2.16,83deg)  jump=0.92 m  heading_jump=6deg  t_epoch=1795218531.39
+GPS rejected: (3.29,2.46,84deg)  jump=0.99 m  heading_jump=5deg  t_epoch=1795218531.59
+pose=(2.34,2.22,89deg)  path_pt=(2.25,2.30)  cross_track=-0.004 m  cs: s=19.83 m  offset=+0.4cm  heading=+0.1deg  src=E  fits=164  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=17  sd_d=0.4cm  sd_s=6.6cm  v_target=0.40  t_epoch=1795218531.65
+GPS rejected: (3.29,2.53,84deg)  jump=0.98 m  heading_jump=5deg  t_epoch=1795218531.79
+GPS rejected: (3.29,2.43,85deg)  jump=0.95 m  heading_jump=4deg  t_epoch=1795218531.98
+pose=(2.34,2.42,89deg)  path_pt=(2.25,2.49)  cross_track=-0.003 m  cs: s=20.03 m  offset=+0.3cm  heading=-0.2deg  src=YE  fits=171  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=19  sd_d=0.4cm  sd_s=7.0cm  v_target=0.40  t_epoch=1795218532.13
+GPS rejected: (3.29,2.50,84deg)  jump=0.95 m  heading_jump=4deg  t_epoch=1795218532.19
+GPS rejected: (3.29,2.56,84deg)  jump=0.94 m  heading_jump=5deg  t_epoch=1795218532.38
+GPS rejected: (3.32,2.73,89deg)  jump=0.98 m  heading_jump=1deg  t_epoch=1795218532.58
+pose=(2.35,2.62,88deg)  path_pt=(2.25,2.69)  cross_track=-0.001 m  cs: s=20.22 m  offset=+0.1cm  heading=-0.5deg  src=YE  fits=177  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=22  sd_d=0.4cm  sd_s=7.3cm  v_target=0.40  t_epoch=1795218532.63
+GPS rejected: (3.32,2.80,88deg)  jump=0.98 m  heading_jump=0deg  t_epoch=1795218532.78
+GPS rejected: (3.32,2.90,89deg)  jump=0.98 m  heading_jump=1deg  t_epoch=1795218532.98
+pose=(2.35,2.82,88deg)  path_pt=(2.25,2.88)  cross_track=0.001 m  cs: s=20.42 m  offset=-0.1cm  heading=-0.6deg  src=Y  fits=182  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=24  sd_d=0.4cm  sd_s=7.7cm  v_target=0.40  t_epoch=1795218533.13
+GPS rejected: (3.32,3.00,90deg)  jump=0.98 m  heading_jump=2deg  t_epoch=1795218533.18
+GPS rejected: (3.28,3.03,89deg)  jump=0.93 m  heading_jump=1deg  t_epoch=1795218533.39
+GPS rejected: (3.28,3.16,90deg)  jump=0.94 m  heading_jump=2deg  t_epoch=1795218533.58
+pose=(2.36,3.02,88deg)  path_pt=(2.25,3.08)  cross_track=0.003 m  cs: s=20.61 m  offset=-0.3cm  heading=-0.5deg  src=DR  fits=187  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=27  sd_d=0.5cm  sd_s=8.0cm  v_target=0.40  t_epoch=1795218533.63
+GPS rejected: (3.28,3.26,91deg)  jump=0.94 m  heading_jump=3deg  t_epoch=1795218533.78
+GPS rejected: (3.32,3.33,88deg)  jump=0.97 m  heading_jump=0deg  t_epoch=1795218533.99
+pose=(2.37,3.22,88deg)  path_pt=(2.25,3.27)  cross_track=0.002 m  cs: s=20.80 m  offset=-0.2cm  heading=-0.2deg  src=DR  fits=187  rej=0  wait=0  hbad=10  gps_s=75  shift=0  gps_rej=29  sd_d=0.7cm  sd_s=8.3cm  v_target=0.40  t_epoch=1795218534.13
+GPS rejected: (3.28,3.36,90deg)  jump=0.92 m  heading_jump=2deg  t_epoch=1795218534.19
+GPS rejected: (3.28,3.46,89deg)  jump=0.93 m  heading_jump=1deg  t_epoch=1795218534.39
+GPS rejected: (3.29,1.96,84deg)  jump=1.69 m  heading_jump=4deg  t_epoch=1795218534.59
+CAMSTEER: camera along-route measurement +16.1 cm -> s 20.98 -> 21.12 m  t_epoch=1795218534.63
+pose=(2.37,3.40,88deg)  path_pt=(2.25,3.59)  cross_track=0.001 m  cs: s=21.12 m  offset=-0.1cm  heading=+0.1deg  src=shift  fits=187  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=32  sd_d=0.8cm  sd_s=3.6cm  v_target=0.30  t_epoch=1795218534.63
+GPS rejected: (3.28,2.03,86deg)  jump=1.68 m  heading_jump=3deg  t_epoch=1795218534.79
+GPS rejected: (3.29,2.06,85deg)  jump=1.70 m  heading_jump=4deg  t_epoch=1795218534.99
+pose=(2.38,3.54,88deg)  path_pt=(2.25,3.71)  cross_track=-0.007 m  cs: s=21.25 m  offset=+0.7cm  heading=+0.5deg  src=E  fits=190  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=34  sd_d=0.7cm  sd_s=4.0cm  v_target=0.30  t_epoch=1795218535.13
+GPS rejected: (3.28,2.13,86deg)  jump=1.69 m  heading_jump=3deg  t_epoch=1795218535.19
+GPS rejected: (3.25,2.13,83deg)  jump=1.72 m  heading_jump=4deg  t_epoch=1795218535.40
+GPS rejected: (3.28,2.26,86deg)  jump=1.68 m  heading_jump=1deg  t_epoch=1795218535.60
+pose=(2.38,3.69,87deg)  path_pt=(2.25,3.87)  cross_track=-0.003 m  cs: s=21.40 m  offset=+0.3cm  heading=-5.0deg  src=E  fits=196  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=37  sd_d=0.6cm  sd_s=4.4cm  v_target=0.30  t_epoch=1795218535.66
+GPS rejected: (3.29,2.26,82deg)  jump=1.72 m  heading_jump=5deg  t_epoch=1795218535.80
+GPS rejected: (3.28,2.33,84deg)  jump=1.71 m  heading_jump=5deg  t_epoch=1795218535.99
+pose=(2.39,3.83,92deg)  path_pt=(2.22,4.03)  cross_track=0.010 m  cs: s=21.57 m  offset=-1.0cm  heading=-14.8deg  src=E  fits=203  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=39  sd_d=0.7cm  sd_s=3.5cm  v_target=0.29  t_epoch=1795218536.13
+GPS rejected: (3.28,2.46,90deg)  jump=1.65 m  heading_jump=2deg  t_epoch=1795218536.21
+GPS rejected: (3.25,2.43,91deg)  jump=1.72 m  heading_jump=6deg  t_epoch=1795218536.41
+GPS rejected: (3.24,2.49,94deg)  jump=1.71 m  heading_jump=6deg  t_epoch=1795218536.60
+pose=(2.37,3.98,102deg)  path_pt=(2.14,4.19)  cross_track=0.015 m  cs: s=21.75 m  offset=-1.5cm  heading=-19.4deg  src=E  fits=209  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=42  sd_d=0.7cm  sd_s=2.6cm  v_target=0.30  t_epoch=1795218536.68
+GPS rejected: (3.21,2.53,101deg)  jump=1.72 m  heading_jump=4deg  t_epoch=1795218536.81
+GPS rejected: (3.20,2.53,104deg)  jump=1.77 m  heading_jump=5deg  t_epoch=1795218537.01
+pose=(2.32,4.13,114deg)  path_pt=(2.06,4.29)  cross_track=-0.004 m  cs: s=21.87 m  offset=+0.4cm  heading=-17.6deg  src=E  fits=214  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=44  sd_d=0.6cm  sd_s=2.4cm  v_target=0.30  t_epoch=1795218537.15
+GPS rejected: (3.16,2.66,112deg)  jump=1.70 m  heading_jump=3deg  t_epoch=1795218537.22
+GPS rejected: (3.13,2.73,116deg)  jump=1.68 m  heading_jump=2deg  t_epoch=1795218537.43
+GPS rejected: (3.09,2.69,117deg)  jump=1.75 m  heading_jump=5deg  t_epoch=1795218537.70
+pose=(2.25,4.27,125deg)  path_pt=(2.00,4.35)  cross_track=-0.033 m  cs: s=21.96 m  offset=+3.3cm  heading=-14.4deg  src=E  fits=219  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=47  sd_d=0.5cm  sd_s=2.2cm  v_target=0.30  t_epoch=1795218537.70
+GPS rejected: (3.21,4.69,86deg)  jump=1.06 m  heading_jump=42deg  t_epoch=1795218537.83
+GPS rejected: (3.11,2.26,92deg)  jump=2.26 m  heading_jump=39deg  t_epoch=1795218538.03
+pose=(2.16,4.37,134deg)  path_pt=(1.91,4.41)  cross_track=-0.045 m  cs: s=22.07 m  offset=+4.5cm  heading=-14.9deg  src=DR  fits=220  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=49  sd_d=0.6cm  sd_s=2.5cm  v_target=0.30  t_epoch=1795218538.16
+GPS rejected: (3.00,1.94,36deg)  jump=2.58 m  heading_jump=98deg  t_epoch=1795218538.21
+GPS rejected: (3.10,1.94,39deg)  jump=2.67 m  heading_jump=97deg  t_epoch=1795218538.42
+GPS rejected: (3.17,2.01,42deg)  jump=2.69 m  heading_jump=97deg  t_epoch=1795218538.61
+pose=(2.04,4.48,139deg)  path_pt=(1.78,4.46)  cross_track=-0.025 m  cs: s=22.21 m  offset=+2.5cm  heading=-21.9deg  src=DR  fits=220  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=52  sd_d=1.0cm  sd_s=3.0cm  v_target=0.30  t_epoch=1795218538.63
+GPS rejected: (3.20,2.05,47deg)  jump=2.74 m  heading_jump=93deg  t_epoch=1795218538.81
+GPS rejected: (3.23,2.11,49deg)  jump=2.76 m  heading_jump=93deg  t_epoch=1795218539.00
+pose=(1.90,4.60,143deg)  path_pt=(1.61,4.49)  cross_track=0.037 m  cs: s=22.38 m  offset=-3.7cm  heading=-31.5deg  src=DR  fits=220  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=54  sd_d=1.6cm  sd_s=3.3cm  v_target=0.30  t_epoch=1795218539.14
+GPS rejected: (3.20,2.18,52deg)  jump=2.75 m  heading_jump=92deg  t_epoch=1795218539.20
+GPS rejected: (3.23,2.18,53deg)  jump=2.82 m  heading_jump=94deg  t_epoch=1795218539.40
+GPS rejected: (3.26,2.18,55deg)  jump=2.87 m  heading_jump=95deg  t_epoch=1795218539.60
+pose=(1.81,4.66,151deg)  path_pt=(1.46,4.48)  cross_track=0.114 m  cs: s=22.53 m  offset=-11.4cm  heading=-36.9deg  src=DR  fits=220  rej=0  wait=0  hbad=10  gps_s=75  shift=1  gps_rej=57  sd_d=2.2cm  sd_s=3.5cm  v_target=0.30  t_epoch=1795218539.63
+GPS rejected: (3.26,2.19,60deg)  jump=2.87 m  heading_jump=92deg  t_epoch=1795218539.81
+STOPPED (camera steering): offset -12.0 cm. s = 22.54 m, offset -12.0 cm, heading -36.9 deg  t_epoch=1795218539.82
+ODOMETRY: saved odometry_drive.csv

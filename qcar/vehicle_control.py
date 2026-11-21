@@ -22,6 +22,7 @@ from hal.content.qcar_functions import QCarEKF
 from hal.products.mats import SDCSRoadMap
 import argparse
 from utils import YOLOReceiver, YOLODriveLogic
+from lane_fusion import axle_step, LaneFusion   # §57: axle dead reckoning; §62: the fusion filter
 
 parser = argparse.ArgumentParser(prog='Vehicle control')
 parser.add_argument('-c','--calibrate', default=False)
@@ -100,7 +101,7 @@ K_soft = 0.05
 #   tight curves. REVERT: use_curve_speed = False.
 #   OFF for the next drive (user, 2026-11-19): test the new trim alone first, then
 #   switch this on and compare the same curves (report "Where to pick up").
-use_curve_speed = False
+use_curve_speed = True
 v_curve_alat = 0.13         # m/s^2
 v_curve_min = 0.2           # m/s
 v_curve_ahead = 0.5         # m
@@ -212,6 +213,61 @@ cs_head_kchange = 0.3       # 1/m
 profile_port = 18556
 profile_s = np.round(np.arange(-0.30, 1.0001, 0.05), 3)   # keep identical to lane_camera.PROFILE_S
 profile_period = 0.02       # s between curvature messages
+# Dead reckoning and along-route correction (camera report §53-§57, 2026-11-20). The
+# ruler check in the roundabout (§55: front axle 11 cm, rear 3 cm outward while the
+# estimate said +2 cm) is reproduced offline only with both (§56):
+# - cs_dr_model 'axle': the rear axle is carried along the body heading (encoder + gyro),
+#   the front axle is rear + wheelbase. The old model moved the rear axle's offset but
+#   used it as the front axle's, so on arcs the car steered the rear axle onto the lane
+#   and the front ran 4-5 cm outward (§53). The body heading psi is the state, so an
+#   along-route correction (GPS, camera) changes the heading to the lane, not the gyro
+#   heading. REVERT: cs_dr_model = 'old'.
+# - cs_shift_use: lane_camera.py refits the lane shape with the route shifted along s
+#   where the curvature changes in view (curve starts/ends) and sends the best shift;
+#   two consecutive frames agreeing within cs_shift_confirm_tol move s to the camera's
+#   value. In every drive the painted roundabout started curving 14-30 cm before the
+#   estimate expected (late turn-in, §55). REVERT: cs_shift_use = False (or run
+#   lane_camera.py with --no-shift).
+cs_dr_model = 'axle'
+cs_enc_axle = 'front'       # which axle's travel the scaled encoder distance is (§54)
+cs_shift_use = True
+cs_shift_gain = 1.0         # fraction of the camera's along-route difference applied
+cs_shift_confirm_tol = 0.06 # m, the two frames' along-route positions must agree within this
+# Since 2026-11-20 (§68): one usable frame (lane_camera's sh_ok: clean best fit, clear rms
+# gain, inside +-0.30 m) is enough. In drive D (exit, +14 cm) and car B (entry, +24 cm) the
+# second frame never came (no lane in view / rate-limited shift fit), nothing was applied and
+# both crossed the divider at the 16 -> 18 S-bend; every offline replay (§56) used single
+# frames, with no wrong correction on 10 drives. REVERT: cs_shift_confirm = True.
+cs_shift_confirm = False
+cs_shift_hist = 1.0         # s of (time, s) history kept to evaluate s at the frame time
+# Estimator (camera report §61-§62, 2026-11-20): 'fusion' = lane_fusion.LaneFusion, a
+# Kalman filter on (s, d, body heading, GPS bias along/across): prediction by encoder +
+# gyro (cs_dr_model), updates by the camera fits (offset, heading where allowed), the
+# camera along-route measurements at curve starts/ends (lane_camera sh_*) and EVERY GPS
+# reading (x, y, heading, with place-dependent bias states; each reading is tested
+# against the estimate and its uncertainty, instead of the jump gate / confirmation /
+# re-lock rules). Offline on 8 drives it halved the error at camera re-acquisitions
+# (8.3 -> 4.0 cm) and rejected no real camera fit (§61). The safety stops stay.
+# REVERT: cs_estimator = 'c3' (the C3 estimator with the §57 additions).
+# 2026-11-20 (§64): back to 'c3' after drive F stopped in the roundabout on the filter (§63).
+# §72: 'fusion' again: with camera heading sd 6 deg, the live single-frame along-route
+# measurements and the GPS sideways, the filter passes 11 of 12 recorded drives
+# (replay_check.py), including car B's S-bend and blind 12 -> 0 straight and drive F.
+# Speed and stop follow its uncertainty (cs_fus_*). REVERT: cs_estimator = 'c3' (drive G's setup).
+# §74 (2026-11-20, end of day): back to 'c3' after drive H stopped in the roundabout on the
+# filter (§73); the filter's roundabout behaviour is to be investigated offline first.
+cs_estimator = 'c3'
+cs_fus_shift_sd = (0.04, 0.07)   # m: sd of a camera along-route measurement, fit rms < 0.06 / otherwise
+# Fusion filter only (§72): speed and stop from the filter's offset uncertainty sd_d. On the
+# recorded drives sd_d is ~0.5 cm where the camera sees the lane, 3.5-3.8 cm on the blind part of
+# 0 -> 2, 3.6-5.0 cm in the roundabout's second half and the S-bend, ~2.2 cm on 12 -> 0 (GPS).
+# Speed: v_ref below cs_fus_v_sd[0], linearly down to cs_fus_v_min at cs_fus_v_sd[1] (on top of
+# the curvature limit). Stop when sd_d > cs_fus_sd_stop; the blind-distance backstop is longer
+# than cs_dr_max (2.3 m) because the S-bend is blind for ~2.1 m.
+cs_fus_v_sd = (0.015, 0.04)  # m
+cs_fus_v_min = 0.2           # m/s
+cs_fus_sd_stop = 0.07        # m
+cs_fus_dr_max = 3.5          # m
 
 # - Odometry log (camera report §32, 2026-11-18): logging only, no effect on
 #   driving. Every odo_log_period s one row to odo_log_file with the same
@@ -407,6 +463,7 @@ class CameraReceiver:
         self.sock.setblocking(False)
         self.t, self.mode, self.offset, self.heading, self.conf = 0.0, 'none', np.nan, np.nan, 0.0
         self.mf_src, self.mf_d, self.mf_h, self.mf_rms, self.mf_s = 'none', np.nan, np.nan, np.nan, np.nan
+        self.sh_m, self.sh_ok, self.sh_rms = np.nan, False, np.nan   # along-route shift fit (§57, §62)
         self.count = 0
         self.tRecv = 0.0      # local time of the newest message
 
@@ -431,6 +488,12 @@ class CameraReceiver:
                     self.mf_h = np.radians(float(f[7]))
                     self.mf_rms = float(f[8])        # cm
                     self.mf_s = float(f[9])
+                if len(f) >= 12:
+                    self.sh_m = float(f[10])
+                    self.sh_ok = f[11].strip() == '1'
+                    self.sh_rms = float(f[12]) if len(f) >= 13 else np.nan
+                else:
+                    self.sh_m, self.sh_ok, self.sh_rms = np.nan, False, np.nan
                 self.count += 1
                 self.tRecv = time.time()
                 new = True
@@ -523,7 +586,13 @@ def controlLoop():
         profSock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         cs = dict(s=s0, d=0.0, h=0.0, enc=None, biasSum=0.0, biasN=0, bias=None,
                   fitS=s0, lastProf=-1.0, hExpPrev=0.0, src='none', nFit=0, nGps=0,
-                  rejS=None, rejVals=[], nRej=0, pend=None, nWait=0, nHbad=0)
+                  rejS=None, rejVals=[], nRej=0, pend=None, nWait=0, nHbad=0,
+                  psi=None, sHist=[], shPend=None, nShift=0, nGpsRej=0, gLast=None, gLastT=0.0)
+        fus = None
+        if cs_estimator == 'fusion':
+            fus = LaneFusion(route, cs_wheelbase, gps_front_ahead, s0, initPose[2],
+                             dr_model=cs_dr_model, enc_axle=cs_enc_axle)
+            print(f"CAMSTEER: estimator = fusion filter (dead reckoning {cs_dr_model}, encoder = {cs_enc_axle} axle)")
         startNodeReached = True      # main controller from the start (the car starts on the route)
         # Stanley's waypoint index starts at 0 (node 0); move it to the segment the car is on
         wpS = np.r_[0, np.cumsum(np.hypot(*np.diff(steeringController.wp, axis=1)))]
@@ -664,77 +733,182 @@ def controlLoop():
                     # encoder: along the route; offset/heading carried on (dead reckoning)
                     ds = enc_scale * (enc - cs['enc']) * csCps
                     cs['enc'] = enc
-                    sPrev = cs['s']
-                    cs['s'] += ds
-                    thPath = float(route.heading(cs['s']))
-                    hExp = float(wrap_to_pi(float(route.heading(cs['s'] - cs_wheelbase)) - thPath))
-                    cs['d'] += np.sin(cs['h'] - cs['hExpPrev']) * ds
-                    if cs['bias'] is not None:
-                        cs['h'] = float(wrap_to_pi(cs['h'] + (gzRaw - cs['bias']) * dt
-                                                   - wrap_to_pi(thPath - float(route.heading(sPrev)))))
-                    cs['hExpPrev'] = hExp
-                    # GPS: position along the route only, when it agrees
-                    if gpsRaw is not None:
-                        sG, latG = route.project(gpsRaw[0], gpsRaw[1], cs['s'] - gps_front_ahead, 0.4)
-                        innov = sG + gps_front_ahead - cs['s']
-                        if abs(innov) < cs_gps_gate and abs(latG) < cs_gps_lat_gate:
-                            cs['s'] += cs_gps_gain * innov
-                            cs['nGps'] += 1
-                    # camera: offset (and heading when clean and plausible)
-                    if newCam:
-                        accept = False
-                        status = 'DR'
-                        headBad = (camRx.mf_src in ('YE', 'E', 'Y')
-                                   and abs(wrap_to_pi(camRx.mf_h - hExp)) > cs_max_head_fit)
-                        if camRx.mf_src not in ('YE', 'E', 'Y') or headBad:
-                            cs['pend'] = None            # a frame without a usable fit breaks a confirmation pair
-                            if headBad:
-                                status = 'hbad'
-                                cs['nHbad'] += 1
-                        elif (t >= startDelay and cs['s'] - cs['fitS'] > cs_confirm_after
-                              and (cs['pend'] is None or abs(camRx.mf_d - cs['pend']) > cs_confirm_tol)):
-                            # after a gap without fits: wait for a second fit that agrees (§36)
-                            cs['pend'] = camRx.mf_d
-                            cs['nWait'] += 1
-                            status = 'wait'
-                        else:
-                            cs['pend'] = None
-                            gate = cs_gate0 + cs_gate_per_m * (cs['s'] - cs['fitS'])
-                            if t < startDelay or abs(camRx.mf_d - cs['d']) <= gate:
-                                accept = True
-                            else:
-                                # jump gate: ignore, unless the camera keeps saying the same
-                                if cs['rejS'] is None:
-                                    cs['rejS'], cs['rejVals'] = cs['s'], []
-                                cs['rejVals'].append(camRx.mf_d)
-                                cs['nRej'] += 1
-                                if ((cs['s'] - cs['rejS'] > cs_relock_dist
-                                        and np.std(cs['rejVals'][-5:]) < cs_relock_sd)
-                                        or (len(cs['rejVals']) >= cs_relock_n
-                                            and np.std(cs['rejVals'][-cs_relock_n:]) < cs_relock_n_sd)):
-                                    accept = True
-                                    print(f"CAMSTEER: re-lock to the camera at s = {cs['s']:.2f} m: offset "
-                                          f"{cs['d']*100:+.1f} -> {camRx.mf_d*100:+.1f} cm  t_epoch={time.time():.2f}")
+                    if cs_estimator == 'fusion':
+                        # §62: Kalman filter (lane_fusion.LaneFusion)
+                        dpsi = (gzRaw - cs['bias']) * dt if cs['bias'] is not None else 0.0
+                        fus.predict(ds, dpsi)
+                        if gpsRaw is not None:
+                            # every reading; the log repeats some within ~50 ms: use one
+                            gKey = (round(float(gpsRaw[0]), 4), round(float(gpsRaw[1]), 4), round(float(gpsRaw[2]), 4))
+                            if not (gKey == cs['gLast'] and time.time() - cs['gLastT'] < 0.1):
+                                okG, _ = fus.gps(gpsRaw[0], gpsRaw[1], gpsRaw[2], 'full')
+                                cs['nGps' if okG else 'nGpsRej'] += 1
+                            cs['gLast'], cs['gLastT'] = gKey, time.time()
+                        nowT = time.time()
+                        cs['sHist'].append((nowT, float(fus.x[0])))
+                        while cs['sHist'] and nowT - cs['sHist'][0][0] > cs_shift_hist:
+                            cs['sHist'].pop(0)
+                        if newCam:
+                            status = 'DR'
+                            # along-route measurement where the curvature changes in view
+                            if (cs_shift_use and camRx.sh_ok and t >= startDelay and ds > 0
+                                    and np.isfinite(camRx.mf_s) and np.isfinite(camRx.sh_m)):
+                                sAtFrame = float(np.interp(camRx.t, [h_[0] for h_ in cs['sHist']],
+                                                           [h_[1] for h_ in cs['sHist']]))
+                                sTrue = camRx.mf_s + camRx.sh_m + (float(fus.x[0]) - sAtFrame)
+                                sdS = cs_fus_shift_sd[0] if camRx.sh_rms < 0.06 else cs_fus_shift_sd[1]
+                                sBefore = float(fus.x[0])
+                                okS, _ = fus.camera_s(sTrue, sdS)
+                                if okS:
+                                    cs['nShift'] += 1
+                                    status = 'shift'
+                                    print(f"CAMSTEER: camera along-route measurement {100*(sTrue - sBefore):+.1f} cm -> "
+                                          f"s {sBefore:.2f} -> {float(fus.x[0]):.2f} m  t_epoch={time.time():.2f}")
+                            # lane fit: offset, and heading where the C3 rules allow it
+                            if camRx.mf_src in ('YE', 'E', 'Y'):
+                                hExpF = fus.h_exp()
+                                if abs(wrap_to_pi(camRx.mf_h - hExpF)) > cs_max_head_fit:
+                                    status = 'hbad'
+                                    cs['nHbad'] += 1
                                 else:
-                                    status = 'rej'
-                                    if cs['nRej'] <= 50:
-                                        print(f"CAMSTEER: camera offset {camRx.mf_d*100:+.1f} cm ignored "
-                                              f"(predicted {cs['d']*100:+.1f}, gate {gate*100:.1f} cm, "
-                                              f"{camRx.mf_src}) s = {cs['s']:.2f} m  t_epoch={time.time():.2f}")
-                        if accept:
-                            cs['rejS'] = None
-                            cs['d'] = camRx.mf_d
-                            kWin = route.curvature(cs['s'] + np.linspace(cs_head_window[0], cs_head_window[1], 37))
-                            if (np.ptp(kWin) <= cs_head_kchange and camRx.mf_rms < cs_head_rms
-                                    and abs(wrap_to_pi(camRx.mf_h - hExp)) < cs_max_head):
-                                cs['h'] = camRx.mf_h
-                            cs['fitS'], cs['src'] = cs['s'], camRx.mf_src
-                            cs['nFit'] += 1
-                        elif t < startDelay and camRx.mode == 'both':
-                            cs['d'], cs['h'] = camRx.offset, camRx.heading
-                            cs['fitS'], cs['src'] = cs['s'], 'both'
-                        else:
+                                    kWin = route.curvature(fus.x[0] + np.linspace(cs_head_window[0], cs_head_window[1], 37))
+                                    useH = (np.ptp(kWin) <= cs_head_kchange and camRx.mf_rms < cs_head_rms
+                                            and abs(wrap_to_pi(camRx.mf_h - hExpF)) < cs_max_head)
+                                    okC, _ = fus.camera(camRx.mf_src, camRx.mf_d, camRx.mf_h if useH else None,
+                                                        camRx.mf_rms / 100)
+                                    if okC:
+                                        cs['fitS'] = float(fus.x[0])
+                                        cs['nFit'] += 1
+                                        status = camRx.mf_src
+                                    else:
+                                        cs['nRej'] += 1
+                                        status = 'rej'
                             cs['src'] = status
+                        cs['s'], cs['d'] = float(fus.x[0]), float(fus.x[1])
+                        cs['h'] = fus.h()
+                        thPath = float(route.heading(cs['s']))
+                        hExp = fus.h_exp()
+                    else:
+                        if cs_dr_model == 'old':
+                            sPrev = cs['s']
+                            cs['s'] += ds
+                            thPath = float(route.heading(cs['s']))
+                            hExp = float(wrap_to_pi(float(route.heading(cs['s'] - cs_wheelbase)) - thPath))
+                            cs['d'] += np.sin(cs['h'] - cs['hExpPrev']) * ds
+                            if cs['bias'] is not None:
+                                cs['h'] = float(wrap_to_pi(cs['h'] + (gzRaw - cs['bias']) * dt
+                                                           - wrap_to_pi(thPath - float(route.heading(sPrev)))))
+                            cs['hExpPrev'] = hExp
+                        else:
+                            # §57: rear axle carried along the body heading, front axle = rear + L
+                            dpsi = (gzRaw - cs['bias']) * dt if cs['bias'] is not None else 0.0
+                            if cs['psi'] is None:
+                                cs['psi'] = cs['h'] + float(route.heading(cs['s']))
+                            cs['s'], cs['d'], cs['psi'] = axle_step(route, cs_wheelbase, cs['s'], cs['d'],
+                                                                    cs['psi'], ds, dpsi, cs_enc_axle)
+                        # GPS: position along the route only, when it agrees
+                        if gpsRaw is not None:
+                            sG, latG = route.project(gpsRaw[0], gpsRaw[1], cs['s'] - gps_front_ahead, 0.4)
+                            innov = sG + gps_front_ahead - cs['s']
+                            if abs(innov) < cs_gps_gate and abs(latG) < cs_gps_lat_gate:
+                                cs['s'] += cs_gps_gain * innov
+                                cs['nGps'] += 1
+                        if cs_dr_model != 'old':
+                            # heading to the lane from the body heading at the (corrected) s
+                            thPath = float(route.heading(cs['s']))
+                            cs['h'] = float(wrap_to_pi(cs['psi'] - thPath))
+                            hExp = float(wrap_to_pi(float(route.heading(cs['s'] - cs_wheelbase)) - thPath))
+                        # (time, s) history: the camera's along-route shift is for its frame time
+                        nowT = time.time()
+                        cs['sHist'].append((nowT, cs['s']))
+                        while cs['sHist'] and nowT - cs['sHist'][0][0] > cs_shift_hist:
+                            cs['sHist'].pop(0)
+                        # camera along-route correction at curve starts / ends (§55-§57)
+                        if (newCam and cs_shift_use and camRx.sh_ok and t >= startDelay and ds > 0
+                                and np.isfinite(camRx.mf_s) and np.isfinite(camRx.sh_m)):
+                            hT = [h_[0] for h_ in cs['sHist']]
+                            hS = [h_[1] for h_ in cs['sHist']]
+                            dsCam = camRx.mf_s + camRx.sh_m - float(np.interp(camRx.t, hT, hS))
+                            pend = cs['shPend']
+                            confirmed = (pend is not None and cs['s'] - pend[1] < 0.3
+                                         and abs(dsCam - pend[0]) < cs_shift_confirm_tol)
+                            if confirmed or not cs_shift_confirm:
+                                corr = cs_shift_gain * (0.5 * (dsCam + pend[0]) if confirmed else dsCam)
+                                psiNow = cs['h'] + thPath            # keep the gyro heading
+                                cs['s'] += corr
+                                cs['sHist'] = [(a_, b_ + corr) for a_, b_ in cs['sHist']]   # no double correction
+                                thPath = float(route.heading(cs['s']))
+                                cs['h'] = float(wrap_to_pi(psiNow - thPath))
+                                if cs_dr_model != 'old':
+                                    cs['psi'] = psiNow
+                                hExp = float(wrap_to_pi(float(route.heading(cs['s'] - cs_wheelbase)) - thPath))
+                                cs['nShift'] += 1
+                                cs['shPend'] = None
+                                newCam = False                       # this frame's fit was made at the old s
+                                cs['src'] = 'shift'
+                                frTxt = (f"frames {pend[0]*100:+.1f} / {dsCam*100:+.1f} cm" if confirmed
+                                         else f"single frame {dsCam*100:+.1f} cm")
+                                print(f"CAMSTEER: along-route correction {corr*100:+.1f} cm from the camera "
+                                      f"({frTxt}) -> s = {cs['s']:.2f} m  t_epoch={time.time():.2f}")
+                            else:
+                                cs['shPend'] = (dsCam, cs['s'])
+                        # camera: offset (and heading when clean and plausible)
+                        if newCam:
+                            accept = False
+                            status = 'DR'
+                            headBad = (camRx.mf_src in ('YE', 'E', 'Y')
+                                       and abs(wrap_to_pi(camRx.mf_h - hExp)) > cs_max_head_fit)
+                            if camRx.mf_src not in ('YE', 'E', 'Y') or headBad:
+                                cs['pend'] = None            # a frame without a usable fit breaks a confirmation pair
+                                if headBad:
+                                    status = 'hbad'
+                                    cs['nHbad'] += 1
+                            elif (t >= startDelay and cs['s'] - cs['fitS'] > cs_confirm_after
+                                  and (cs['pend'] is None or abs(camRx.mf_d - cs['pend']) > cs_confirm_tol)):
+                                # after a gap without fits: wait for a second fit that agrees (§36)
+                                cs['pend'] = camRx.mf_d
+                                cs['nWait'] += 1
+                                status = 'wait'
+                            else:
+                                cs['pend'] = None
+                                gate = cs_gate0 + cs_gate_per_m * (cs['s'] - cs['fitS'])
+                                if t < startDelay or abs(camRx.mf_d - cs['d']) <= gate:
+                                    accept = True
+                                else:
+                                    # jump gate: ignore, unless the camera keeps saying the same
+                                    if cs['rejS'] is None:
+                                        cs['rejS'], cs['rejVals'] = cs['s'], []
+                                    cs['rejVals'].append(camRx.mf_d)
+                                    cs['nRej'] += 1
+                                    if ((cs['s'] - cs['rejS'] > cs_relock_dist
+                                            and np.std(cs['rejVals'][-5:]) < cs_relock_sd)
+                                            or (len(cs['rejVals']) >= cs_relock_n
+                                                and np.std(cs['rejVals'][-cs_relock_n:]) < cs_relock_n_sd)):
+                                        accept = True
+                                        print(f"CAMSTEER: re-lock to the camera at s = {cs['s']:.2f} m: offset "
+                                              f"{cs['d']*100:+.1f} -> {camRx.mf_d*100:+.1f} cm  t_epoch={time.time():.2f}")
+                                    else:
+                                        status = 'rej'
+                                        if cs['nRej'] <= 50:
+                                            print(f"CAMSTEER: camera offset {camRx.mf_d*100:+.1f} cm ignored "
+                                                  f"(predicted {cs['d']*100:+.1f}, gate {gate*100:.1f} cm, "
+                                                  f"{camRx.mf_src}) s = {cs['s']:.2f} m  t_epoch={time.time():.2f}")
+                            if accept:
+                                cs['rejS'] = None
+                                cs['d'] = camRx.mf_d
+                                kWin = route.curvature(cs['s'] + np.linspace(cs_head_window[0], cs_head_window[1], 37))
+                                if (np.ptp(kWin) <= cs_head_kchange and camRx.mf_rms < cs_head_rms
+                                        and abs(wrap_to_pi(camRx.mf_h - hExp)) < cs_max_head):
+                                    cs['h'] = camRx.mf_h
+                                    cs['psi'] = None             # body heading follows from the camera heading
+                                cs['fitS'], cs['src'] = cs['s'], camRx.mf_src
+                                cs['nFit'] += 1
+                            elif t < startDelay and camRx.mode == 'both':
+                                cs['d'], cs['h'] = camRx.offset, camRx.heading
+                                cs['psi'] = None
+                                cs['fitS'], cs['src'] = cs['s'], 'both'
+                            else:
+                                cs['src'] = status
                     # lane curvature around the car -> lane_camera.py
                     if t - cs['lastProf'] >= profile_period:
                         cs['lastProf'] = t
@@ -752,14 +926,21 @@ def controlLoop():
                             cs['s'] + np.linspace(-cs_wheelbase, v_curve_ahead, 40)))))
                         if kMax > 1e-6:
                             vTarget = min(v_ref, max(v_curve_min, float(np.sqrt(v_curve_alat / kMax))))
+                    # fusion filter: slower when the offset estimate is uncertain (blind stretches, §72)
+                    if fus is not None:
+                        sdD = float(fus.sd()[1])
+                        fU = float(np.clip((sdD - cs_fus_v_sd[0]) / (cs_fus_v_sd[1] - cs_fus_v_sd[0]), 0.0, 1.0))
+                        vTarget = min(vTarget, v_ref - fU * (v_ref - cs_fus_v_min))
                     # safety stops (once driving)
                     stopWhy = None
                     if t >= startDelay:
                         if time.time() - camRx.tRecv > cs_cam_timeout:
                             stopWhy = (f"no message from lane_camera.py for {cs_cam_timeout:.1f} s "
                                        f"({camRx.count} received; is it running with UDP on?)")
-                        elif cs['s'] - cs['fitS'] > cs_dr_max:
+                        elif cs['s'] - cs['fitS'] > (cs_fus_dr_max if fus is not None else cs_dr_max):
                             stopWhy = f"no camera fit for {cs['s'] - cs['fitS']:.2f} m"
+                        elif fus is not None and float(fus.sd()[1]) > cs_fus_sd_stop:
+                            stopWhy = f"offset uncertainty {100*float(fus.sd()[1]):.1f} cm"
                         elif abs(cs['d']) > cs_max_offset:
                             stopWhy = f"offset {cs['d']*100:+.1f} cm"
                     if stopWhy:
@@ -830,8 +1011,9 @@ def controlLoop():
                         if cs is not None:
                             camTxt = (f"  cs: s={cs['s']:.2f} m  offset={cs['d']*100:+.1f}cm  "
                                       f"heading={np.degrees(cs['h']):+.1f}deg  src={cs['src']}  "
-                                      f"fits={cs['nFit']}  rej={cs['nRej']}  wait={cs['nWait']}  hbad={cs['nHbad']}  gps_s={cs['nGps']}  "
-                                      f"v_target={vTarget:.2f}")
+                                      f"fits={cs['nFit']}  rej={cs['nRej']}  wait={cs['nWait']}  hbad={cs['nHbad']}  gps_s={cs['nGps']}  shift={cs['nShift']}  "
+                                      + (f"gps_rej={cs['nGpsRej']}  sd_d={100*fus.sd()[1]:.1f}cm  sd_s={100*fus.sd()[0]:.1f}cm  " if fus is not None else "")
+                                      + f"v_target={vTarget:.2f}")
                         initTxt = "" if startNodeReached else "  init=1"
                         print(f"pose=({x:.2f},{y:.2f},{np.degrees(th):.0f}deg)  path_pt=({activeController.p_ref[0]:.2f},{activeController.p_ref[1]:.2f})  cross_track={activeController.ect:.3f} m{camTxt}{initTxt}  t_epoch={time.time():.2f}")
                 else:

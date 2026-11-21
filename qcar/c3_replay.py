@@ -18,6 +18,15 @@ lane_camera.csv, every processed frame, ~13/s) instead of recomputing them on th
 saved frames (5/s). Use it for a camera-steering drive, to test the acceptance rules
 on the real message stream (the fits come from the lane_camera.py of that drive).
 Output: c3_replay_<folder>.csv / .png next to the frames folder.
+
+Dead reckoning (report §53): --dr old (default, the car's current model: carries the
+rear axle's offset as the front's) or --dr axle (rear axle carried along the body, front
+axle by geometry, lane_fusion.axle_step; offline test only, not validated, §54);
+--enc front|rear|mean: which axle the encoder distance is (axle model only). The axle
+model's outputs get a suffix, e.g. c3_replay_<folder>_axle_front.
+--shift 0.25|0.5|0.75|1 (frames mode only, i.e. without the lane_camera.csv argument):
+along-route correction from the camera at curve starts/ends (lane_camera.shift_fit, §56),
+s += gain x shift per frame where it is observable; suffix _shift<gain>.
 """
 import ast
 import os
@@ -30,6 +39,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
 import lane_camera as lc
+import lane_fusion as lf
 
 
 def load_vc():
@@ -53,6 +63,22 @@ def load_vc():
 
 def wrap(a):
     return (a + np.pi) % (2 * np.pi) - np.pi
+
+
+def pop_opt(name, default, choices):
+    """--name value from sys.argv (removed), or the default."""
+    if name in sys.argv:
+        k = sys.argv.index(name)
+        val = sys.argv[k + 1]
+        del sys.argv[k:k + 2]
+        assert val in choices, f'{name} must be one of {choices}'
+        return val
+    return default
+
+
+DR = pop_opt('--dr', 'old', ('axle', 'old')) if __name__ == '__main__' else 'old'
+ENC = pop_opt('--enc', 'front', lf.ENC_AXLES) if __name__ == '__main__' else 'front'
+SHIFT_GAIN = float(pop_opt('--shift', '0', ('0', '0.25', '0.5', '0.75', '1'))) if __name__ == '__main__' else 0.0
 
 
 def main():
@@ -92,6 +118,7 @@ def main():
     bias_rows = odo['t_epoch'] < (odo['t_epoch'][moving[0]] if len(moving) else odo['t_epoch'][-1])
     bias = float(np.mean(odo['gyro_z_raw'][bias_rows][:max(1, int(start_delay / 0.02))]))
     d = h = 0.0
+    psi = None      # body heading (axle model); None = take it from h at the next step
     h_exp_prev = 0.0
     fit_s = s
     rows = []
@@ -99,6 +126,7 @@ def main():
     fi = 0
     n_gps = n_fit = n_rej = 0
     rej_s, rej_vals = None, []
+    shifts = []
     pend, n_wait = None, 0
     enc_prev = odo['encoder'][0]
     for i in range(len(odo)):
@@ -106,13 +134,22 @@ def main():
         dt = t - odo['t_epoch'][i - 1] if i else 0.0
         ds = vc['enc_scale'] * (odo['encoder'][i] - enc_prev) * cps
         enc_prev = odo['encoder'][i]
-        s_prev = s
-        s += ds
-        th_path = float(route.heading(s))
-        h_exp = float(wrap(float(route.heading(s - vc['cs_wheelbase'])) - th_path))
-        d += np.sin(h - h_exp_prev) * ds
-        h = float(wrap(h + (odo['gyro_z_raw'][i] - bias) * dt - wrap(th_path - float(route.heading(s_prev)))))
-        h_exp_prev = h_exp
+        dpsi = (odo['gyro_z_raw'][i] - bias) * dt
+        if DR == 'old':
+            s_prev = s
+            s += ds
+            th_path = float(route.heading(s))
+            h_exp = float(wrap(float(route.heading(s - vc['cs_wheelbase'])) - th_path))
+            d += np.sin(h - h_exp_prev) * ds
+            h = float(wrap(h + dpsi - wrap(th_path - float(route.heading(s_prev)))))
+            h_exp_prev = h_exp
+        else:   # §53: rear axle carried, front axle by geometry
+            if psi is None:
+                psi = h + float(route.heading(s))
+            s, d, psi = lf.axle_step(route, vc['cs_wheelbase'], s, d, psi, ds, dpsi, ENC)
+            th_path = float(route.heading(s))
+            h = float(wrap(psi - th_path))
+            h_exp = float(wrap(float(route.heading(s - vc['cs_wheelbase'])) - th_path))
         # GPS readings up to now
         while gi < len(gps) and gps[gi, 0] <= t:
             sG, latG = route.project(gps[gi, 1], gps[gi, 2], s - vc['gps_front_ahead'], 0.4)
@@ -132,6 +169,15 @@ def main():
             else:
                 bgr = cv2.imread(os.path.join(folder, f'{frames[fi]:.3f}_front.jpg'))
                 out, dbg = lc.process(bgr)
+                if SHIFT_GAIN > 0 and odo['dist_m'][i] > 0.002:
+                    # §56: along-route correction from the camera at curve starts / ends
+                    sf = lc.shift_fit(dbg, route.curvature(s + vc['profile_s']))
+                    if sf['sh_ok']:
+                        ds_cam = SHIFT_GAIN * sf['sh_m']
+                        if DR == 'old':      # keep the gyro heading: heading to the lane changes with s
+                            h = float(wrap(h - (float(route.heading(s + ds_cam)) - float(route.heading(s)))))
+                        s += ds_cam
+                        shifts.append((s, sf['sh_m'], sf['sh_rms0'], sf['sh_rms']))
                 mf = lc.map_fit(dbg, route.curvature(s + vc['profile_s']))
             src = mf['mf_src']
             accept = False
@@ -172,10 +218,12 @@ def main():
                 if (np.ptp(k_win) <= vc['cs_head_kchange'] and mf['mf_rms_cm'] < vc['cs_head_rms']
                         and abs(wrap(np.radians(mf['mf_h_deg']) - h_exp)) < vc['cs_max_head']):
                     h = np.radians(mf['mf_h_deg'])
+                    psi = None
                 fit_s = s
                 n_fit += 1
             elif out['mode'] == 'both' and odo['dist_m'][i] < 0.002:
                 d, h = out['offset_cm'] / 100, np.radians(out['heading_deg'])
+                psi = None
                 fit_s, src = s, 'both'
             rows.append(dict(t=frames[fi], s=s, d=100 * d, h=np.degrees(h), h_exp=np.degrees(h_exp),
                              src=src if src else 'none', dr=s - fit_s))
@@ -193,7 +241,13 @@ def main():
           f'{n_gps} GPS along-route corrections')
     print(f'offset: mean {D.mean():+.1f} cm, sd {D.std():.1f}, max |d| {np.abs(D).max():.1f}; '
           f'longest stretch without a fit {max(r["dr"] for r in rows):.2f} m')
-    out = os.path.join(os.path.dirname(folder), 'c3_replay_' + os.path.basename(folder))
+    print(f'dead reckoning: {DR}' + (f', encoder distance = {ENC} axle' if DR == 'axle' else ''))
+    if SHIFT_GAIN > 0:
+        print(f'camera along-route corrections (gain {SHIFT_GAIN}): {len(shifts)}')
+        for sc, sh, r0, rb in shifts:
+            print(f'  s = {sc:7.3f} (mod {np.mod(sc, route.L):5.2f}): shift {sh:+.2f} m, rms {r0:.3f} -> {rb:.3f}')
+    out = os.path.join(os.path.dirname(folder), 'c3_replay_' + os.path.basename(folder)
+                       + ('' if DR == 'old' else f'_axle_{ENC}') + (f'_shift{SHIFT_GAIN:g}' if SHIFT_GAIN > 0 else ''))
     with open(out + '.csv', 'w') as f:
         f.write('t,s,d_cm,h_deg,h_exp_deg,src,dr_m\n')
         for r in rows:
