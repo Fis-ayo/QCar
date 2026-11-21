@@ -12,7 +12,7 @@ For each front frame, the yellow line and the right edge are fitted SEPARATELY
 with s0 limited to the visible range S_VISIBLE. A change point counts as seen
 when the best entry/exit fit is clearly better than both pure shapes.
 
-    python qcar/curve_start_test.py "logs/car A/raw_frames/20261117_191853" 13 28.5
+    python tools/archive/curve_start_test.py "logs/car A/raw_frames/20261117_191853" 13 28.5
 Output: <folder>/../curve_start_<folder name>.csv, printed table.
 """
 import os
@@ -21,7 +21,8 @@ import numpy as np
 import cv2
 from scipy.optimize import least_squares
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
 import curve_offline_test as cot
 

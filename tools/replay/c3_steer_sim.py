@@ -15,15 +15,15 @@ noise) and are carried on between frames by ideal dead reckoning. Not modelled:
 the blind 0 -> 2 stretch (ideal DR there is the same as camera here), slip,
 steering trim errors.
 
-    python qcar/c3_steer_sim.py
+    python tools/replay/c3_steer_sim.py
 """
 import ast
 import os
 import sys
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 
 
 def wrap(a):
@@ -31,7 +31,7 @@ def wrap(a):
 
 
 def load_vc():
-    src = open(os.path.join(HERE, 'vehicle_control.py'), encoding='utf-8').read()
+    src = open(os.path.join(common.QCAR, 'vehicle_control.py'), encoding='utf-8').read()
     keep = []
     for node in ast.parse(src).body:
         if isinstance(node, (ast.ClassDef, ast.FunctionDef)) and node.name in (

@@ -32,7 +32,7 @@ All values are in [qcar/vehicle_control.py](../../qcar/vehicle_control.py).
 |---|---|
 | [qcar/vehicle_control.py](../../qcar/vehicle_control.py) | Settings above; `gps_scale` applied to GPS x/y in two places (start-position check and EKF update); `steering_trim` in `qcar.write`; two debug prints (§3.1); `self.ect` stored in `SteeringController.update` for the print |
 | [python/start.py](../../python/start.py) | `vehicle_control.py` output saved to `vehicle_control.log` on the car (§3.1) |
-| [qcar/check_pose.py](../../qcar/check_pose.py) | New: static localization check (§5) |
+| [tools/on_car/check_pose.py](../../tools/on_car/check_pose.py) | New: static localization check (§5) |
 
 ---
 
@@ -90,7 +90,7 @@ Each problem is listed with the evidence that identified it and the fix.
 
 ### 3.4 Tracking looked perfect, but the car still cut into the other lane: localization scale
 - **Evidence:** with ~1.5 cm tracking in the log, the car still crossed the divider, worst on the 2 → 4 curve. Halving the speed (`v_ref = 0.2`) changed nothing, which ruled out localization lag.
-- **Static check:** [qcar/check_pose.py](../../qcar/check_pose.py) (see [§5](#5-diagnostic-tools)), with the car held still and centered in its lane at several spots, before and after recalibrating:
+- **Static check:** [tools/on_car/check_pose.py](../../tools/on_car/check_pose.py) (see [§5](#5-diagnostic-tools)), with the car held still and centered in its lane at several spots, before and after recalibrating:
 
   | Spot | Round 1 | Round 2 (recalibrated) |
   |---|---|---|
@@ -160,7 +160,7 @@ See [§3.1](#31-no-visibility-into-what-the-car-was-doing). Useful patterns:
 - `cross_track` small while the car is visibly off: localization or path problem; use `check_pose.py`.
 
 ### `check_pose.py`
-[qcar/check_pose.py](../../qcar/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
+[tools/on_car/check_pose.py](../../tools/on_car/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
 - `side_offset`: sideways distance from the route path. **Positive = left of the path.**
 - `spread`: min..max over the window, i.e. jitter at rest.
 - `heading_err`: car heading minus path direction.
@@ -168,7 +168,7 @@ See [§3.1](#31-no-visibility-into-what-the-car-was-doing). Useful patterns:
 
 Run it on the car (not through `run_all_cars.bat`, which would also start driving):
 ```
-scp qcar/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
+scp tools/on_car/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
 ssh nvidia@192.168.0.151
 cd /home/nvidia/Documents/self_driving/multi_vehicle_self_driving
 python -u check_pose.py | tee check_pose.log

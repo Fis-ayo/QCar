@@ -18,8 +18,8 @@ contradicted each other in §26 with the borrowed intrinsics:
      the 0.891 m arcs). Counts clean edge fits whose heading is within 3 deg of
      that, and how well the yellow and edge offsets agree.
 
-    python qcar/road_check.py
-    python qcar/road_check.py --skip-curves
+    python tools/archive/road_check.py
+    python tools/archive/road_check.py --skip-curves
 """
 import argparse
 import json
@@ -29,12 +29,11 @@ import numpy as np
 import cv2
 from scipy.optimize import least_squares
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
 
-LOGS = os.path.join(HERE, '..', 'logs', 'car A')
+LOGS = os.path.join(common.LOGS, 'car A')
 CALIB = os.path.join(LOGS, 'calib_frames', 'calib_result_20261118_203057+20261118_204943', 'calib_result.json')
 STRIP_IMG = os.path.join(LOGS, 'forward_check_front.png')
 STRIP_TRUE = np.array([0.30, 0.45, 0.60])   # m from the front axle (user's ruler)

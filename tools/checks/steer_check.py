@@ -5,14 +5,13 @@ Per-drive steering check (camera report §47, §50): commanded vs achieved steer
 stretch, achieved = atan(L * gyro / v) with 0.2 s smoothing and the command taken 0.1 s
 earlier (servo); time at the steering limit; roundabout in 0.25 m bins; node 2 re-acquisition.
 
-    python qcar/steer_check.py <folder with odometry_drive.csv>
+    python tools/checks/steer_check.py <folder with odometry_drive.csv>
 """
 import sys, os
 import numpy as np
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
-from c3_replay import load_vc
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
+from common import load_vc
 
 D = sys.argv[1]
 vc = load_vc()

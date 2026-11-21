@@ -34,9 +34,9 @@ import numpy as np
 import cv2
 
 # -- Calibration (front CSI camera, car A, 2026-11-18, camera report §28-§29) ---
-# Intrinsics: checkerboard (qcar/calib_solve.py, 147 frames, rms 0.19 px). The
+# Intrinsics: checkerboard (tools/calibration/calib_solve.py, 147 frames, rms 0.19 px). The
 # pixels aren't square (FY/FX = 0.665: the 4:3 sensor is squeezed into 820x410).
-# Mounting: from the paper-strip image (qcar/road_check.py): pitch from the lane
+# Mounting: from the paper-strip image (tools/archive/road_check.py): pitch from the lane
 # lines' vanishing point, height from the lane width, CAM_AHEAD from the strips
 # (30/45/60 cm -> 29.8/46.0/59.2). True scale: lane width 25.7 cm and the curve
 # radius (edge 0.95-1.07 m, map 1.02 m) come out right without a scale factor.

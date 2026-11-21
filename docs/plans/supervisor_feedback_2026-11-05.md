@@ -2,7 +2,7 @@
 
 **Status (2026-11-19):** feedback reviewed and decisions agreed (below). Nothing started yet except what already sits in the [camera plan](camera_lane_correction.md). The camera report's "Where to pick up" block (drive A → drive B → fusion → left camera) is still the immediate next work; this doc adds what comes after it and what the next report needs.
 
-**Source:** Dr. Fu's *Technical Feedback and Research Development Guidelines* (reviewing the [2026-10-30 update](../../SUPERVISOR_PROJECT_UPDATE_2026-10-30.txt)), plus her follow-up note on path planning and multi-vehicle coordination. The PDF is kept by the user, not in this folder.
+**Source:** Dr. Fu's *Technical Feedback and Research Development Guidelines* (reviewing the [2026-10-30 update](../reference/SUPERVISOR_PROJECT_UPDATE_2026-10-30.txt)), plus her follow-up note on path planning and multi-vehicle coordination. The PDF is kept by the user, not in this folder.
 
 ## What she asked for (summary)
 

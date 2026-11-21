@@ -9,12 +9,13 @@ painted lane actually starts curving relative to the car's estimate (+ = the lan
 earlier than expected = the estimate is behind, or the map's curve starts later than the
 paint). Control: the 0 -> 2 entry, where the GPS still holds s (expect ~0).
 
-    python qcar/curve_shift_check.py "<name>|<raw frames folder>|<odometry_drive.csv>" [...]
+    python tools/checks/curve_shift_check.py "<name>|<raw frames folder>|<odometry_drive.csv>" [...]
 """
 import sys, os, numpy as np, cv2
-HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE); sys.path.insert(0,os.path.join(HERE,'..','..','libraries','python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
-from c3_replay import load_vc
+from common import load_vc
 from hal.products.mats import SDCSRoadMap
 vc=load_vc()
 route=vc['RoutePath'](vc['remove_backward_points'](SDCSRoadMap(leftHandTraffic=False).generate_path(vc['nodeSequence'])))

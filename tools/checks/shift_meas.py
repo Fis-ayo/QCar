@@ -8,7 +8,7 @@ the map curvature changes within the view, with the profile at the car's logged 
 the frame time. The measurement is s_true = logged s + best shift (independent of the
 estimator that later uses it).
 
-    python qcar/shift_meas.py <raw frames folder> <odometry_drive.csv>
+    python tools/checks/shift_meas.py <raw frames folder> <odometry_drive.csv>
 Output: shift_meas.csv next to the odometry file:
     t_epoch, s_logged, sh_m, s_true, rms0, rms, ok   (ok = lane_camera's sh_ok rule)
 """
@@ -17,11 +17,10 @@ import sys
 import numpy as np
 import cv2
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
-from c3_replay import load_vc
+from common import load_vc
 
 
 def main():

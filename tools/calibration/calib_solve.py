@@ -4,9 +4,9 @@ calib_solve.py  (PC only)
 Camera report §26: checkerboard calibration of the FRONT CSI camera at 820x410,
 from the frames saved by calib_capture.py.
 
-    python qcar/calib_solve.py "logs/car A/calib_frames/20261118_203057"
-    python qcar/calib_solve.py <folder> --cols 7 --rows 4 --square 0.034
-    python qcar/calib_solve.py <folder1> <folder2>      # several recordings combined
+    python tools/calibration/calib_solve.py "logs/car A/calib_frames/20261118_203057"
+    python tools/calibration/calib_solve.py <folder> --cols 7 --rows 4 --square 0.034
+    python tools/calibration/calib_solve.py <folder1> <folder2>      # several recordings combined
 
 Steps:
   1. Find the board's inner corners in every frame (classic detector), refined

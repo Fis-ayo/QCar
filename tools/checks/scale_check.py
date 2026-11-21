@@ -8,12 +8,13 @@ i.e. without enc_scale) from the recorded drives, two ways:
          refitted with s shifted, frames s 7.0-7.46 before any along-route correction);
   k_gps: GPS along-route position vs raw encoder distance from the start to s 4.2.
 Drive list is in the script.
-    python qcar/scale_check.py
+    python tools/checks/scale_check.py
 """
 import sys, os, re, numpy as np, cv2
-HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE); sys.path.insert(0,os.path.join(HERE,'..','..','libraries','python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
-from c3_replay import load_vc
+from common import load_vc
 from hal.products.mats import SDCSRoadMap
 vc=load_vc(); RL=None
 route=vc['RoutePath'](vc['remove_backward_points'](SDCSRoadMap(leftHandTraffic=False).generate_path(vc['nodeSequence'])))

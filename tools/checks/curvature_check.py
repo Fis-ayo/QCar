@@ -6,12 +6,13 @@ inside an arc (the whole 0-0.6 m view in the arc), the lane points are refitted 
 constant test curvature 0.60 ... 2.40 /m instead of the map's; the best total rms per
 region and drive is printed, with the map arcs for comparison. Control: the 2 -> 4 arc.
 Drive list in the script.
-    python qcar/curvature_check.py
+    python tools/checks/curvature_check.py
 """
 import sys, os, numpy as np, cv2
-HERE=os.path.dirname(os.path.abspath(__file__)); sys.path.insert(0,HERE); sys.path.insert(0,os.path.join(HERE,'..','..','libraries','python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
-from c3_replay import load_vc
+from common import load_vc
 from hal.products.mats import SDCSRoadMap
 vc=load_vc(); route=vc['RoutePath'](vc['remove_backward_points'](SDCSRoadMap(leftHandTraffic=False).generate_path(vc['nodeSequence'])))
 RL=route.L

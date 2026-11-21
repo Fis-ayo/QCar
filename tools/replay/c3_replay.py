@@ -11,8 +11,8 @@ encoder/gyro dead reckoning in between. The steering itself isn't simulated
 RoutePath, remove_backward_points and the cs_* settings are taken from
 vehicle_control.py's source, so the replay uses the same code and numbers.
 
-    python qcar/c3_replay.py "logs/car A/raw_frames/20261118_222611" "logs/car A/odometry_drive.csv" "logs/car A/vehicle_control.log"
-    python qcar/c3_replay.py <frames> <odometry_drive.csv> <vehicle_control.log> "logs/car A/lane_camera.csv"
+    python tools/replay/c3_replay.py "logs/car A/raw_frames/20261118_222611" "logs/car A/odometry_drive.csv" "logs/car A/vehicle_control.log"
+    python tools/replay/c3_replay.py <frames> <odometry_drive.csv> <vehicle_control.log> "logs/car A/lane_camera.csv"
 The optional 4th argument replays the map fits the car actually received (mf_* in
 lane_camera.csv, every processed frame, ~13/s) instead of recomputing them on the
 saved frames (5/s). Use it for a camera-steering drive, to test the acceptance rules
@@ -35,45 +35,15 @@ import sys
 import numpy as np
 import cv2
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
 import lane_fusion as lf
-
-
-def load_vc():
-    """RoutePath, remove_backward_points and the settings from vehicle_control.py."""
-    src = open(os.path.join(HERE, 'vehicle_control.py'), encoding='utf-8').read()
-    tree = ast.parse(src)
-    keep = []
-    names = {'RoutePath', 'remove_backward_points'}
-    for node in tree.body:
-        if isinstance(node, (ast.ClassDef, ast.FunctionDef)) and node.name in names:
-            keep.append(node)
-        elif isinstance(node, ast.Assign) and len(node.targets) == 1 and isinstance(node.targets[0], ast.Name):
-            n = node.targets[0].id
-            if n.startswith(('cs_', 'enc_scale', 'gps_front_ahead', 'profile_s', 'nodeSequence',
-                             'startDelay')):
-                keep.append(node)
-    ns = {'np': np}
-    exec(compile(ast.Module(body=keep, type_ignores=[]), 'vehicle_control.py', 'exec'), ns)
-    return ns
+from common import load_vc, pop_opt  # noqa: E402,F401  (were defined here)
 
 
 def wrap(a):
     return (a + np.pi) % (2 * np.pi) - np.pi
-
-
-def pop_opt(name, default, choices):
-    """--name value from sys.argv (removed), or the default."""
-    if name in sys.argv:
-        k = sys.argv.index(name)
-        val = sys.argv[k + 1]
-        del sys.argv[k:k + 2]
-        assert val in choices, f'{name} must be one of {choices}'
-        return val
-    return default
 
 
 DR = pop_opt('--dr', 'old', ('axle', 'old')) if __name__ == '__main__' else 'old'

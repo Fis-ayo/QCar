@@ -46,7 +46,7 @@ No code changes were made for these.
 - **Yes, at certain spots:** the lidar can't get a reliable fix on that stretch. Look at what the lidar sees from there (open space, people, symmetric walls) or recalibrate.
 - **No, stable everywhere:** the problem only happens while driving. Next is the GPS-jump safety check (setup doc next step 3), which makes the car reject impossible readings or stop instead of following them.
 
-[qcar/check_pose.py](../../qcar/check_pose.py) already has `nodeSequence = [0, 2, 4, 14, 16, 18, 12, 0]`.
+[tools/on_car/check_pose.py](../../tools/on_car/check_pose.py) already has `nodeSequence = [0, 2, 4, 14, 16, 18, 12, 0]`.
 
 ### Where to place the car
 
@@ -73,7 +73,7 @@ Stay out of the lidar's view (below about car-roof height) while each spot settl
 
 On the PC, from the project folder:
 ```
-scp qcar/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
+scp tools/on_car/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
 ssh nvidia@192.168.0.151
 ```
 On the car (SSH):

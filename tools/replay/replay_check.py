@@ -17,7 +17,7 @@ from the frames if missing) and prints per drive and in total:
     car B drive B's blind 12 -> 0 straight (camera -12 cm at its end, §70)
 and a PASS / CHECK verdict per drive (rejections, re-acquisition > 5 cm, NIS p99 > 9).
 
-    python qcar/replay_check.py [--dr axle|old] [--enc front|rear|mean] [--set name=value ...] [drive ...]
+    python tools/replay/replay_check.py [--dr axle|old] [--enc front|rear|mean] [--set name=value ...] [drive ...]
 --set overrides lane_fusion.DEFAULTS for this run, e.g. --set q_s=0.1 --set cam_sd_h_deg=6
 (cam_sd_h_deg / cam_sd0_scale are shortcuts). Default: dr axle, enc front, all drives.
 """
@@ -26,14 +26,13 @@ import sys
 import subprocess
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import fusion_replay as fr
 import lane_fusion as lf
-from c3_replay import load_vc, pop_opt
+from common import load_vc, pop_opt
 
-ROOT = os.path.join(HERE, '..', 'logs')
+ROOT = common.LOGS
 A, B = os.path.join(ROOT, 'car A'), os.path.join(ROOT, 'car B')
 # name: (folder with odometry_drive.csv / vehicle_control.log / lane_camera.csv, raw frames, shift_meas file)
 DRIVES = {
@@ -99,7 +98,7 @@ def main():
         folder, frames, shf = DRIVES[name]
         shf = shf or os.path.join(folder, 'shift_meas.csv')
         if not os.path.exists(shf):
-            subprocess.run([sys.executable, os.path.join(HERE, 'shift_meas.py'), frames,
+            subprocess.run([sys.executable, common.tool('checks', 'shift_meas.py'), frames,
                             os.path.join(folder, 'odometry_drive.csv')], check=True, capture_output=True)
         odo, gps, cam = fr.load(os.path.join(folder, 'odometry_drive.csv'), os.path.join(folder, 'vehicle_control.log'),
                                 os.path.join(folder, 'lane_camera.csv'))

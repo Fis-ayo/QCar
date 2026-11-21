@@ -38,7 +38,7 @@
 
 **Where to pick up: two test drives, one change at a time (agreed with the user on 2026-11-19), then the Kalman fusion, then the left camera.** What comes after the full lap (controlled GPS vs camera comparison, repeated trials, measurements for the supervisor, then multi-vehicle) is in [plans/supervisor_feedback_2026-11-05.md](../plans/supervisor_feedback_2026-11-05.md).
 
-1. **Done 2026-11-20 (§50), logs `logs/car A/20261120_driveA/`, check with `python qcar/steer_check.py <folder>`.** Drive A: new trim only (`steering_trim = -0.04`, `K_soft = 0.05`, `use_curve_speed = False`, `v_ref` 0.4). Same start as §46 (straight before node 0, procedure car_A_setup.md §3). Copy back the whole log set (`vehicle_control.log`, `odometry_drive.csv`, `lane_camera.csv`, `lane_debug/`, `raw_frames/`) **into a new folder of its own** (e.g. `logs/car A/<date>_driveA/`, likewise for drive B): the top of `logs/car A/` holds the §40 drive's logs and `Fresh_Log/` the §46 drive's, both used by the fusion replays (§48–§49) and must not be overwritten, and note **where the car leaves the lane, which way (inward/outward), and where it stops**. Check in the logs:
+1. **Done 2026-11-20 (§50), logs `logs/car A/20261120_driveA/`, check with `python tools/checks/steer_check.py <folder>`.** Drive A: new trim only (`steering_trim = -0.04`, `K_soft = 0.05`, `use_curve_speed = False`, `v_ref` 0.4). Same start as §46 (straight before node 0, procedure car_A_setup.md §3). Copy back the whole log set (`vehicle_control.log`, `odometry_drive.csv`, `lane_camera.csv`, `lane_debug/`, `raw_frames/`) **into a new folder of its own** (e.g. `logs/car A/<date>_driveA/`, likewise for drive B): the top of `logs/car A/` holds the §40 drive's logs and `Fresh_Log/` the §46 drive's, both used by the fusion replays (§48–§49) and must not be overwritten, and note **where the car leaves the lane, which way (inward/outward), and where it stops**. Check in the logs:
    - straights (approach, 4 → 14): commanded `delta` ≈ 0 (was +6°) and `cs_d_cm` ≈ 0 (was −1 … −2 cm). If the car now pulls left, the trim went too far: back to −0.14 and look at the log;
    - achieved steering atan(L · gyro / speed) vs needed in the roundabout (22.3°) and on 16 → 18 (24.4° right), and no long stretches at ±30°;
    - node 2: is the first fit after 0 → 2 still ~−8 cm?
@@ -50,10 +50,10 @@
    - **GPS as a full input, along and across the route**, with an honest uncertainty instead of a per-place table: it holds the position along the route (§46: ±3 cm while good, ~3 % drift without it), gives the start position, cross-checks the camera, and carries the car where the camera is blind. Readings that disagree with the estimate beyond their uncertainty are rejected (the false fixes on 4 → 14 would fail this test), and the uncertainty can be learned per drive from how the GPS agrees with the camera on straights;
    - in the same filter, the position along the route (s) as a state, corrected by the GPS and later by camera curve starts/ends.
    Test offline first on the §40 and §46 logs with `c3_replay.py`. It also prepares for two cameras with different confidence.
-   - **Started offline on 2026-11-20 (§48), before drives A and B, not on the car:** [qcar/lane_fusion.py](../../qcar/lane_fusion.py) + [qcar/fusion_replay.py](../../qcar/fusion_replay.py), replayed on the §46 drive. Findings: the raw GPS error is a place-dependent bias (+6 cm node 0, −8 cm on 2 → 4) and needs bias states in the filter; with them all 68 false GPS fixes are rejected and the camera fits are kept; the 0 → 2 and roundabout errors come from the along-route position at the curve entry (≈ 1.6 cm offset per cm); an uncertainty stop would have stopped at s ≈ 8.1 in the roundabout. §40 drive replayed (§49): same along-route mechanism, the dead reckoning itself is accurate, and the GPS along-route error on the 0 → 2 arc repeats (+7 … +8 cm). Next: GPS model on arcs, then along-route position at curve entries, then tuning (§49 "Next steps").
+   - **Started offline on 2026-11-20 (§48), before drives A and B, not on the car:** [qcar/lane_fusion.py](../../qcar/lane_fusion.py) + [tools/replay/fusion_replay.py](../../tools/replay/fusion_replay.py), replayed on the §46 drive. Findings: the raw GPS error is a place-dependent bias (+6 cm node 0, −8 cm on 2 → 4) and needs bias states in the filter; with them all 68 false GPS fixes are rejected and the camera fits are kept; the 0 → 2 and roundabout errors come from the along-route position at the curve entry (≈ 1.6 cm offset per cm); an uncertainty stop would have stopped at s ≈ 8.1 in the roundabout. §40 drive replayed (§49): same along-route mechanism, the dead reckoning itself is accurate, and the GPS along-route error on the 0 → 2 arc repeats (+7 … +8 cm). Next: GPS model on arcs, then along-route position at curve entries, then tuning (§49 "Next steps").
    - **Drives A and B done and replayed (§50–§52). Before item 4: the dead-reckoning axle fix of §53 (it changes `lane_fusion.predict` too, so the GPS-on-arcs work should start from the fixed model), then item 4 (GPS model on arcs) on all five drives (§40, §46, A, B, C).** §52: raw GPS sideways bias repeats by place within ~2 cm (§46, A, B); GPS on the 0 → 2 arc makes node 2 worse in all four drives (`full` 4–7 cm out); parked camera heading −1.15° / −2.06° in A / B (C3 discards it); in the roundabout the filter's uncertainty reaches 26–30 cm (nothing measures the car there). Logs `logs/car A/20261120_driveA/` (raw frames `20261120_190909`) and `20261120_driveB/` (`20261120_193052`). Items 1–3 below are done (§50–§52):
      1. evaluate each drive as planned in steps 1 and 2 above (trim, steering, node 2), from its own folder;
-     2. replay each drive: `python qcar/c3_replay.py <folder>/raw_frames/<drive> <folder>/odometry_drive.csv <folder>/vehicle_control.log <folder>/lane_camera.csv`, then `python qcar/fusion_replay.py <folder>/odometry_drive.csv <folder>/vehicle_control.log <folder>/lane_camera.csv <c3_replay csv>` and `python qcar/fusion_drive_checks.py <folder> <c3_replay csv>`;
+     2. replay each drive: `python tools/replay/c3_replay.py <folder>/raw_frames/<drive> <folder>/odometry_drive.csv <folder>/vehicle_control.log <folder>/lane_camera.csv`, then `python tools/replay/fusion_replay.py <folder>/odometry_drive.csv <folder>/vehicle_control.log <folder>/lane_camera.csv <c3_replay csv>` and `python tools/replay/fusion_drive_checks.py <folder> <c3_replay csv>`;
      3. compare with §49's tables (GPS minus camera along/across, node 2 re-acquisition, sensitivity, parked heading). Drive A/B are the first logs with the new trim (−0.04) and at 0.4 m/s on 0 → 2, and the first with raw GPS (no table) on the lower map besides §46;
      4. then continue §49 "Next steps" (GPS model on arcs first) on all four drives.
    - **Related GPS work:** the false fix on 4 → 14 (x ≈ 3.2 instead of 2.28 in every drive since 2026-11-11, §6, §46) was deferred (§13). With the GPS as an integral sensor it should be looked at: `check_pose.py` survey of 4 → 14, the room near x ≈ 3.2, y ≈ 2, and whether a landmark or recalibration removes it.
@@ -67,7 +67,7 @@ What's already known:
 - **Calibration:** the left camera has none yet. The front camera needed a checkerboard (§26–§28: borrowed intrinsics were badly wrong, non-square pixels FY/FX ≈ 0.665). Expect the same for the left camera.
 
 Suggested steps:
-1. **Checkerboard calibration of the left camera:** add a camera option to [qcar/calib_capture.py](../../qcar/calib_capture.py) (it only reads `csiFront` now), record on the desk as for the front camera (§27–§28), and solve with [qcar/calib_solve.py](../../qcar/calib_solve.py).
+1. **Checkerboard calibration of the left camera:** add a camera option to [tools/on_car/calib_capture.py](../../tools/on_car/calib_capture.py) (it only reads `csiFront` now), record on the desk as for the front camera (§27–§28), and solve with [tools/calibration/calib_solve.py](../../tools/calibration/calib_solve.py).
 2. **Mounting** (height, angles, position on the car), without tape. Use frames where the front camera already gives the offset and heading: parked on a straight, and the straights of `20261118_234715` (front fits about −1 cm on 4 → 14). Fit the left camera's pose so that its yellow line lands where the front camera says.
 3. **Offline test on `20261118_234715` and `20261117_204844`:** detect the yellow line in the left frames, project it to the floor, fit it with the map lane shape at `cs_s` (as `lane_camera.map_fit`), and compare with the front camera where both see the lane, and with the dead reckoning through 0 → 2. On the hand-rolled pass the answer should be ≈ 0.
 4. **Then** add it to `lane_camera.py` (second camera; check the CPU, §4: frame rate and `proc_ms`) and to `vehicle_control.py`'s camera steering (left-camera fit used where the front camera has none, e.g. 0 → 2).
@@ -80,7 +80,7 @@ Later: (curvature feedforward tried in simulation, §44–§45: ramped over L it
 
 ## 1. Step 0: which cameras can see the lines
 
-[qcar/csi_snapshot.py](../../qcar/csi_snapshot.py) saved one frame from each of the four CSI cameras (820×410), plus a copy with the yellow HSV mask from [examples/QCar2_task_lane_following_probe.py](../../examples/QCar2_task_lane_following_probe.py). Positions: right lane and left lane, straight and curve. Images: `logs/car A/snapshots/`.
+[tools/on_car/csi_snapshot.py](../../tools/on_car/csi_snapshot.py) saved one frame from each of the four CSI cameras (820×410), plus a copy with the yellow HSV mask from [examples/QCar2_task_lane_following_probe.py](../../examples/QCar2_task_lane_following_probe.py). Positions: right lane and left lane, straight and curve. Images: `logs/car A/snapshots/`.
 
 - **The yellow divider is always on the car's left** on this route, including the left lane, which is driven in the opposite direction.
 - **The right boundary is not a painted line.** It's the edge between the dark road and the white surface beside it.
@@ -347,7 +347,7 @@ Logs: `logs/car A/raw_frames/20261117_191853/` (212 front, 211 left frames; it r
 
 ## 19. Offline test: visible boundary + known curvature (2026-11-17)
 
-Script: [qcar/curve_offline_test.py](../../qcar/curve_offline_test.py) (PC only). Output: `logs/car A/raw_frames/curve_test_20261117_191853/` (`curve_test.csv`, `offsets.png`, a bird's-eye plot `bev_<t>.png` every ~1 s).
+Script: [tools/archive/curve_offline_test.py](../../tools/archive/curve_offline_test.py) (PC only). Output: `logs/car A/raw_frames/curve_test_20261117_191853/` (`curve_test.csv`, `offsets.png`, a bird's-eye plot `bev_<t>.png` every ~1 s).
 
 **Method:** same yellow and edge pixels as `lane_camera.py`, projected to the floor at the fixed scale (0.724), using points up to 60 cm ahead of the axle. Both boundaries are fitted as circles of known radius around one lane centre, so only the offset `d` and the heading are free (§12 proposal, normal shift as in §14). Two models per frame: **straight** (infinite radius) and **arc** (0.891 m left). True offset ≈ 0, since the car was centred by hand (±1–2 cm).
 
@@ -369,7 +369,7 @@ Script: [qcar/curve_offline_test.py](../../qcar/curve_offline_test.py) (PC only)
 
 ## 20. Offline test: piecewise straight/arc model (2026-11-17)
 
-Added to [qcar/curve_offline_test.py](../../qcar/curve_offline_test.py): the lane centre is straight up to `s0` ahead of the axle and then the 0.891 m left arc ("entry"), or the reverse ("exit"). `s0` is searched over −5 … 85 cm, with offset and heading fitted at each value, as a stand-in for the GPS position. New CSV columns `d_piece`, `h_piece`, `rms_piece`, `piece_kind`, `piece_s0`; the plots show the fit in red (every frame from 12.8 to 28.5 s). Runtime 3.7 min for 212 frames on the PC (36 fits per frame).
+Added to [tools/archive/curve_offline_test.py](../../tools/archive/curve_offline_test.py): the lane centre is straight up to `s0` ahead of the axle and then the 0.891 m left arc ("entry"), or the reverse ("exit"). `s0` is searched over −5 … 85 cm, with offset and heading fitted at each value, as a stand-in for the GPS position. New CSV columns `d_piece`, `h_piece`, `rms_piece`, `piece_kind`, `piece_s0`; the plots show the fit in red (every frame from 12.8 to 28.5 s). Runtime 3.7 min for 212 frames on the PC (36 fits per frame).
 
 - **Pure arcs: unchanged.** 23.3–26.5 s: d = −0.5 … −2.2 cm, rms < 0.07 cm, the same as the arc model in §19.
 - **`s0` can't be fitted from the image.** On the node 4 straight (28.5–48 s) the fit alternates between the true answer (straight, d = −0.7 cm, heading −1.9°) and "arc up to 30 cm, then straight": d = −6 cm, heading +17°, with the same rms (0.03 cm, [bev_046.7.png](../../logs/car%20A/raw_frames/curve_test_20261117_191853/bev_046.7.png)). The edge is only seen from ~28 cm ahead. Whatever the lane does between the axle and there is invisible, and an arc there looks just like a turned heading. The same ambiguity explains the bad frames at 21–22 s and 27–27.8 s.
@@ -434,7 +434,7 @@ Sequence (times = `t_epoch` − 1794946400 s):
 
 ## 23. C1: can the camera see where a curve starts or ends? (first look)
 
-Script: [qcar/curve_start_test.py](../../qcar/curve_start_test.py) (PC only). Per frame, the yellow line and the right edge are fitted **separately** with four lane shapes: straight, arc (0.891 m left), entry at `s0` and exit at `s0`, with `s0` limited to the visible range 25–65 cm. A change point counts as **seen** when the best entry/exit fit has under half the error of both pure shapes. The yellow line is reduced to **one centre point per image row**: with all its pixels the fit error was ~0.4 cm from the line's width alone, and with the centre line it is 0.05–0.2 cm.
+Script: [tools/archive/curve_start_test.py](../../tools/archive/curve_start_test.py) (PC only). Per frame, the yellow line and the right edge are fitted **separately** with four lane shapes: straight, arc (0.891 m left), entry at `s0` and exit at `s0`, with `s0` limited to the visible range 25–65 cm. A change point counts as **seen** when the best entry/exit fit has under half the error of both pure shapes. The yellow line is reduced to **one centre point per image row**: with all its pixels the fit error was ~0.4 cm from the line's width alone, and with the centre line it is 0.05–0.2 cm.
 
 **Data:** the hand-rolled recording (§18) and drive 1's frames (§21) were no longer in `logs/car A/raw_frames/` (replaced when new folders were copied in; the §19/§20 output folder went with them). The two remaining folders are drives that went wrong: `20261117_201140` (earlier run, no log; it started on the straight before node 0 and crossed left near the 0 → 2 exit) and `20261117_201313` (drive 2, §22). Output: `logs/car A/raw_frames/curve_start_<folder>.csv`.
 
@@ -476,11 +476,11 @@ The hand-rolled (`20261117_191853`, car centred, true offset ≈ 0) and drive 1 
 - **Start the car on the straight before node 0** (as in 201140), not at node 0 itself, where neither boundary can be used.
 
 **C2 needs the distance travelled per frame**, which none of the recordings have: `lane_camera.py` doesn't read the encoder, and only drive 2 has timed GPS. Proposed: a small logger that reads only the QCar's encoder and gyro (no GPS, no motors) with `t_epoch`, run alongside `lane_camera.py --save-raw` during another hand-rolled, centred pass from the straight before node 0 through 0 → 2 → 4.
-**Written 2026-11-17:** [qcar/odometry_log.py](../../qcar/odometry_log.py) → `odometry.csv` (`t_epoch`, encoder counts, distance from encoder and tach, gyro z, heading). The gyro bias is averaged over the first 3 s with the car still; throttle and steering are held at 0. Compiles on the PC; not yet run on the car.
+**Written 2026-11-17:** [tools/on_car/odometry_log.py](../../tools/on_car/odometry_log.py) → `odometry.csv` (`t_epoch`, encoder counts, distance from encoder and tach, gyro z, heading). The gyro bias is averaged over the first 3 s with the car still; throttle and steering are held at 0. Compiles on the PC; not yet run on the car.
 
 ## 25. C2: hand-rolled pass with odometry (2026-11-17)
 
-Logs: `logs/car A/odometry.csv` ([qcar/odometry_log.py](../../qcar/odometry_log.py), first run), `lane_camera.csv`, `raw_frames/20261117_204844/` (214 front frames). Hand-rolled, centred (true offset ≈ 0), from the straight before node 0 to node 4. Script: [qcar/c2_offline_test.py](../../qcar/c2_offline_test.py) (PC only; output `logs/car A/raw_frames/c2_*.csv/.png`).
+Logs: `logs/car A/odometry.csv` ([tools/on_car/odometry_log.py](../../tools/on_car/odometry_log.py), first run), `lane_camera.csv`, `raw_frames/20261117_204844/` (214 front frames). Hand-rolled, centred (true offset ≈ 0), from the straight before node 0 to node 4. Script: [tools/archive/c2_offline_test.py](../../tools/archive/c2_offline_test.py) (PC only; output `logs/car A/raw_frames/c2_*.csv/.png`).
 
 **The odometry works:** encoder and tachometer distance agree (4.097 vs 4.099 m); moving 45.8–64.6 s; heading +178.9° at node 4. The gyro heading profile matches the map: the 0 → 2 turn spans 0.85–2.3 m (1.45 m, map 1.40 m), and the straight through node 2 is ~0.45 m (map 0.45 m).
 
@@ -531,13 +531,13 @@ Image: `logs/car A/forward_check_front.png` (`csi_snapshot.py forward_check`). T
 - **Strip measurement:** the user measured from the front wheels. Where exactly doesn't matter for the conflict, which is in the strip *spacing* (15 cm).
 - **The calibration script is a template:** `image_interpretation.py`'s `camera_calibration` has no calibration code (it fills in placeholders) and needs a screen.
 - **Its comments give Quanser's reference CSI intrinsics** at 820×410 (FX 318.86, FY 312.14, CX 401.34, CY 201.50; distortion −0.9033, 1.5314, −0.0173, 0.0080, −1.1659). The values `lane_camera.py` borrowed are the template's input section, not these. Tested on the strip image: the reference values warp it into a bubble, so they don't fit this camera either.
-- **Written:** [qcar/calib_capture.py](../../qcar/calib_capture.py). It saves front-camera frames over SSH (no screen) and reports whether the board is visible. Detection and calibration are done on the PC.
+- **Written:** [tools/on_car/calib_capture.py](../../tools/on_car/calib_capture.py). It saves front-camera frames over SSH (no screen) and reports whether the board is visible. Detection and calibration are done on the PC.
 
 **Next:** a **checkerboard calibration** of the front CSI camera at 820×410 with [image_interpretation.py](../../skills_activities/02-image_interpretation/image_interpretation.py) (`camera_calibration`, front CSI). Then repeat the strip check with the new intrinsics: strips, lane width and curve radius must all agree before C2 can be finished.
 
 ## 27. Checkerboard calibration, first recording (2026-11-18)
 
-Frames: `logs/car A/calib_frames/20261118_203057/` (119 frames from [qcar/calib_capture.py](../../qcar/calib_capture.py), car on a desk). Board: letter paper, 3.4 cm squares, **7 × 4 inner corners** (half squares at the ends are ignored by the detector, checked on a zoomed frame). Solver: [qcar/calib_solve.py](../../qcar/calib_solve.py) (PC only), output `calib_frames/calib_result_20261118_203057/`.
+Frames: `logs/car A/calib_frames/20261118_203057/` (119 frames from [tools/on_car/calib_capture.py](../../tools/on_car/calib_capture.py), car on a desk). Board: letter paper, 3.4 cm squares, **7 × 4 inner corners** (half squares at the ends are ignored by the detector, checked on a zoomed frame). Solver: [tools/calibration/calib_solve.py](../../tools/calibration/calib_solve.py) (PC only), output `calib_frames/calib_result_20261118_203057/`.
 
 | | FX | FY | CX | CY | rms |
 |---|---|---|---|---|---|
@@ -578,7 +578,7 @@ Frames: `logs/car A/calib_frames/20261118_204943/` (94 frames, board held lower,
 
 ## 29. Road check with the new calibration (2026-11-18): passes
 
-Script: [qcar/road_check.py](../../qcar/road_check.py) (PC only, existing images, nothing new recorded). The §28 intrinsics, with the camera height, pitch and position fitted on the strip image.
+Script: [tools/archive/road_check.py](../../tools/archive/road_check.py) (PC only, existing images, nothing new recorded). The §28 intrinsics, with the camera height, pitch and position fitted on the strip image.
 
 **1. Strip image.** With the new intrinsics the undistorted strips are straight (with the borrowed ones they were bent).
 - Pitch from the lane lines' vanishing point (row 204.3): **−0.56°**.
@@ -630,7 +630,7 @@ The offline scripts take the projection from `lane_camera.py`, so they now use i
 
 ## 31. C2 rerun with the new calibration and the rear-axle geometry (2026-11-18)
 
-[qcar/c2_offline_test.py](../../qcar/c2_offline_test.py) changes (same recording and odometry as §25):
+[tools/archive/c2_offline_test.py](../../tools/archive/c2_offline_test.py) changes (same recording and odometry as §25):
 - **Expected heading.** A car following the lane points `h_exp = th(s − L) − th(s)` relative to the lane at the front axle (−16.4° on the 0.891 m arcs, 0 on straights; §29). The camera heading is accepted within 8° of `h_exp`, not of 0.
 - **Dead reckoning.** The offset changes with `h − h_exp`, not with `h`. On an arc the body moves along the lane when `h = h_exp`; the old code read that as a −16° heading error.
 - **Start position.** The gyro/map alignment matches the body heading, which is the lane direction at the rear axle. So the front axle is the reference + L (0.256 m), not + L/2.
@@ -661,7 +661,7 @@ The offline scripts take the projection from `lane_camera.py`, so they now use i
 
 **Chosen approach** (instead of the GPS or the camera curve ends, which are both unreliable here, §22, §25, §31): the encoder moves the position along the path. At each curve it is corrected by matching the gyro heading to the map. The camera curve ends and the GPS are only cross-checks.
 
-[qcar/c2_offline_test.py](../../qcar/c2_offline_test.py), new default mode `gyro` (`cam` = the old curve-end corrections, `nofix` = none):
+[tools/archive/c2_offline_test.py](../../tools/archive/c2_offline_test.py), new default mode `gyro` (`cam` = the old curve-end corrections, `nofix` = none):
 - Body heading in map coordinates = gyro + `g_off`. `g_off` comes from the camera heading on a straight:
   - while **parked at the start**, from a plain straight-line fit, which doesn't need the position;
   - while driving on mapped straights.
@@ -765,7 +765,7 @@ Agreed with the user (2026-11-18): the camera does the lane keeping; encoder × 
 - `pose=` lines show `cs: s, offset, heading, src, fits, gps_s`. `odometry_drive.csv` gains `cs_s`, `cs_d_cm`, `cs_h_deg`, `cs_src`.
 
 **Offline checks:**
-- **Replay of the §34 drive** ([qcar/c3_replay.py](../../qcar/c3_replay.py), using `RoutePath` and the settings from `vehicle_control.py`'s source):
+- **Replay of the §34 drive** ([tools/replay/c3_replay.py](../../tools/replay/c3_replay.py), using `RoutePath` and the settings from `vehicle_control.py`'s source):
   - start at s = −0.26 m (the offline alignment gave −0.25);
   - 89 camera fits, 138 GPS along-route corrections;
   - offset mean −1.8 cm, sd 4.3, max 10 cm (as C2 in §34);
@@ -975,7 +975,7 @@ Node positions along the route (from the removed comment): node 2 at 1.95 m, nod
 
    Old rows (x, y, dx, dy), for reference: node 0 (0.06, −0.06, +0.030, 0); mid 0 → 2 (0.27, −0.81, +0.021, +0.021); node 2 (1.26, −1.15, 0, +0.063); mid 2 → 4 (2.04, −0.88, −0.064, +0.064); node 4 (2.32, 0.00, −0.061, 0); mid 4 → 14 (2.29, 1.43, −0.036, 0); radius 0.35 m.
 
-[qcar/c3_replay.py](../../qcar/c3_replay.py) updated the same way (start from `locate()` with the logged GPS heading, no edge zone).
+[tools/replay/c3_replay.py](../../tools/replay/c3_replay.py) updated the same way (start from `locate()` with the logged GPS heading, no edge zone).
 
 **Replay of the §40 drive** (`20261118_234715`, logged message stream; its GPS lines were logged with the table on):
 - Start s = 13.490 m = −0.26 m one lap on, the same as the car's `CAMSTEER: start at s = -0.26 m`.
@@ -993,7 +993,7 @@ Node positions along the route (from the removed comment): node 2 at 1.95 m, nod
 
 **Code ([qcar/vehicle_control.py](../../qcar/vehicle_control.py)):** `SteeringController.update(p, th, speed, ff=0.0)` adds a feedforward angle. With `cs_ff = True`, camera steering steers `atan(cs_wheelbase · k)` for the map curvature k at `cs_ff_preview` m ahead, and measures Stanley's heading error from the expected heading on the arc (`hExp`) instead of the lane tangent, so the turn isn't counted twice. **`cs_ff = False`** (off) after the check below.
 
-**Check: [qcar/c3_steer_sim.py](../../qcar/c3_steer_sim.py)** (new, PC only; replaces the unsaved §41 simulation). Kinematic bicycle on the full route, `SteeringController`/`RoutePath` from the file, camera 13/s with delay and noise (±0.5 cm, ±1°), ideal dead reckoning between frames, optional 100 ms steering-servo lag, start 2 cm off. Max |front-axle offset| in cm:
+**Check: [tools/replay/c3_steer_sim.py](../../tools/replay/c3_steer_sim.py)** (new, PC only; replaces the unsaved §41 simulation). Kinematic bicycle on the full route, `SteeringController`/`RoutePath` from the file, camera 13/s with delay and noise (±0.5 cm, ±1°), ideal dead reckoning between frames, optional 100 ms steering-servo lag, start 2 cm off. Max |front-axle offset| in cm:
 
 | Case | 0 → 2 | 2 → 4 | 14 → 16 | 16 → 18 | 18 → 12 |
 |---|---|---|---|---|---|
@@ -1094,7 +1094,7 @@ The achieved steering angle from the gyro and the speed, δ = atan(L · yaw rate
 2. **`K_soft = 0.05`** m/s: Stanley's cross-track term is atan(`K_stanley` · e / (v + `K_soft`)), in `SteeringController` (new `k_soft` argument, both controllers). Keeps it finite near standstill (at the start it jumped to ±90° and was clipped). At 0.4 m/s the cross-track gain is 11 % weaker, at 0.2 m/s 20 %. Simulation: ≤ 0.1 cm change.
 3. **Curvature speed limit** (`use_curve_speed = True`, camera steering only, since it needs the position along the route): speed target = min(`v_ref`, √(`v_curve_alat` / k)) for the largest |map curvature| k from `cs_wheelbase` behind to `v_curve_ahead` = 0.5 m ahead of the front axle (look-ahead used for speed planning only, not steering), never below `v_curve_min` = 0.2 m/s. `v_curve_alat` = 0.13 m/s²: straights 0.40, 0 → 2 / 2 → 4 0.34, roundabout 0.30, 16 → 18 0.28 m/s. The speed PI controller follows `vTarget` instead of `v_ref`. `pose=` lines show `v_target=`.
 
-### Simulation ([qcar/c3_steer_sim.py](../../qcar/c3_steer_sim.py), now with `K_soft`, the speed limit and a first-order speed loop, 0.3 s)
+### Simulation ([tools/replay/c3_steer_sim.py](../../tools/replay/c3_steer_sim.py), now with `K_soft`, the speed limit and a first-order speed loop, 0.3 s)
 
 Max |offset| (cm), and the largest |steering| (deg) per stretch:
 
@@ -1122,7 +1122,7 @@ The simulation assumes the steering reaches what is commanded (perfect trim), so
 
 **Done before drives A and B (user's choice, 2026-11-19):** the filter is replayed on logs only; `vehicle_control.py` is unchanged, so drives A and B still test one change each.
 
-**Code:** [qcar/lane_fusion.py](../../qcar/lane_fusion.py) (filter, pure numpy, importable by `vehicle_control.py` later), [qcar/fusion_replay.py](../../qcar/fusion_replay.py) (replay, held-out test, plot). Run: `python qcar/fusion_replay.py "logs/car A/Fresh_Log/odometry_drive.csv" "logs/car A/Fresh_Log/vehicle_control.log" "logs/car A/Fresh_Log/lane_camera.csv"` → `Fresh_Log/fusion_replay.csv/.png`. All numbers in `lane_fusion.DEFAULTS` are first guesses, not tuned.
+**Code:** [qcar/lane_fusion.py](../../qcar/lane_fusion.py) (filter, pure numpy, importable by `vehicle_control.py` later), [tools/replay/fusion_replay.py](../../tools/replay/fusion_replay.py) (replay, held-out test, plot). Run: `python tools/replay/fusion_replay.py "logs/car A/Fresh_Log/odometry_drive.csv" "logs/car A/Fresh_Log/vehicle_control.log" "logs/car A/Fresh_Log/lane_camera.csv"` → `Fresh_Log/fusion_replay.csv/.png`. All numbers in `lane_fusion.DEFAULTS` are first guesses, not tuned.
 
 **Filter:** extended Kalman filter, state `[s, d, psi, b_al, b_lat]`: front-axle position along the route, offset, body heading in map coordinates, GPS error along / across the route. The heading to the lane is `psi − th(s)`, so an along-route error turns into a heading error κ·Δs on arcs (§46) inside the filter's own uncertainty. Prediction: encoder × 0.98 + gyro. Updates: camera offset (and heading where the C3 rules allow it), with sd from the fit source and rms; GPS x, y, heading. One chi-square test on each reading's innovation replaces the jump gate, confirmation and re-lock rules. `cs_max_head_fit` (§40) stays: it rejects implausible fits, not readings that disagree with the estimate. Baseline: `c3_replay.py` on the same drive gives 196 fits / 75 GPS corrections (the car: 197 / 76), so it reproduces the car's C3 estimator.
 
@@ -1178,7 +1178,7 @@ The simulation assumes the steering reaches what is commanded (perfect trim), so
 
 ## 49. Fusion filter replayed on the §40 drive; both drives compared (2026-11-20, PC only)
 
-**Drive:** §40 (`raw_frames/20261118_234715`, logs in `logs/car A/`), 0.2 m/s, planned stop at s = 6.6. Its GPS lines were logged **with the old correction table applied** (§43), so its GPS errors on the lower map are table-corrected. Run: `python qcar/fusion_replay.py "logs/car A/odometry_drive.csv" "logs/car A/vehicle_control.log" "logs/car A/lane_camera.csv" "logs/car A/raw_frames/c3_replay_20261118_234715.csv"` → `logs/car A/fusion_replay_20261118_234715.csv/.png` (the 4th argument, new, is the C3 replay drawn for comparison). C3 replay rerun with the current code: 363 fits, 139 GPS corrections, as in §43. Filter settings as in §48, unchanged.
+**Drive:** §40 (`raw_frames/20261118_234715`, logs in `logs/car A/`), 0.2 m/s, planned stop at s = 6.6. Its GPS lines were logged **with the old correction table applied** (§43), so its GPS errors on the lower map are table-corrected. Run: `python tools/replay/fusion_replay.py "logs/car A/odometry_drive.csv" "logs/car A/vehicle_control.log" "logs/car A/lane_camera.csv" "logs/car A/raw_frames/c3_replay_20261118_234715.csv"` → `logs/car A/fusion_replay_20261118_234715.csv/.png` (the 4th argument, new, is the C3 replay drawn for comparison). C3 replay rerun with the current code: 363 fits, 139 GPS corrections, as in §43. Filter settings as in §48, unchanged.
 
 **1. Replay summary (§40):**
 
@@ -1236,7 +1236,7 @@ Sensitivity (`none`, start s shifted): §40 from +6.1 cm (s 8.9 cm behind) to �
 
 ## 50. Drive A (2026-11-20): trim −0.04 works on the straights; the roundabout still went outward
 
-Logs: `logs/car A/20261120_driveA/` (`vehicle_control.log`, `odometry_drive.csv`, `lane_camera.csv`, `lane_debug/`, `raw_frames` folder `20261120_190909/`, front + left). Code as after §47: `steering_trim = -0.04`, `K_soft = 0.05`, `use_curve_speed = False`, `v_ref` 0.4, camera steering. Same start as §46 (straight before node 0, s = 13.53, +2.6 cm from the route by GPS). Check script: [qcar/steer_check.py](../../qcar/steer_check.py) (new, the §47 method: achieved δ = atan(L · gyro / v), 0.2 s smoothing, command 0.1 s earlier).
+Logs: `logs/car A/20261120_driveA/` (`vehicle_control.log`, `odometry_drive.csv`, `lane_camera.csv`, `lane_debug/`, `raw_frames` folder `20261120_190909/`, front + left). Code as after §47: `steering_trim = -0.04`, `K_soft = 0.05`, `use_curve_speed = False`, `v_ref` 0.4, camera steering. Same start as §46 (straight before node 0, s = 13.53, +2.6 cm from the route by GPS). Check script: [tools/checks/steer_check.py](../../tools/checks/steer_check.py) (new, the §47 method: achieved δ = atan(L · gyro / v), 0.2 s smoothing, command 0.1 s earlier).
 
 **Result:** 10.2 m at 0.40 m/s, start → 0 → 2 → 4 → 14 → roundabout. Stopped by `no camera fit for 2.30 m` at estimated s = 10.02 (§46: 10.00). **User: the car did not stay in its lane in the roundabout; it went outward, then stopped at node 16** (s = 9.83), the same as §46.
 
@@ -1382,7 +1382,7 @@ Dead-reckon the rear axle (exact, needs no steering angle) and get the front-axl
 
 **Code (offline only, the car is unchanged):**
 - [qcar/lane_fusion.py](../../qcar/lane_fusion.py) `axle_step()`: rear axle carried along the body heading by encoder + gyro, front axle = rear + L, projected back onto the route for s and d. Steering angle from sin δ = L · dψ / ds (no servo command needed). `enc_axle` = `front` / `rear` / `mean`: which axle the encoder distance is. `LaneFusion.predict` uses it when `dr_model='axle'` (numerical Jacobian); **default stays `'old'`**, so §48–§52 are unchanged.
-- [qcar/c3_replay.py](../../qcar/c3_replay.py): `--dr old` (default, mirrors the car) or `--dr axle --enc front|rear|mean` (outputs `c3_replay_<drive>_axle_<enc>.csv/.png`). With the axle model the body heading ψ is carried as its own state, so a GPS along-route nudge changes h = ψ − th(s) and not the gyro heading. The first version held h and rotated ψ by κ·Δs at every nudge, which pushed node 2 3–10 cm inward; fixed before the results below.
+- [tools/replay/c3_replay.py](../../tools/replay/c3_replay.py): `--dr old` (default, mirrors the car) or `--dr axle --enc front|rear|mean` (outputs `c3_replay_<drive>_axle_<enc>.csv/.png`). With the axle model the body heading ψ is carried as its own state, so a GPS along-route nudge changes h = ψ − th(s) and not the gyro heading. The first version held h and rotated ψ by κ·Δs at every nudge, which pushed node 2 3–10 cm inward; fixed before the results below.
 
 **1. Synthetic check, a car whose front axle follows the map exactly** (4 → 14 → roundabout → 16, 8 mm steps):
 
@@ -1433,7 +1433,7 @@ Logs: `logs/car A/20261120_rulercheck/` (raw frames `20261120_201634`). Code unc
 - **The car was out of its lane while it believed it was centred: ~13 cm error at the front axle.**
 - **The axle model (§53–§54) accounts for only ~3–4 cm.** The ruler has the front 8 cm further out than the rear; on the arc in steady state that would be 5 cm, so the car also pointed ~7° more outward than either model thinks.
 
-**2. The camera measures the along-route error at the roundabout entry** ([qcar/curve_shift_check.py](../../qcar/curve_shift_check.py), new): before the curve, each front frame's lane points are refitted with the map lane shape at the logged s shifted by −0.30 … +0.30 m; the lowest total rms gives the shift.
+**2. The camera measures the along-route error at the roundabout entry** ([tools/checks/curve_shift_check.py](../../tools/checks/curve_shift_check.py), new): before the curve, each front frame's lane points are refitted with the map lane shape at the logged s shifted by −0.30 … +0.30 m; the lowest total rms gives the shift.
 
 | Drive | 0 → 2 entry (control, GPS good) | **Roundabout entry** (frames s 7.0–7.6) | per frame, s 7.0–7.45 |
 |---|---|---|---|
@@ -1455,7 +1455,7 @@ Logs: `logs/car A/20261120_rulercheck/` (raw frames `20261120_201634`). Code unc
 
 **Code (offline only, the car is unchanged; nothing in the live `lane_camera.py` pipeline calls the new function):**
 - [qcar/lane_camera.py](../../qcar/lane_camera.py) `shift_fit(dbg, k)`: refits the map lane shape with the curvature profile shifted by −0.30 … +0.30 m (`SHIFTS`, 2 cm steps). Used only where the curvature changes by ≥ 0.5 /m within the fit window (0–0.6 m ahead; else s is unobservable); accepted (`sh_ok`) when the best shift is inside the range, improves the rms by > 0.10 and the best fit itself is clean (rms < `MF_MAX_RMS`).
-- [qcar/c3_replay.py](../../qcar/c3_replay.py) `--shift <gain>` (frames mode, i.e. without the `lane_camera.csv` argument): s += gain × shift on each accepted frame, keeping the gyro heading (h changes with s), then the map fit at the corrected s. Outputs `…_shift<gain>`.
+- [tools/replay/c3_replay.py](../../tools/replay/c3_replay.py) `--shift <gain>` (frames mode, i.e. without the `lane_camera.csv` argument): s += gain × shift on each accepted frame, keeping the gyro heading (h changes with s), then the map fit at the corrected s. Outputs `…_shift<gain>`.
 
 **1. Ruler-check drive (§55), end of the log, vs the ruler (front −11, rear −3 cm, measured a few cm later after the car rolled):**
 
@@ -1559,7 +1559,7 @@ Logs: `logs/car A/20261120_driveE/` (raw frames `20261120_215026`). Same code as
 
 The user can't do the tape test now and asked for a holistic approach. **The Kalman filter (`lane_fusion.py`) is still offline only**; the car runs the C3 estimator with the §57 additions. Plan agreed: (1) measure the encoder-to-map ratio from the existing drives; (2) scale state + axle model + camera shift as measurements in the filter, offline; (3) the filter on the car.
 
-**Step 1: encoder-to-map ratio k (map m per raw encoder m)** ([qcar/scale_check.py](../../qcar/scale_check.py), new):
+**Step 1: encoder-to-map ratio k (map m per raw encoder m)** ([tools/checks/scale_check.py](../../tools/checks/scale_check.py), new):
 
 | Drive | k_cam: last good GPS (s 4.0–4.4) → painted roundabout entry (camera), 2.8–3.3 m | k_gps: GPS vs encoder, start → s 4.2 |
 |---|---|---|
@@ -1584,8 +1584,8 @@ The user can't do the tape test now and asked for a holistic approach. **The Kal
 
 **Code (offline only; the car is unchanged):**
 - [qcar/lane_fusion.py](../../qcar/lane_fusion.py) `camera_s(s_true, sd)`: the camera's along-route position as a measurement of s (same chi-square test as the other updates). The axle model (`dr_model='axle'`, §54) and the GPS bias states (§48) were already there.
-- [qcar/shift_meas.py](../../qcar/shift_meas.py) (new): runs the car's `lane_camera.shift_fit` on every saved frame taken while moving where the curvature changes in view, with the profile at the car's logged s → `shift_meas.csv` (`s_true` = logged s + shift, `ok` = the car's `sh_ok` rule). Usable frames per drive: §40 0, §46 4, A 3, B 2, C 6, ruler 3, D 3, E 5; all at the roundabout entry (+0.14 … +0.30 m) except D's roundabout exit (+0.14, s 9.70) and E's 16 → 18 exit (+0.08, s 10.63–10.71).
-- [qcar/fusion_replay.py](../../qcar/fusion_replay.py): `--dr old|axle`, `--enc front|rear|mean`, `--shift <shift_meas.csv>` (sd 0.04 m for a fit rms < 0.06, else 0.07); prints the camera re-acquisitions (after > 0.5 m without a used fit: prediction just before vs the fit) and the along-route measurements used.
+- [tools/checks/shift_meas.py](../../tools/checks/shift_meas.py) (new): runs the car's `lane_camera.shift_fit` on every saved frame taken while moving where the curvature changes in view, with the profile at the car's logged s → `shift_meas.csv` (`s_true` = logged s + shift, `ok` = the car's `sh_ok` rule). Usable frames per drive: §40 0, §46 4, A 3, B 2, C 6, ruler 3, D 3, E 5; all at the roundabout entry (+0.14 … +0.30 m) except D's roundabout exit (+0.14, s 9.70) and E's 16 → 18 exit (+0.08, s 10.63–10.71).
+- [tools/replay/fusion_replay.py](../../tools/replay/fusion_replay.py): `--dr old|axle`, `--enc front|rear|mean`, `--shift <shift_meas.csv>` (sd 0.04 m for a fit rms < 0.06, else 0.07); prints the camera re-acquisitions (after > 0.5 m without a used fit: prediction just before vs the fit) and the along-route measurements used.
 
 **Results, GPS mode `full` (GPS x/y/heading with place-dependent bias states), 8 drives. Mean |error| at camera re-acquisitions, cm (max in brackets):**
 
@@ -1663,7 +1663,7 @@ The user chose all three.
 
 **2. `cs_estimator = 'c3'`** in [qcar/vehicle_control.py](../../qcar/vehicle_control.py) for laps now: the car runs as in drive E's clean lap (§59: C3 estimator, axle dead reckoning, two-frame camera along-route correction). `'fusion'` brings the filter back.
 
-**3. Curvature the camera sees** ([qcar/curvature_check.py](../../qcar/curvature_check.py), new): frames well inside an arc refitted with a constant test curvature 0.60–2.40 /m; best total rms:
+**3. Curvature the camera sees** ([tools/checks/curvature_check.py](../../tools/checks/curvature_check.py), new): frames well inside an arc refitted with a constant test curvature 0.60–2.40 /m; best total rms:
 
 | Drive | 2 → 4 arc (control, map κ 1.12) | roundabout first half (map κ 1.48) | roundabout second half |
 |---|---|---|---|
@@ -1735,8 +1735,8 @@ k_gps is ~2.5 sd above car A's, which would mean car B's encoder reads ~3 % shor
 **Priorities agreed with the user** (measurements first, then the estimator, then the controller, one change at a time): (1) drive report + fixed replay check, (2) camera calibration check (`road_check.py`), (3) fix the filter and switch it back on, (4) measure latency, (5) smooth speed changes and a controlled stop that keeps steering, (6) front axle slightly outside on curves.
 
 **(1) done:**
-- [qcar/drive_report.py](../../qcar/drive_report.py) `<folder> [--frames]`: summary (distance, speeds, stop reason, estimator, along-route corrections, gate rejections, GPS), per-stretch table (the route split into straights and arcs from the map's own curvature, labelled by the nodes: camera fits used / rows, camera-measured offset, commanded / achieved / needed steering, time at the limit), steering calibration (straights only where the whole view is straight; achieved/commanded by command range), re-acquisitions after > 0.5 m blind, corrections, GPS by stretch; `--frames` adds the camera along-route measurement. Checked on drives D, E and car B: it reproduces the hand analyses (D and car B blind on 16 → 18, car B with no along-route correction, achieved/commanded ~0.95 on both cars).
-- [qcar/replay_check.py](../../qcar/replay_check.py) `[--dr] [--enc] [--set name=value] [drive …]`: all 10 drives (car A 9, car B 1) through the fusion filter; per drive: camera fits used / rejected, re-acquisition error, NIS per dimension (mean and 99th percentile; the mean is ≪ 1 because 13 agreeing fits/s make the filter under-confident on average, so the flag is local: p99 > 9), along-route measurements, ground-truth checks (ruler, D's S-bend, F's roundabout), PASS/CHECK. `fusion_replay.run` now records each camera update's NIS.
+- [tools/report/drive_report.py](../../tools/report/drive_report.py) `<folder> [--frames]`: summary (distance, speeds, stop reason, estimator, along-route corrections, gate rejections, GPS), per-stretch table (the route split into straights and arcs from the map's own curvature, labelled by the nodes: camera fits used / rows, camera-measured offset, commanded / achieved / needed steering, time at the limit), steering calibration (straights only where the whole view is straight; achieved/commanded by command range), re-acquisitions after > 0.5 m blind, corrections, GPS by stretch; `--frames` adds the camera along-route measurement. Checked on drives D, E and car B: it reproduces the hand analyses (D and car B blind on 16 → 18, car B with no along-route correction, achieved/commanded ~0.95 on both cars).
+- [tools/replay/replay_check.py](../../tools/replay/replay_check.py) `[--dr] [--enc] [--set name=value] [drive …]`: all 10 drives (car A 9, car B 1) through the fusion filter; per drive: camera fits used / rejected, re-acquisition error, NIS per dimension (mean and 99th percentile; the mean is ≪ 1 because 13 agreeing fits/s make the filter under-confident on average, so the flag is local: p99 > 9), along-route measurements, ground-truth checks (ruler, D's S-bend, F's roundabout), PASS/CHECK. `fusion_replay.run` now records each camera update's NIS.
 
 **Baseline (current filter settings: axle, encoder front, camera heading sd 6°): PASS 8 / 10**, 1 rejection, re-acquisition error 4.7 cm mean. CHECK: §46 (7.8 cm; the suspect fit while the car was out of its lane) and **car B drive A (1 rejection, 14.9 cm, max 28: the S-bend with only one along-route measurement, so the filter as it stands would not have saved car B)**. With the setting drive F ran on (camera heading sd 3°) F fails the check (1 rejection in the roundabout, as on the car): **this check would have caught drive F before the drive.** Ruler: front −13.4 / rear −3.9 (true −11 / −3). D's S-bend: +7.7 before the camera saw +19 (still under-estimated).
 
@@ -1745,7 +1745,7 @@ k_gps is ~2.5 sd above car A's, which would mean car B's encoder reads ~3 % shor
 
 ## 67. Camera calibration check: the camera hasn't moved; arcs read tight only while the car drives (2026-11-20, PC only)
 
-Priority 2 of §66. `road_check.py` checks the calibration against the fixed old recordings (strip image, hand-rolled pass of 2026-11-17), so it can't show a change since; new [qcar/camera_drift_check.py](../../qcar/camera_drift_check.py) uses the recent drives:
+Priority 2 of §66. `road_check.py` checks the calibration against the fixed old recordings (strip image, hand-rolled pass of 2026-11-17), so it can't show a change since; new [tools/checks/camera_drift_check.py](../../tools/checks/camera_drift_check.py) uses the recent drives:
 
 | Drive | lane width in the log (true 25.7 cm) | pitch from parallelism on 4 → 14 (lane_camera −0.56°) | height from width (10.5 cm) | 2 → 4 arc κ, now / with fitted pitch (map 1.12) |
 |---|---|---|---|---|
@@ -1876,34 +1876,34 @@ User: revert to `'c3'`, stop for today. **[qcar/vehicle_control.py](../../qcar/v
 
 | File | What |
 |---|---|
-| [qcar/csi_snapshot.py](../../qcar/csi_snapshot.py) | One frame + yellow mask from each CSI camera (§1) |
+| [tools/on_car/csi_snapshot.py](../../tools/on_car/csi_snapshot.py) | One frame + yellow mask from each CSI camera (§1) |
 | [qcar/lane_camera.py](../../qcar/lane_camera.py) | Lane offset from the front camera (§3); UDP sender (§10); `--save-raw` (§16) |
-| [qcar/curve_offline_test.py](../../qcar/curve_offline_test.py) | PC-only offline test of boundary + known curvature on raw frames (§19) |
-| [qcar/curve_start_test.py](../../qcar/curve_start_test.py) | PC-only C1 test: change points seen by the camera, yellow and edge separately (§23) |
-| [qcar/odometry_log.py](../../qcar/odometry_log.py) | Encoder + gyro logger for hand-rolled passes, `odometry.csv` (§24, §25) |
+| [tools/archive/curve_offline_test.py](../../tools/archive/curve_offline_test.py) | PC-only offline test of boundary + known curvature on raw frames (§19) |
+| [tools/archive/curve_start_test.py](../../tools/archive/curve_start_test.py) | PC-only C1 test: change points seen by the camera, yellow and edge separately (§23) |
+| [tools/on_car/odometry_log.py](../../tools/on_car/odometry_log.py) | Encoder + gyro logger for hand-rolled passes, `odometry.csv` (§24, §25) |
 | [qcar/lane_fusion.py](../../qcar/lane_fusion.py) `axle_step`, `c3_replay.py --dr axle --enc …` | Axle dead-reckoning model, offline only (§54); outputs `c3_replay_<drive>_axle_<enc>.*` in each drive folder |
 | `logs/car A/20261120_driveC/` | Drive C logs and frames, first full lap (§53) |
-| [qcar/camera_drift_check.py](../../qcar/camera_drift_check.py) | Camera mounting check on recent drives: lane width, pitch from parallelism, height, arc curvature with fitted values (§67) |
-| [qcar/drive_report.py](../../qcar/drive_report.py), [qcar/replay_check.py](../../qcar/replay_check.py) | Per-drive report (one command per log folder) and the fixed 10-drive filter check to run before every estimator change (§66) |
-| [qcar/shift_meas.py](../../qcar/shift_meas.py), [qcar/scale_check.py](../../qcar/scale_check.py), [qcar/curvature_check.py](../../qcar/curvature_check.py) | Camera along-route measurements per drive (§61), encoder-to-map ratio (§60), camera curvature on arcs (§64) |
-| [qcar/curve_shift_check.py](../../qcar/curve_shift_check.py) | PC-only: along-route error at curve entries from the front camera (map shape refitted with s shifted), §55 |
+| [tools/checks/camera_drift_check.py](../../tools/checks/camera_drift_check.py) | Camera mounting check on recent drives: lane width, pitch from parallelism, height, arc curvature with fitted values (§67) |
+| [tools/report/drive_report.py](../../tools/report/drive_report.py), [tools/replay/replay_check.py](../../tools/replay/replay_check.py) | Per-drive report (one command per log folder) and the fixed 10-drive filter check to run before every estimator change (§66) |
+| [tools/checks/shift_meas.py](../../tools/checks/shift_meas.py), [tools/checks/scale_check.py](../../tools/checks/scale_check.py), [tools/checks/curvature_check.py](../../tools/checks/curvature_check.py) | Camera along-route measurements per drive (§61), encoder-to-map ratio (§60), camera curvature on arcs (§64) |
+| [tools/checks/curve_shift_check.py](../../tools/checks/curve_shift_check.py) | PC-only: along-route error at curve entries from the front camera (map shape refitted with s shifted), §55 |
 | `logs/car A/20261120_driveF/`, `20261120_driveG/` | Drive F (fusion filter, stopped in the roundabout, §63) and drive G (full lap, single-frame corrections, §69) |
 | `logs/car A/20261120_driveD/`, `20261120_driveE/` | Drive D (S-bend failure, §58) and drive E (first clean lap with the §57 code, §59) |
 | `logs/car B/20261120_driveB/` | Car B drive B: almost a full lap, drifted on the blind 12 → 0 straight (§70) |
 | `logs/car B/20261120_driveA/` | Car B drive A: car A's code on car B, S-bend failure (§65) |
 | `logs/car A/20261120_rulercheck/` | Ruler-check drive, hand stop in the roundabout (§55) |
-| [qcar/steer_check.py](../../qcar/steer_check.py) | PC-only per-drive steering check: commanded vs achieved per stretch, steering limit, roundabout bins, node 2 (§50) |
+| [tools/checks/steer_check.py](../../tools/checks/steer_check.py) | PC-only per-drive steering check: commanded vs achieved per stretch, steering limit, roundabout bins, node 2 (§50) |
 | `logs/car A/20261120_driveA/`, `20261120_driveB/` | Drive A and drive B logs and frames (§50, §51) |
-| [qcar/c3_steer_sim.py](../../qcar/c3_steer_sim.py) | PC-only kinematic simulation of camera steering (§44–§47; `K_soft` and curvature speed limit since §47) |
-| [qcar/c2_offline_test.py](../../qcar/c2_offline_test.py) | PC-only C2 emulation: map shape at the encoder position + camera fits + dead reckoning (§25) |
+| [tools/replay/c3_steer_sim.py](../../tools/replay/c3_steer_sim.py) | PC-only kinematic simulation of camera steering (§44–§47; `K_soft` and curvature speed limit since §47) |
+| [tools/archive/c2_offline_test.py](../../tools/archive/c2_offline_test.py) | PC-only C2 emulation: map shape at the encoder position + camera fits + dead reckoning (§25) |
 | `logs/car A/odometry.csv`, `raw_frames/20261117_204844/`, `raw_frames/c2_*` | C2 hand-rolled pass and results (§25) |
 | `logs/car A/raw_frames/20261117_191853/`, `20261117_200303/` | Hand-rolled 0 → 2 → 4 frames (§18) and drive 1 frames (§21), copied back from the car; C1 results in `curve_start_*.csv` (§24). `curve_test_20261117_191853/` (§19, §20 plots) is empty; regenerate with `curve_offline_test.py` if needed |
 | `logs/car A/raw_frames/20261117_201140/`, `20261117_201313/`, `curve_start_*.csv` | Two drives that crossed left on 0 → 2 (§22, §23) and the C1 results |
-| [qcar/calib_capture.py](../../qcar/calib_capture.py), [qcar/calib_solve.py](../../qcar/calib_solve.py) | Checkerboard frames on the car; calibration on the PC (§27, §28) |
-| [qcar/road_check.py](../../qcar/road_check.py) | PC-only check of the calibration against strips, lane width and curves (§29) |
+| [tools/on_car/calib_capture.py](../../tools/on_car/calib_capture.py), [tools/calibration/calib_solve.py](../../tools/calibration/calib_solve.py) | Checkerboard frames on the car; calibration on the PC (§27, §28) |
+| [tools/archive/road_check.py](../../tools/archive/road_check.py) | PC-only check of the calibration against strips, lane width and curves (§29) |
 | `logs/car A/calib_frames/` | Checkerboard frames and `calib_result_*` (§27) |
 | [qcar/vehicle_control.py](../../qcar/vehicle_control.py) | `t_epoch=` in the `pose=` line (§3); camera lane correction, `use_gps_table`, `v_ref = 0.2` (§10) |
-| [qcar/lane_fusion.py](../../qcar/lane_fusion.py), [qcar/fusion_replay.py](../../qcar/fusion_replay.py) | Fusion filter (GPS bias states) and its offline replay / held-out test (§48, §49); per-drive checks (GPS vs camera, node 2 re-acquisition, sensitivity, parked heading): [qcar/fusion_drive_checks.py](../../qcar/fusion_drive_checks.py); results `logs/car A/Fresh_Log/fusion_replay.csv/.png` (§46 drive), `logs/car A/fusion_replay_20261118_234715.csv/.png` (§40 drive) |
+| [qcar/lane_fusion.py](../../qcar/lane_fusion.py), [tools/replay/fusion_replay.py](../../tools/replay/fusion_replay.py) | Fusion filter (GPS bias states) and its offline replay / held-out test (§48, §49); per-drive checks (GPS vs camera, node 2 re-acquisition, sensitivity, parked heading): [tools/replay/fusion_drive_checks.py](../../tools/replay/fusion_drive_checks.py); results `logs/car A/Fresh_Log/fusion_replay.csv/.png` (§46 drive), `logs/car A/fusion_replay_20261118_234715.csv/.png` (§40 drive) |
 | [docs/plans/camera_lane_correction.md](../plans/camera_lane_correction.md) | The plan: methods, steps, short step results |
 | [docs/car_A_setup.md](../car_A_setup.md) | Current settings, run steps (start `lane_camera.py` first), log format |
 | `logs/car A/snapshots/` | Step 0 images (§1) |

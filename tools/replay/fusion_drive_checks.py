@@ -10,7 +10,7 @@ Per-drive checks for the fusion filter (camera report §48-§49):
   3. sensitivity of the node 2 prediction to the along-route position at the entry;
   4. camera heading while parked.
 
-    python qcar/fusion_drive_checks.py <folder with odometry_drive.csv, vehicle_control.log, lane_camera.csv> <c3_replay_<drive>.csv>
+    python tools/replay/fusion_drive_checks.py <folder with odometry_drive.csv, vehicle_control.log, lane_camera.csv> <c3_replay_<drive>.csv>
 
 The c3_replay csv comes from c3_replay.py run with the drive's lane_camera.csv (4th argument).
 """
@@ -18,12 +18,11 @@ import os
 import sys
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import fusion_replay as fr
 import lane_fusion as lf
-from c3_replay import load_vc
+from common import load_vc
 
 
 def node2(rows, L):

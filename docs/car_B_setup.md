@@ -67,7 +67,7 @@ Same procedure as car A's camera-steering drive, [car_A_setup.md §3 "First came
    Wait for `both` with an offset near 0.
 5. **Launch** with `run_all_cars.bat`. Keep the car still for the first second (gyro bias). Have `stop_all_cars.bat` ready.
 6. **Copy back** into a new folder of its own, e.g. `logs/car B/<date>_<name>/`: `vehicle_control.log`, `odometry_drive.csv`, `lane_camera.csv`, `lane_debug/` and the new `raw_frames/<start time>/` folder (each run overwrites them on the car).
-7. **Check:** `python qcar/steer_check.py "logs/car B/<folder>"`.
+7. **Check:** `python tools/checks/steer_check.py "logs/car B/<folder>"`.
 
 ---
 
@@ -87,7 +87,7 @@ Logs: [logs/car B/20261120_driveA/](../logs/car%20B/20261120_driveA/) (raw frame
 
 - **Settings:** every stretch matches car A's drives D/E within about 1° and 1 cm. Trim and camera calibration fit car B (§1).
 - **Why it left the lane at the S-bend:** the GPS failed on 4 → 14 (from s ≈ 20.0, every reading rejected, as on car A), so the position along the route came from the encoder only. The camera's along-route correction at the roundabout entry needs two agreeing frames: car B got **one** good frame (+24 cm) and the next one failed, so **no correction was applied** (car A drive E: +25 cm, drive D: +19 cm). The car reached the S-bend with its along-route position behind, kept the roundabout's left turn too long and switched to the right turn too late. Same mechanism as car A's drive D: a code/estimation issue shared by both cars, not car B tuning.
-- **Encoder (`qcar/scale_check.py` method, camera report §60):** k_gps (map m per raw encoder m, start → s 4.2) = **1.026** on car B vs 0.994 ± 0.013 over car A's seven drives; k_cam (last good GPS → painted roundabout entry) 1.005 vs 1.045 ± 0.016. One drive, and the two numbers point different ways, so **not yet a reason to change `enc_scale`**; repeat on the next car B drives.
+- **Encoder (`tools/checks/scale_check.py` method, camera report §60):** k_gps (map m per raw encoder m, start → s 4.2) = **1.026** on car B vs 0.994 ± 0.013 over car A's seven drives; k_cam (last good GPS → painted roundabout entry) 1.005 vs 1.045 ± 0.016. One drive, and the two numbers point different ways, so **not yet a reason to change `enc_scale`**; repeat on the next car B drives.
 - GPS: same repeatable failure on 4 → 14 as car A (wrong solution ~1 m to the right, then near (−0.6, 3.6) in the roundabout). Not a car B problem.
 
 ---

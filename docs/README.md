@@ -6,6 +6,9 @@
 | [car_B_setup.md](car_B_setup.md) | Car B as it is now. Runs car A's code; points to car A's doc for anything shared | Yes: update it whenever a setting or procedure changes |
 | [plans/](plans/) | Work that is planned but not started | Updated when that work starts or changes |
 | [history/](history/) | Finished, dated records of how problems were found and fixed | No: written once, kept as written |
+| [reference/](reference/) | Fixed source material: project PDF, 2026-10-30 supervisor update, map layout image | No |
+
+**Code layout (2026-11-20):** [../qcar/](../qcar/) holds only the code that runs on the car (copied there by `python/start.py`); offline tools live in [../tools/](../tools/README.md) (replay, report, checks, calibration, on_car, archive).
 
 **Plans**
 - [plans/camera_lane_correction.md](plans/camera_lane_correction.md): measure the car's position in the lane with the camera, to replace the GPS correction table.

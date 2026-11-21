@@ -14,7 +14,7 @@ only two unknowns: offset d (+ = car left of lane centre) and heading psi
     arc      : Rc = 0.891 m left turn (SDCSRoadMap outerLaneRadius, 0->2 and 2->4)
 The model with the lower robust cost is reported as "best"; both are logged.
 
-    python qcar/curve_offline_test.py "logs/car A/raw_frames/20261117_191853"
+    python tools/archive/curve_offline_test.py "logs/car A/raw_frames/20261117_191853"
 Output in <folder>/../curve_test_<folder name>/: curve_test.csv, offsets.png,
 and bird's-eye plots of some frames (bev_<t>.png).
 """
@@ -24,7 +24,8 @@ import numpy as np
 import cv2
 from scipy.optimize import least_squares
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
 
 RC_ARC = 0.891           # m, lane-centre radius of the 0->2 and 2->4 arcs (left turns)

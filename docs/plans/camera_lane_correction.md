@@ -104,7 +104,7 @@ The detection is the same, but the behaviour isn't: crossing markings confuse th
 ## Plan (measure first, then steer)
 
 0. **Look first (done):** on car A, with the car parked in the right lane and then the left lane, save a frame from each CSI camera. Check which way each one faces, how much floor it sees, and whether the yellow divider (and white edge line) is clearly in view. This confirms which cameras to use before calibrating.
-   **Done 2026-11-10** ([qcar/csi_snapshot.py](../../qcar/csi_snapshot.py), images in `logs/car A/snapshots/`, 820×410, right/left lane × straight/curve):
+   **Done 2026-11-10** ([tools/on_car/csi_snapshot.py](../../tools/on_car/csi_snapshot.py), images in `logs/car A/snapshots/`, 820×410, right/left lane × straight/curve):
    - The yellow divider is on the car's **left** in all four positions, including the left lane (driven in the opposite direction). So the side is fixed: left = yellow.
    - **The right boundary is not a painted line.** It is the edge between the dark road and the white surface next to it.
    - **Left camera:** sees the yellow line as an arc at the bottom of the image, only at the left and right corners. The part of the line directly beside the camera is below the frame, and the car body hides the extreme corners. The line can still be measured after undistort + IPM.

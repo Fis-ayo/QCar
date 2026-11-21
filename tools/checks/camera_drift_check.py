@@ -10,21 +10,20 @@ checkerboard calibration of 2026-11-18 (§27-§30)? On recorded drives:
   3. curvature on the 2 -> 4 arc (map 1.12 /m) with lane_camera's values and with the
      fitted pitch/height: if the fitted values remove the ~16 % (§64), pitch is the cause.
 
-    python qcar/camera_drift_check.py
+    python tools/checks/camera_drift_check.py
 """
 import os
 import sys
 import numpy as np
 import cv2
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
-from c3_replay import load_vc
+from common import load_vc
 
-A = os.path.join(HERE, '..', 'logs', 'car A')
-B = os.path.join(HERE, '..', 'logs', 'car B')
+A = os.path.join(common.LOGS, 'car A')
+B = os.path.join(common.LOGS, 'car B')
 DRIVES = [  # name, folder with odometry_drive.csv + lane_camera.csv, raw frames
     ('A 11-18 (§40)', A, os.path.join(A, 'raw_frames', '20261118_234715')),
     ('A 11-19 (§46)', os.path.join(A, 'Fresh_Log'), os.path.join(A, 'Fresh_Log', '20261119_234304')),

@@ -56,7 +56,7 @@ The bias is also learned **while parked** during `startDelay` (1 s; the watchdog
 | [qcar/vehicle_control.py](../qcar/vehicle_control.py) | Settings above. `correct_gps()` (`gps_scale` only since 2026-11-19) applied to GPS x/y in two places (start position and EKF update). EKF started from the first GPS reading. GPS-jump check and stop. `remove_backward_points()` on the route and the approach path. `steering_trim` in `qcar.write`. Debug prints (§5). Camera lane correction: `CameraReceiver`, `path_left_offset()`, `use_camera` (2026-11-11). Camera steering `use_camera_steer` (2026-11-18) |
 | [qcar/lane_camera.py](../qcar/lane_camera.py) | New (2026-11-10): front camera lane offset, CSV log and overlay images. Sends each result over UDP (`--udp-port`, default 18555, 0 = off) since 2026-11-11 |
 | [python/start.py](../python/start.py) | `vehicle_control.py` output saved to `vehicle_control.log` on the car |
-| [qcar/check_pose.py](../qcar/check_pose.py) | New: static localization check (§5). `nodeSequence` set to the new route |
+| [tools/on_car/check_pose.py](../tools/on_car/check_pose.py) | New: static localization check (§5). `nodeSequence` set to the new route |
 
 **`remove_backward_points()`:** Quanser's `generate_path` sometimes overshoots a node by a few mm, which leaves a tiny backward step in the path. The steering controller can never get past one (it made the car miss node 18). The function drops these points for any route: 38 of the 552 node-to-node paths on the map have one. See the [new-route record](history/2026-10-28_new_route_investigation.md) §11.
 
@@ -129,9 +129,9 @@ GPS steering (`use_camera = False`, `use_camera_steer = False`; no correction ta
 6. Expected console lines: `CAMSTEER: start at s = … m along the route (front axle, route length … m)` (the straight before node 0 is now near the end of the route, s ≈ 13.5), then `pose= … cs: s=… offset=… heading=… src=E/YE/DR …` twice per second, and finally a `STOPPED (camera steering): …` safety-stop reason (or a hand stop). `lane_camera.py` prints `map-fit …` once per second.
 7. Copy back `vehicle_control.log`, `odometry_drive.csv` (now with `cs_s`, `cs_d_cm`, `cs_h_deg`, `cs_src`), `lane_camera.csv` (with `mf_*`), `lane_debug/` and the `raw_frames/` folder.
 
-**Since 2026-11-20 (camera report §57):** copy the new `lane_camera.py` to the car by hand again (it now runs the along-route shift fit, `sh_*` columns in `lane_camera.csv`; `--no-shift` turns it off). `vehicle_control.py` imports `lane_fusion.py`, which `start.py` uploads with the other `qcar/*.py`. New console lines: `lane_camera.py` adds `shift +0.18 m` to its `map-fit` line when a shift is found; `vehicle_control.py` prints `CAMSTEER: along-route correction +18.0 cm from the camera …` when it applies one (expected once, just before the roundabout), and the `pose=` lines show `shift=<count>`. After the drive: `python qcar/steer_check.py <folder>` and `python qcar/curve_shift_check.py "<name>|<folder>/<raw frames>|<folder>/odometry_drive.csv"` (the roundabout entry shift should now be ~0).
+**Since 2026-11-20 (camera report §57):** copy the new `lane_camera.py` to the car by hand again (it now runs the along-route shift fit, `sh_*` columns in `lane_camera.csv`; `--no-shift` turns it off). `vehicle_control.py` imports `lane_fusion.py`, which `start.py` uploads with the other `qcar/*.py`. New console lines: `lane_camera.py` adds `shift +0.18 m` to its `map-fit` line when a shift is found; `vehicle_control.py` prints `CAMSTEER: along-route correction +18.0 cm from the camera …` when it applies one (expected once, just before the roundabout), and the `pose=` lines show `shift=<count>`. After the drive: `python tools/checks/steer_check.py <folder>` and `python tools/checks/curve_shift_check.py "<name>|<folder>/<raw frames>|<folder>/odometry_drive.csv"` (the roundabout entry shift should now be ~0).
 
-**Since 2026-11-20 evening (camera report §62; on only §62–§63 and §72–§73, off since §74):** with `cs_estimator = 'fusion'` the fusion filter steers. The `pose=` lines' `v_target` shows the uncertainty slow-down; a stop for uncertainty prints `STOPPED (camera steering): offset uncertainty … cm`. Copy the new `lane_camera.py` to the car again (one more UDP field, `sh_rms`). Console: `CAMSTEER: estimator = fusion filter (dead reckoning axle, encoder = front axle)` at the start; `CAMSTEER: camera along-route measurement +… cm -> s … -> … m` at curve starts/ends (expected before the roundabout and around its exit / 16 → 18); the `pose=` lines add `gps_rej=`, `sd_d=` (offset uncertainty) and `sd_s=` (along-route uncertainty). After the drive also run `python qcar/shift_meas.py <frames> <odometry_drive.csv>` and `python qcar/fusion_replay.py … --dr axle --enc front --shift <folder>/shift_meas.csv`.
+**Since 2026-11-20 evening (camera report §62; on only §62–§63 and §72–§73, off since §74):** with `cs_estimator = 'fusion'` the fusion filter steers. The `pose=` lines' `v_target` shows the uncertainty slow-down; a stop for uncertainty prints `STOPPED (camera steering): offset uncertainty … cm`. Copy the new `lane_camera.py` to the car again (one more UDP field, `sh_rms`). Console: `CAMSTEER: estimator = fusion filter (dead reckoning axle, encoder = front axle)` at the start; `CAMSTEER: camera along-route measurement +… cm -> s … -> … m` at curve starts/ends (expected before the roundabout and around its exit / 16 → 18); the `pose=` lines add `gps_rej=`, `sd_d=` (offset uncertainty) and `sd_s=` (along-route uncertainty). After the drive also run `python tools/checks/shift_meas.py <frames> <odometry_drive.csv>` and `python tools/replay/fusion_replay.py … --dr axle --enc front --shift <folder>/shift_meas.csv`.
 
 ---
 
@@ -175,7 +175,7 @@ Useful patterns:
 - `GPS rejected:` lines in a row: localization lost at that spot; check that part of the room.
 
 ### `check_pose.py`
-[qcar/check_pose.py](../qcar/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
+[tools/on_car/check_pose.py](../tools/on_car/check_pose.py) reads only the GPS (motors are not used) and prints, averaged over the last 25 readings (~5 s):
 - `side_offset`: sideways distance of the **raw** reading from the route path. **+ = left of the path (toward the divider), − = right (toward the outer edge).** The controller moves the real car the opposite way, so a negative reading puts the real car toward the divider.
 - `spread`: min..max over the window, i.e. jitter at rest.
 - `heading_err`: car heading minus path direction.
@@ -193,7 +193,7 @@ Useful patterns:
 
 Commands. On the PC:
 ```
-scp qcar/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
+scp tools/on_car/check_pose.py nvidia@192.168.0.151:/home/nvidia/Documents/self_driving/multi_vehicle_self_driving/
 ssh nvidia@192.168.0.151
 ```
 On the car:

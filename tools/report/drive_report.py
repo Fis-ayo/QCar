@@ -6,7 +6,7 @@ every drive (steer_check.py, the stretch tables, re-acquisitions, along-route
 corrections, GPS status). Route-agnostic: the route is split into straights and arcs
 from the map's own curvature and each stretch is labelled by the nodes around it.
 
-    python qcar/drive_report.py <folder> [--frames]
+    python tools/report/drive_report.py <folder> [--frames]
 <folder> holds odometry_drive.csv, vehicle_control.log, lane_camera.csv (and the raw
 frames folder). --frames also runs the camera along-route measurement on the saved
 frames (shift_meas.py -> <folder>/shift_meas.csv) and lists where it finds a shift.
@@ -26,10 +26,9 @@ import sys
 import subprocess
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
-from c3_replay import load_vc
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
+from common import load_vc
 
 FIT_SRC = ('E', 'Y', 'YE')
 GAP = 0.5            # m without a fit before a re-acquisition counts
@@ -223,7 +222,7 @@ def main():
     if want_frames:
         frames = [f for f in os.listdir(folder) if os.path.isdir(os.path.join(folder, f)) and re.match(r'\d{8}_\d{6}$', f)]
         if frames:
-            subprocess.run([sys.executable, os.path.join(HERE, 'shift_meas.py'), os.path.join(folder, frames[0]),
+            subprocess.run([sys.executable, common.tool('checks', 'shift_meas.py'), os.path.join(folder, frames[0]),
                             os.path.join(folder, 'odometry_drive.csv')], check=True)
             sm = np.genfromtxt(os.path.join(folder, 'shift_meas.csv'), delimiter=',', names=True)
             sm = np.atleast_1d(sm)

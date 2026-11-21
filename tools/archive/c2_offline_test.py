@@ -12,7 +12,7 @@ lane offset without the GPS table, on a hand-rolled centred pass (true offset ~ 
   * otherwise (intersections, curve starts) dead reckoning from the last camera
     value with the encoder distance and the gyro heading.
 
-    python qcar/c2_offline_test.py "logs/car A/raw_frames/20261117_204844" "logs/car A/odometry.csv" [shift_m] [mode] [enc]
+    python tools/archive/c2_offline_test.py "logs/car A/raw_frames/20261117_204844" "logs/car A/odometry.csv" [shift_m] [mode] [enc]
       shift_m  test: error added to the start position (m)
       enc      optional encoder distance scale (default 1.0; 0.98 for car A, report §34)
       mode     gyro (default): position corrected by matching the gyro heading to the map
@@ -47,8 +47,8 @@ import numpy as np
 import cv2
 from scipy.optimize import least_squares
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '..', 'libraries', 'python'))
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
 import lane_camera as lc
 import curve_offline_test as cot
 import curve_start_test as cst

@@ -8,7 +8,7 @@ car: the filter makes its own decision) and the map fits in lane_camera.csv.
 The steering isn't simulated: the car was steered by the C3 estimator, so this
 checks the estimate only.
 
-    python qcar/fusion_replay.py <odometry_drive.csv> <vehicle_control.log> <lane_camera.csv> [c3_replay_<drive>.csv]
+    python tools/replay/fusion_replay.py <odometry_drive.csv> <vehicle_control.log> <lane_camera.csv> [c3_replay_<drive>.csv]
         [--dr old|axle] [--enc front|rear|mean] [--shift <shift_meas.csv>]
 --dr axle: the §53-§54 axle dead reckoning; --enc: which axle the encoder distance is;
 --shift: camera along-route measurements from shift_meas.py (§61). Suffix on the outputs.
@@ -30,12 +30,11 @@ import re
 import sys
 import numpy as np
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, HERE)
-sys.path.insert(0, os.path.join(HERE, '..', '..', 'libraries', 'python'))
-from c3_replay import load_vc
+sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+import common  # noqa: E402  qcar/, tools/ folders and ../libraries/python on sys.path
+from common import load_vc
 from lane_fusion import LaneFusion, wrap, ENC_AXLES
-from c3_replay import pop_opt
+from common import pop_opt
 
 # §61 options: dead-reckoning model, which axle the encoder is, camera along-route measurements
 OPT = dict(dr='old', enc='front', shift=None)
